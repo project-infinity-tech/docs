@@ -7,7 +7,7 @@
     "light": "#07C983",
     "dark": "#15803D"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon green.svg",
   "navigation": {
     "tabs": [
       {
@@ -84,14 +84,14 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
+    "light": "/logo/logo+name.svg",
     "dark": "/logo/dark.svg"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Help",
+        "href": "mailto:help@scram.com"
       }
     ],
     "primary": {
@@ -114,9 +114,9 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/BuildWithScram",
+      "github": "https://github.com/project-infinity-tech",
+      "linkedin": "https://linkedin.com/company/buildwithscram"
     }
   }
 }
