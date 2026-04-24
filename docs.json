@@ -4,8 +4,8 @@
   "name": "Mint Starter Kit",
   "colors": {
     "primary": "#a9dd7b",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "light": "#a9dd7b",
+    "dark": "#a9dd7b"
   },
   "favicon": "/logo/favicon.svg",
   "navigation": {
@@ -96,8 +96,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "https://https://workspace.projectinfinity.tech/"
     }
   },
   "contextual": {
