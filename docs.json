@@ -7,6 +7,9 @@
     "light": "#a9dd7b",
     "dark": "#a9dd7b"
   },
+  "blog": {
+    "subdirectory": "blog"
+  },
   "favicon": "/logo/favicon.svg",
   "navigation": {
     "tabs": [
@@ -77,7 +80,7 @@
         },
         {
           "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "href": "https://scram.mintlify.app/blog",
           "icon": "newspaper"
         }
       ]
