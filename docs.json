@@ -1,48 +1,91 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Scram",
   "colors": {
     "primary": "#a9dd7b",
     "light": "#a9dd7b",
     "dark": "#a9dd7b"
   },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/logo/favicon.svg",
   "blog": {
     "subdirectory": "blog"
   },
-  "favicon": "/logo/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Understanding Scram",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "understanding/understanding-page-structure",
+              "understanding/understanding-data-types",
+              "understanding/understanding-data-sources",
+              "understanding/understanding-expressions",
+              "understanding/understanding-variables",
+              "understanding/understanding-page-data",
+              "understanding/understanding-reactive-programming",
+              "understanding/understanding-events-and-workflows",
+              "understanding/understanding-actions",
+              "understanding/understanding-components",
+              "understanding/understanding-repeaters",
+              "understanding/understanding-slots",
+              "understanding/understanding-properties",
+              "understanding/understanding-themes",
+              "understanding/understanding-user-management",
+              "understanding/understanding-the-scram-database",
+              "understanding/understanding-project-files",
+              "understanding/understanding-server-logs"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "The Editor",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "understanding/subpages/scram-editor-overview",
+              "understanding/subpages/editor-canvas",
+              "understanding/subpages/editor-header",
+              "understanding/subpages/editor-sidebar",
+              "understanding/subpages/scram-chat-panel",
+              "understanding/subpages/scram-project-structure",
+              "understanding/subpages/page-management",
+              "understanding/subpages/page-settings",
+              "understanding/subpages/page-data-tab",
+              "understanding/subpages/page-authorisation"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Building",
             "pages": [
+              "understanding/subpages/building-your-own-components",
+              "understanding/subpages/dynamic-prop-setting-on-components",
+              "understanding/subpages/event-handling-in-components",
+              "understanding/subpages/data-sources---api-calls",
+              "understanding/subpages/data-sources---the-scram-database",
+              "understanding/subpages/signing-users-up",
+              "understanding/subpages/workflow-auth",
+              "understanding/subpages/sending-query-parameters",
+              "understanding/subpages/the-scram-file-store",
+              "understanding/subpages/theme-management",
+              "understanding/subpages/custom-project-types"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "understanding/subpages/hints-and-tips",
+              "understanding/subpages/for-bubble-developers-!",
               "ai-tools/cursor",
               "ai-tools/claude-code",
               "ai-tools/windsurf"
@@ -51,75 +94,78 @@
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Actions",
             "pages": [
-              "api-reference/introduction"
+              "actions/action-directory",
+              "actions/set-variable",
+              "actions/create-variable",
+              "actions/if-else",
+              "actions/case-switch",
+              "actions/switch-case-action",
+              "actions/emit-event",
+              "actions/execute-sql",
+              "actions/run-code",
+              "actions/log-message-and-log-to-console",
+              "actions/login-existing-user",
+              "actions/logout-user",
+              "actions/reload-user",
+              "actions/signup-new-user-with-email-and-password",
+              "actions/signup-or-login-with-social-provider",
+              "actions/reload-page-data",
+              "actions/reload-all-page-data",
+              "actions/upload-file-to-url",
+              "actions/terminate"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Components",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "components/component-directory",
+              "components/button",
+              "components/button-group",
+              "components/icon-button",
+              "components/input-components",
+              "components/input-select",
+              "components/date-picker-input",
+              "components/checkbox",
+              "components/checkbox-group",
+              "components/chip",
+              "components/chip-group",
+              "components/card",
+              "components/container",
+              "components/styled-container",
+              "components/background-image-container",
+              "components/overlay-container",
+              "components/full-screen-overlay",
+              "components/repeater",
+              "components/tabbed-section",
+              "components/heading-(1-4)",
+              "components/text",
+              "components/unstyled-text",
+              "components/link",
+              "components/image",
+              "components/icon",
+              "components/avatar",
+              "components/avatar-group",
+              "components/alert",
+              "components/toast",
+              "components/progress-bar",
+              "components/meter",
+              "components/divider",
+              "components/breadcrumbs",
+              "components/breadcrumb-item",
+              "components/main-navigation",
+              "components/main-footer",
+              "components/page-templates",
+              "components/page-template-full",
+              "components/html-element"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://scram.mintlify.app/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Help",
-        "href": "mailto:help@scram.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Get Started",
-      "href": "https://https://workspace.projectinfinity.tech/"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/BuildWithScram",
-      "github": "https://github.com/project-infinity-tech",
-      "linkedin": "https://linkedin.com/company/buildwithscram"
-    }
+    ]
   }
 }
