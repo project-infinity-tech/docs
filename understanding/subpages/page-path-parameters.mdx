@@ -1,4 +1,35 @@
 ---
-title: 'page path parameters'
+title: "page path parameters"
 ---
 
+##Path Parameters##
+
+Sometimes a page needs to display different content depending on what's being viewed — a specific product, a particular user profile, or a single blog post. Rather than creating a separate page for every item, you can use a **path parameter**: a placeholder in the URL that captures a variable value.
+
+A path parameter is written with a colon before its name. For example, `:itemId` in a URL means "whatever value appears here will be stored as `itemId` and made available on the page."
+
+Example: A page with the slug `:itemId` nested under a `items` parent page would be accessible at `mybrandnewsite.com/items/42` — and the page would know that `itemId` is `42`.
+
+---
+
+##Requiring a Parent Page##
+
+Path parameters must always live on a child page — you cannot put a path parameter directly on a top-level page. This is because the parameter needs a fixed "anchor" in the URL before it.
+
+Example: To build a URL like `mybrandnewsite.com/shop/items/:itemId`, you would:
+
+1. Create a `shop` page
+2. Create an `items` child page under it
+3. Create a `:itemId` child page under `items`
+
+The parent pages (`shop` and `items`) give the URL its fixed structure, while `:itemId` is the dynamic part that changes depending on which item is being viewed.
+
+> _If you try to create a path parameter page without a fixed parent, the URL has no structure to anchor it — so the parent page is required._
+
+---
+
+##Using Path Parameters on the Page##
+
+Once a path parameter is defined, its value is available anywhere on that page. You would typically use it to load the right content — for example, fetching the item whose ID matches the value in the URL, then displaying that item's details on the page.
+
+This pattern is the standard way to build detail pages: one page design, driven by whichever item the user selected.

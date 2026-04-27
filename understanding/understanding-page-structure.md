@@ -50,7 +50,7 @@ Child pages are created the same way as regular pages — use the **\+** button 
 ## Related Topics
 
 <CardGroup cols={2}>
-  <Card title="Sending Query Parameters" icon="code" href="/understanding/subpages/sending-query-parameters">
+  <Card title="Sending Query Parameters" icon="circle-question" href="/understanding/subpages/sending-query-parameters">
     Pass data between pages using URL query parameters.
   </Card>
 
@@ -58,10 +58,7 @@ Child pages are created the same way as regular pages — use the **\+** button 
     Control who can access each page in your app.
   </Card>
 
-
- <Card title="Page Path Parameters" icon="lock" href="/understanding/subpages/page path parameters">
+  <Card title="Page Path Parameters" icon="slash-forward" href="/understanding/subpages/page path parameters">
     Control who can access each page in your app.
   </Card>
-
-
 </CardGroup>
