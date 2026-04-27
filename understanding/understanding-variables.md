@@ -1,3 +1,7 @@
+---
+title: "Understanding Variables"
+---
+
 # Understanding Variables
 
 **Variables** are containers that store data in your Scram app. They're like your app's short-term memory - holding user inputs, API responses, UI state, and temporary data while users interact with your application.

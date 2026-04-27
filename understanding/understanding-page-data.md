@@ -1,32 +1,64 @@
-# Understanding Page Data
+---
+title: "Understanding Page Data"
+---
 
-Every Page in a Scram App can have some “Page Data” defined. You can find it at the bottom of the side menu.
+Every page in a Scram app can have Page Data defined. You'll find it at the bottom of the left-hand panel when a page is selected.
 
-Page Data is data loaded when the page loads. So it is there, ready to be used on the page.
+Page Data is data that loads automatically when the page opens — before the user does anything. It's ready and waiting to be displayed as soon as the page appears.
 
-We define the data we want to use in our pages by setting up “Page Data Variables”. These variables can contain either a single data type, such as a text, or a more complex type like a “Project” where a “Project” has multiple fields with your Project Data (name, start date, duration, who is managing). A “Project” can, of course, come from a database table, but it could also come from an API that pulls in Project data. And you can even combine the two by pulling data from an external API and enriching it with internal data.
+---
 
-“Page Data Variables” can also be lists. So it could be a list of “Projects” that you are loading.
+## Page Data Variables
 
-Imagine you have a Project Management System that shows the User all the projects they have responsibility for. On the Dashboard, you can load all their Projects so they are available to display on the page. This would be a “Page Data Variable” with a Type of “List of Projects”.
+You define what data you want available on a page by creating **Page Data Variables**. Each variable holds a particular piece of data that gets loaded when the page opens.
 
-Page data is loaded in a series of one or more “Steps” that combine into a “Workflow”. The simplest workflow is one Step that loads some data. But they can have multiple steps if needed.
+A variable can hold a simple value — like a single piece of text — or a complex structured type, like a Project, which might have multiple fields such as a name, start date, duration, and assigned manager.
 
-Each “step” in the page data workflow runs a particular “Action”
+Variables can also hold lists. For example, in a Project Management app, your dashboard might load all the projects a user is responsible for. That would be a Page Data Variable typed as a List of Projects.
 
-An Action can be -
+The data in a variable can come from many places — your internal database, an external API, or even a combination of both. You could fetch project data from an external system and enrich it with additional information from your own database in the same workflow.
 
-- From a Data Source
-  - An internal database query using Execute SQL
-  - An API call that brings back data
-  - The Scram Filestore
-- Static data
-  - You can, of course, load static data as page data
+<Tip>
+  You can also use static data — values you define directly in the workflow itself, like a fixed list of options or a hardcoded configuration value. Static data never changes unless you edit the workflow.
+</Tip>
 
-Outputs
+---
 
-There are two ways to expose the result of 
+## Page Data Workflows
 
-- "Inherit" 
-  - In this case the output 
-- "Success" 
+Each Page Data Variable is loaded by a **Workflow** — a series of one or more steps that run in sequence when the page opens.
+
+The simplest workflow is a single step that fetches some data. More complex workflows can chain multiple steps together — for example, calling an API and then querying your database to combine the results.
+
+Each step runs an **Action**. Available actions include:
+
+| Action | Description |
+|---|---|
+| Execute SQL | Query your internal Scram database directly |
+| API call | Fetch data from an external service or data source |
+| Scram Filestore | Retrieve stored files |
+| Static data | Return a fixed value defined in the workflow itself |
+
+---
+
+## Outputs
+
+At the end of a Page Data workflow, you define what gets stored in the variable. There are two options:
+
+**Inherit** — The variable automatically receives the result of the last step in the workflow. This is the simplest option and is all you need for most cases — for example, fetching a list of rows from your database. If your workflow has multiple steps, Inherit will forward whatever the final step produced.
+
+**Success** — If you need more control — for example, combining results from multiple steps, or shaping the output yourself — you can define exactly what the variable should contain. This gives you full flexibility over the final output.
+
+---
+
+## Page Data is for load-time data only
+
+<Warning>
+  Page Data only runs when the page first opens. If you need data to load in response to something the user does — clicking a button, submitting a form, making a selection — that should be handled by a regular workflow, not a Page Data Variable. Using Page Data for user-triggered actions is a common mistake and won't behave as expected.
+</Warning>
+
+---
+
+## Reloading Page Data
+
+Page Data can be refreshed during a session using the **Reload Page Data** action inside any workflow. For example, after a user creates a new project, you can trigger a reload so the list on screen updates immediately — without the user having to refresh the page manually.
