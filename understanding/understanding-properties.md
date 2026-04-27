@@ -2,8 +2,6 @@
 title: "Understanding Properties"
 ---
 
-# Understanding Properties
-
 Properties (or "props") are how you configure a component — what it shows, how it behaves, and how it looks. They live on components: both the platform components Scram provides and any custom components you build yourself.
 
 ---

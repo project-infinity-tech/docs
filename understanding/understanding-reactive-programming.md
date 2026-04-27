@@ -2,8 +2,6 @@
 title: "Understanding Reactive Programming"
 ---
 
-# Understanding Reactive Programming
-
 ### Or at least how Scram implements Reactive programming !
 
 Scram's front end builds React Apps. If you already know about React then you will be familiar with Reactive Programming.

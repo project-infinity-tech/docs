@@ -2,8 +2,6 @@
 title: "Understanding Data Types"
 ---
 
-# Understanding Data Types
-
 Every piece of data in Scram has a type. Types tell the system what kind of value to expect, how to store it, how to display it, and what operations make sense on it. Understanding types helps you build more reliably — and avoid subtle bugs where a value looks right but behaves unexpectedly.
 
 ---

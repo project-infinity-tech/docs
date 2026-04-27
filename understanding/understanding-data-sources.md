@@ -2,8 +2,6 @@
 title: "Understanding Data Sources"
 ---
 
-# Understanding Data Sources
-
 Data Sources are Scram's way of connecting your app to external systems, APIs, databases, and services. They're the bridges between your frontend apps and the data and functionality your app needs.
 
 ---

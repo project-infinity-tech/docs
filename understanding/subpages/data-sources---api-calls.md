@@ -2,15 +2,13 @@
 title: "Data Sources - API Calls"
 ---
 
-# Data Sources - API Calls
-
-Infinity handles API calls by importing text files (or URLS to those text files) that describe how these APIs function. This makes it quicker and simpler for the user, as most API calls have already been specified (often by the provider) and can, therefore, just be imported and used immediately rather than manually typing out URLs and Parameters.
+Scram handles API calls by importing text files (or URLS to those text files) that describe how these APIs function. This makes it quicker and simpler for the user, as most API calls have already been specified (often by the provider) and can, therefore, just be imported and used immediately rather than manually typing out URLs and Parameters.
 
 Unlike cURL, which describes a single API call, Infinity is able to import multiple API calls in one file, which includes all the calls, authorisation, descriptions and data structures associated with this set of API calls.
 
 The following formats are supported:
 
-- OpenAPI 3.0
+- OpenAPI 3.0 / 3.1
     - OpenAPI is the generally accepted standard for describing RESTful APIs. It is both human and machine-readable.
 - Postman export
     - Postman one of the most widely used API management platforms.

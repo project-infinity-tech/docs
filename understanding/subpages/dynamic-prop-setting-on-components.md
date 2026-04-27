@@ -2,8 +2,6 @@
 title: "Dynamic Prop setting on Components"
 ---
 
-# Dynamic Prop setting on Components
-
 Note this is current as at March 2025 and may well change.
 
 Parameters that are passed into a composite do so via “props” (properties) that are defined on the composite.

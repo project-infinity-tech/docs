@@ -2,8 +2,6 @@
 title: "Understanding The Scram Database"
 ---
 
-# The Scram Database
-
 Scram's built-in database is a relational database built on PostgreSQL, giving you all the standard relational features:
 
 - Tables with typed columns (text, integer, number, boolean, dates, enums, arrays, and more)

@@ -2,8 +2,6 @@
 title: "Understanding Components"
 ---
 
-# Understanding Components
-
 # Scram Components — Overview
 
 A **Component** is the fundamental building block of every page in Scram. Every visible element you see on a page — a button, a text label, an image, a form input, a layout container — is a component.

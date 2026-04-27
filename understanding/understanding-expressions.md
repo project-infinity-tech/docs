@@ -2,8 +2,6 @@
 title: "Understanding Expressions"
 ---
 
-# Understanding Expressions
-
 When writing an expression, you can access a range of local data depending on where the expression is used. The Expression Builder will eventually abstract this away, but until then this page serves as a reference.
 
 ---

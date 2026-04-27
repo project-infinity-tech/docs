@@ -1,8 +1,6 @@
 ---
-title: "Scram Project Structure"
+title: "Understanding Scram Project Structure"
 ---
-
-# Scram Project Structure
 
 A project in Scram is like a folder containing quite a few of the elements that make up a web app or a web site. At first it can look a little overwhelming as it isn’t like many tools that “build a website” where you are starting off…just building the website.
 

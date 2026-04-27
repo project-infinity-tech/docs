@@ -2,8 +2,6 @@
 title: "Scram Editor Overview!!"
 ---
 
-# Scram Editor Overview
-
 Depending on your screen size, the Scram editor will likely open in one of two ways. On smaller screens, it may look like this.
 
 ![image.png](image%204.png)

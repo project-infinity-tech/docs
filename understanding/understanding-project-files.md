@@ -2,8 +2,6 @@
 title: "Understanding Project Files"
 ---
 
-# Project Files in Scram
-
 Project Files are a place to upload and store static assets that are used directly in your app's design — things like:
 
 - Images (logos, hero images, background photos, icons)

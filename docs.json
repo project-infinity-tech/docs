@@ -30,7 +30,9 @@
           {
             "group": "Understanding Scram",
             "pages": [
+              "understanding/subpages/scram-project-structure",
               "understanding/understanding-page-structure",
+              "understanding/understanding-the-scram-database",
               "understanding/understanding-data-types",
               "understanding/understanding-data-sources",
               "understanding/understanding-expressions",
@@ -45,7 +47,6 @@
               "understanding/understanding-properties",
               "understanding/understanding-themes",
               "understanding/understanding-user-management",
-              "understanding/understanding-the-scram-database",
               "understanding/understanding-project-files",
               "understanding/understanding-server-logs",
               "understanding/understanding-the-filestore",
@@ -60,7 +61,6 @@
               "understanding/subpages/editor-header",
               "understanding/subpages/editor-sidebar",
               "understanding/subpages/scram-chat-panel",
-              "understanding/subpages/scram-project-structure",
               "understanding/subpages/page-management",
               "understanding/subpages/page-settings",
               "understanding/subpages/page-data-tab",
