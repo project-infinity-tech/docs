@@ -1,0 +1,76 @@
+---
+title: "INSERT"
+description: "Adding new rows to the Scram Database using the Execute SQL action."
+---
+
+## Basic INSERT with RETURNING
+
+Always use `RETURNING` so you get the new record back without needing a second query:
+
+```sql
+INSERT INTO "Posts" ("title", "body", "ownerId")
+VALUES (:title, :body, :userId)
+RETURNING "id", "title", "createdAt"
+```
+
+```js
+{ title: vars.postTitle, body: vars.postBody, userId: user.id }
+```
+
+The result comes back as an array with one item — the created row. Access it with `steps.stepId.output.value[0].id`.
+
+---
+
+## Named parameters in INSERT
+
+Exactly the same as `SELECT` — one named parameter per value, passed through the params object. Never interpolate values directly into the SQL string:
+
+```sql
+INSERT INTO "Comments" ("postId", "text", "ownerId")
+VALUES (:postId, :text, :userId)
+RETURNING "id"
+```
+
+```js
+{ postId: vars.currentPostId, text: vars.commentText, userId: user.id }
+```
+
+---
+
+## Scram-specific gotchas
+
+### `id` is auto-generated — never insert it
+
+Every Scram table gets an automatic `id` primary key. Don't include it in your `INSERT` — the database generates it. Specifying it manually will throw an error.
+
+### `ownerId` must be set explicitly in SQL
+
+The `ownerId` column is added to every table by Scram, but it is not auto-populated when you write raw SQL. You need to pass it explicitly — typically `user.id` from the global user object.
+
+<Warning>
+  If your RLS policies depend on `ownerId` matching the logged-in user, forgetting to set it means rows will be created with a null owner and may become inaccessible.
+</Warning>
+
+### No automatic timestamps
+
+Scram doesn't add `createdAt` or `updatedAt` columns automatically. If you want timestamps, add a `datetime` field to your table and set it in the `INSERT` using `NOW()`:
+
+```sql
+INSERT INTO "Posts" ("title", "createdAt")
+VALUES (:title, NOW())
+RETURNING "id"
+```
+
+If you're passing a date as a parameter rather than using `NOW()` inline, add an explicit cast to avoid type errors:
+
+```sql
+VALUES (:title, :publishDate::date)
+```
+
+### INSERT always returns an array
+
+Even though you're inserting one row, `RETURNING` gives back `[{ id: 1, ... }]`. Always access `output.value[0]` to get the record itself.
+
+### Inserting multiple rows
+
+Standard PostgreSQL multi-row insert syntax works, but you lose the ability to use named parameters cleanly for each row. If you need to insert multiple rows from an array, consider running the `INSERT` in a loop via separate workflow steps, or restructuring your data model.
