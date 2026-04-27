@@ -1,3 +1,7 @@
+---
+title: "Understanding Server Logs"
+---
+
 # Understanding Server Logs
 
 The Server Log is a live feed of everything happening on the backend of your app. It's where you go when something isn't working the way you expect — and increasingly, as you build more complex apps, it becomes an indispensable part of your development workflow.
