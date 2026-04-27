@@ -25,13 +25,43 @@ By default, the Index page has a **blank slug**, which means it loads when someo
 
 ---
 
+##Adding Pages##
+
+To add a new page, click the **\+** button next to your app name in the pages panel. Give the page a name and a slug — the slug is what appears in the URL when someone visits that page.
+
+Example: A page with the slug `about` would be accessible at `mybrandnewsite.com/about`.
+
+> _Page slugs should be lowercase, with no spaces. Use hyphens to separate words (e.g._ `contact-us`_)._
+
+---
+
+##Child Pages##
+
+Pages can be nested inside other pages, creating a hierarchy. A child page's full URL is made up of its parent's slug followed by its own slug.
+
+Example: If you have a parent page with the slug `blog`, and a child page with the slug `getting-started`, that child page would be accessible at `mybrandnewsite.com/blog/getting-started`.
+
+This is useful for organising related pages together — for example, grouping all settings pages under a `/settings` parent, or all help articles under `/help`.
+
+> _A child page can itself have children, allowing you to build as many levels of nesting as your app requires._
+
+Child pages are created the same way as regular pages — use the **\+** button — and you can drag and drop pages in the panel to rearrange them or change their parent at any time.
+
 ## Related Topics
 
 <CardGroup cols={2}>
   <Card title="Sending Query Parameters" icon="code" href="/understanding/subpages/sending-query-parameters">
     Pass data between pages using URL query parameters.
   </Card>
+
   <Card title="Page Authorisation" icon="lock" href="/understanding/subpages/page-authorisation">
     Control who can access each page in your app.
   </Card>
+
+
+ <Card title="Page Path Parameters" icon="lock" href="/understanding/subpages/page path parameters">
+    Control who can access each page in your app.
+  </Card>
+
+
 </CardGroup>

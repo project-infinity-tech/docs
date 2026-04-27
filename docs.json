@@ -79,7 +79,8 @@
               "understanding/subpages/sending-query-parameters",
               "understanding/subpages/the-scram-file-store",
               "understanding/subpages/theme-management",
-              "understanding/subpages/custom-project-types"
+              "understanding/subpages/custom-project-types",
+              "understanding/subpages/page-path-parameters"
             ]
           },
           {
