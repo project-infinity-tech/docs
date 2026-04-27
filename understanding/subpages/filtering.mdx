@@ -1,0 +1,102 @@
+---
+title: "filtering"
+---
+
+---
+
+title: "Filtering with Parameters"
+
+description: "Safe, flexible query filtering in the Execute SQL action using named parameters."
+
+---
+
+Named parameters are the standard way to pass values into Execute SQL queries in Scram. They keep your queries safe from SQL injection and your code readable. This page covers the patterns you'll reach for most often.
+
+<Note>
+
+  For a basic introduction to named parameters and the params object, see [SELECT Basics](/understanding/subpages/select-basics#filtering-with-where).
+
+</Note>
+
+---
+
+## Filtering by a list of values
+
+You cannot pass an array to a named parameter and use it inside `IN (:ids)` — PostgreSQL won't expand it as you might expect. Use `= ANY()` instead:
+
+```sql
+SELECT "id", "title"
+FROM "Posts"
+WHERE "id" = ANY(:ids)
+```
+
+```js
+{ ids: [1, 2, 3] }
+```
+
+`= ANY()` accepts a PostgreSQL array and behaves identically to `IN` for most purposes. This is the recommended pattern in Scram whenever you need to filter by a list of values.
+
+<Warning>
+
+  Passing an empty array to `= ANY(:ids)` returns zero rows. This is usually the correct behaviour, but worth keeping in mind if you're building the list conditionally.
+
+</Warning>
+
+---
+
+## Optional filters
+
+The cleanest approach — and the one that keeps your query static, preserving the typed array output — is the **null-bypass pattern**:
+
+```sql
+SELECT "id", "title", "status"
+FROM "Posts"
+WHERE (:status IS NULL OR "status" = :status)
+AND (:authorId IS NULL OR "ownerId" = :authorId)
+```
+
+When a parameter is `null`, the `IS NULL` check passes and that filter is skipped entirely. When a value is provided, the second condition is evaluated normally.
+
+Pass `null` explicitly in the params object for any filter you want to skip:
+
+```js
+{ status: vars.selectedStatus ?? null, authorId: null }
+```
+
+<Tip>
+
+  The null-bypass pattern keeps your query static, which means the output remains a typed array and you can use `.length`, `.filter`, and other array methods. Building the `WHERE` clause dynamically with template literals works, but makes the query dynamic and loses that type information — see [SELECT Basics](/understanding/subpages/select-basics#static-vs-dynamic-query-output) for details.
+
+</Tip>
+
+---
+
+## Type coercion and casting
+
+Parameters are untyped when passed to PostgreSQL, so the database infers the type. This works fine for text, integers, and booleans — but can cause issues with dates and enums. If a query fails with a type error, add an explicit cast in the SQL:
+
+```sql
+WHERE "createdAt" > :since::date
+WHERE "status" = :status::text
+```
+
+### Dates
+
+Avoid passing `.toISOString()` or date objects as parameters — they can serialise in ways PostgreSQL rejects. For the current time, use SQL's `NOW()` directly in the query rather than passing a value through params:
+
+```sql
+WHERE "createdAt" > NOW() - INTERVAL '7 days'
+```
+
+---
+
+## Parameterising identifiers
+
+Column names, table names, and SQL keywords cannot be passed as parameters — only values. If you need a dynamic sort column (for example, an `ORDER BY` a user-chosen field), you'd need to build that part of the query with a template literal, accepting the dynamic query trade-off.
+
+```sql
+-- ✅ Fine — value as a parameter
+WHERE "status" = :status
+-- ❌ Not possible — identifier as a parameter
+ORDER BY :sortColumn DESC
+```
