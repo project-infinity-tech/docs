@@ -1,3 +1,8 @@
+---
+title: "Custom Project Types"
+description: "A project type is a named, reusable data structure you define yourself. It describes the shape of a piece of data: what fields it has, and what type each field is."
+---
+
 # Custom Project Types
 
 As your app grows, you'll find certain shapes of data appearing in multiple places. A delivery address used in orders, customer profiles, and shipping forms. A price structure with an amount and a currency. A set of coordinates used across a mapping feature. Defining these shapes once — and reusing them everywhere — is what custom project types are for.
