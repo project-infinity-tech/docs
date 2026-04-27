@@ -10,4 +10,3 @@ Scram allows you to add
 
 ### API Tokens
 
-[https://www.loom.com/share/199251ba623c4749b9fdb2382766b4f7](https://www.loom.com/share/199251ba623c4749b9fdb2382766b4f7)

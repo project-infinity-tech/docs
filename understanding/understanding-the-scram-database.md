@@ -1,3 +1,5 @@
+# The Scram Database
+
 Scram's built-in database is a relational database built on PostgreSQL, giving you all the standard relational features:
 
 - Tables with typed columns (text, integer, number, boolean, dates, enums, arrays, and more)
@@ -34,8 +36,7 @@ This page is an overview. The sections below cover working with the Scram Databa
 - **ScramDB table conventions** — PascalCase tables, camelCase columns, the automatic `id` primary key
 - **Relating tables** — storing ID fields that reference records in other tables
   <Warning>
-    Scram does not currently enforce foreign key constraints at the database level. There is no `REFERENCES` or `FOREIGN KEY` enforcement — the database will not prevent you from inserting an invalid ID. Referential integrity must be handled in your app logic.
-    The ID type (`text`/UUID or `integer`) also varies by project — always check before writing queries.
+    Scram does not currently enforce foreign key constraints at the database level. There is no `REFERENCES` or `FOREIGN KEY` enforcement — the database will not prevent you from inserting an invalid ID. Referential integrity must be handled in your app logic. The ID type (`text`/UUID or `integer`) also varies by project — always check before writing queries.
   </Warning>
 - **The Users table** — built-in fields, adding custom fields, querying authenticated users
 - **Dates and times** — storing, querying, and formatting temporal data in PostgreSQL
