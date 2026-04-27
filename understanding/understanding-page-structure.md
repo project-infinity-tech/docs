@@ -1,35 +1,37 @@
-# Understanding Page Structure
+---
+title: "Understanding Page Structure"
+description: "How pages work in Scram and how they map to your live app."
+---
 
-# **The Basics**
+## The Basics
 
-Scram Apps have pages (or at least one Index page), and these are, unsurprisingly, mapped to "pages" on the web pages that Scram creates.
+Scram apps are built around pages — at minimum one Index page — and each page maps directly to a URL in your deployed web app.
 
-# **Index Page**
+## The Index Page
 
-Every app has an Index Page created by default when the App is created.
+Every app has an Index page created by default when the app is first created. You can rename it any time by double-clicking the name in the editor.
 
-You can rename this page to whatever you want by double-clicking the name. There is nothing special about this index page in that regard *
+By default, the Index page has a **blank slug**, which means it loads when someone visits your root URL.
 
-- Although if you set another page to have a blank slug, the page created initially will be shown.
+<Info>
+  If you set another page to have a blank slug, that page will become the new root — the originally created page will no longer load by default.
+</Info>
 
-Also, by default, the "slug" of the index page is set to "blank".
+**Example:** If your app is deployed to `mybrandnewsite.com`, any visitor hitting that URL will land on whichever page has the blank slug.
 
-What does this mean in practice?
+<Note>
+  You can change which page acts as the "index" by updating the slug of the old index page to something non-blank, and setting the new page's slug to blank.
+</Note>
 
-*Let's say we have deployed our app to mybrandnewsite.com*
+---
 
-Any link to that url will go the index page, assuming the slug is blank. 
+## Related Topics
 
-So you don't have
-
-Note : You can change the "index" page by simply updating the slug of the "old"
-
-Query Parameters
-
-[Sending Query Parameters](Sending%20Query%20Parameters%2020665b4769b580c7be7ed7fa65ebad11.md)
-
-Path Parameters
-
-Page Authentication
-
-[Page Authorisation](Page%20Authorisation%202e265b4769b580fba17bcc6c514affe3.md)
+<CardGroup cols={2}>
+  <Card title="Sending Query Parameters" icon="code" href="/understanding/subpages/sending-query-parameters">
+    Pass data between pages using URL query parameters.
+  </Card>
+  <Card title="Page Authorisation" icon="lock" href="/understanding/subpages/page-authorisation">
+    Control who can access each page in your app.
+  </Card>
+</CardGroup>

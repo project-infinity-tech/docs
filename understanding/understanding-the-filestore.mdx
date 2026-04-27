@@ -1,0 +1,80 @@
+# File Uploads in Scram
+
+## How Uploading Works
+
+Scram provides a built-in file storage system backed by S3 (eu-west-1). Uploading involves two distinct steps that run in different environments:
+
+1. **Prepare upload (server step)** — generates a pre-signed S3 URL
+2. **Upload file (browser step)** — PUTs the file to that URL directly from the browser
+
+These two steps must run in the correct sequence. Mixing server and browser steps without a bridging variable in between causes the following error:
+
+```
+Step ID not found in given list of steps — likely a frontend step
+```
+
+To avoid this, store the pre-signed URL in a page variable between the two steps. This forces execution back into the browser context before the upload runs.
+
+---
+
+## Capturing the File
+
+The file input's `onChange` event returns the full browser event object. The actual file lives at:
+
+```
+trigger.payload.target.files[0]
+```
+
+Do not use the top-level trigger payload — it will send the raw event object to the upload step, which will fail with `file is required`.
+
+---
+
+## Filename and Content Type
+
+By default, Scram saves every uploaded file with the hardcoded name `file` unless you explicitly pass the real filename in the upload path.
+
+- Read the filename directly from the file object: `file.name`
+- Read the content type directly from the file object: `file.type`
+
+If `file.type` is unavailable, fall back to `application/octet-stream`. Do not hardcode a content type — it will cause MIME type mismatches for images, PDFs, and other formats.
+
+---
+
+## Resetting the File Input After Upload
+
+Browser file inputs cannot be reset with a simple value clear. The most reliable approach in Scram is to bind the input's `value` to the filename variable and clear that variable on successful upload. When the variable empties, the input resets visually.
+
+---
+
+## How File Listing Works
+
+Scram has a built-in **List Files** action that returns an array of file metadata objects with this shape:
+
+```json
+{
+  "name": "filename.ext",
+  "fileUri": "s3://bucket/path/to/file",
+  "size": 1333,
+  "lastModified": {}
+}
+```
+
+### Key points
+
+- `name` reflects exactly how the file was saved — if the upload didn't pass a real filename, this will be `"file"`
+- `size` is in raw bytes — divide by 1000 to display as KB
+- `lastModified` always returns as an **empty object** — the storage system does not populate this field, so it should not be displayed
+- The list must be triggered on page load and re-triggered after each successful upload to stay current without a manual refresh
+
+---
+
+## Common Pitfalls
+
+| Issue | Cause | Fix |
+|---|---|---|
+| `Step not found` error | Server and browser steps running out of order | Store the pre-signed URL in a variable to bridge back to browser context |
+| Filename saves as `file` | Real filename not passed to the upload path | Read `file.name` directly from the file object |
+| `[object Object]` in file list | Raw object rendered as text | Use the correct field accessor (e.g. `.name`, `.size`) |
+| Content type mismatch | Hardcoded MIME type | Use `file.type` from the file object |
+| File input doesn't reset after upload | Browser input limitation | Bind input value to a variable and clear it on successful upload |
+| Date shows as `{}` | Storage system doesn't return `lastModified` | Don't display it — show size instead |

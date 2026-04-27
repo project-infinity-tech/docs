@@ -47,7 +47,8 @@
               "understanding/understanding-user-management",
               "understanding/understanding-the-scram-database",
               "understanding/understanding-project-files",
-              "understanding/understanding-server-logs"
+              "understanding/understanding-server-logs",
+              "understanding/understanding-the-filestore"
             ]
           },
           {
@@ -95,7 +96,7 @@
       },
       {
         "tab": "Reference",
-        "groups": [
+        "pages": [
           {
             "group": "Actions",
             "pages": [
@@ -163,6 +164,10 @@
               "components/page-template-full",
               "components/html-element"
             ]
+          },
+          {
+            "group": "Types",
+            "pages": []
           }
         ]
       }
