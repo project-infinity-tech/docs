@@ -1,0 +1,107 @@
+---
+title: "Full-Text Search"
+description: "Using LIKE, ILIKE, and PostgreSQL full-text search in the Execute SQL action."
+---
+
+Scram supports three approaches to text search, each suited to different situations.
+
+---
+
+## LIKE — case-sensitive pattern matching
+
+Use `LIKE` when case matters — for example, matching product codes, reference numbers, or anything where `ABC` and `abc` are different things.
+
+```sql
+SELECT * FROM "Projects"
+WHERE "name" LIKE '%' || :search || '%'
+```
+
+The `%` symbols are wildcards meaning "anything before or after". Searching for `road` would match `Broadgate`, `roadworks`, and `New road plan`.
+
+---
+
+## ILIKE — case-insensitive pattern matching
+
+Use `ILIKE` for most user-facing search boxes. It works exactly like `LIKE` but ignores capitalisation — so `road`, `Road`, and `ROAD` all return the same results.
+
+```sql
+SELECT * FROM "Projects"
+WHERE "name" ILIKE '%' || :search || '%'
+```
+
+This covers the majority of search use cases in everyday apps.
+
+### Searching across multiple columns
+
+Combine `ILIKE` across several fields using `OR`:
+
+```sql
+SELECT * FROM "Projects"
+WHERE "name" ILIKE '%' || :search || '%'
+OR "description" ILIKE '%' || :search || '%'
+OR "managerName" ILIKE '%' || :search || '%'
+```
+
+---
+
+## PostgreSQL full-text search — relevance-based search
+
+Use full-text search when you want ranked, intelligent search across larger bodies of text. It understands word variations (so `running` matches `run`) and ranks results by relevance — similar to how a search engine works.
+
+```sql
+SELECT *, ts_rank(
+  to_tsvector('english', "name" || ' ' || "description"),
+  plainto_tsquery('english', :search)
+) AS rank
+FROM "Projects"
+WHERE to_tsvector('english', "name" || ' ' || "description")
+  @@ plainto_tsquery('english', :search)
+ORDER BY rank DESC
+```
+
+<Tip>
+  Use full-text search when querying long descriptions, articles, or notes — or when you want results ordered by how closely they match the search term. For simple name lookups or short fields, `ILIKE` is simpler and performs just as well.
+</Tip>
+
+---
+
+## Quick decision guide
+
+| Situation | Use |
+|---|---|
+| User types into a search box | `ILIKE` |
+| Matching codes, references, exact case matters | `LIKE` |
+| Searching long descriptions, ranking by relevance | Full-text search |
+| Filtering a short list by name | `ILIKE` |
+
+---
+
+## Gotchas
+
+### Don't put wildcards inside the parameter
+
+It's tempting to pass `%road%` as your search value and write `WHERE "name" ILIKE :search`. This won't work reliably in Scram. Keep the wildcards in the SQL and concatenate them:
+
+```sql
+WHERE "name" ILIKE '%' || :search || '%'
+```
+
+### An empty search string matches everything
+
+If `:search` is an empty string, `ILIKE '%' || '' || '%'` becomes `ILIKE '%%'` — which matches every row. If you only want to search when the user has typed something, handle that with an `IfElse` step before the query, or add a length check in the `WHERE` clause:
+
+```sql
+WHERE (:search = '' OR "name" ILIKE '%' || :search || '%')
+```
+
+### NULL values won't match
+
+If a column can be `NULL`, it will never match a `LIKE` or `ILIKE` check. Use `COALESCE` to treat `NULL`s as empty strings:
+
+```sql
+WHERE COALESCE("description", '') ILIKE '%' || :search || '%'
+```
+
+### Full-text search needs a consistent language
+
+The `'english'` setting in `to_tsvector` and `plainto_tsquery` must match. If your content is in another language, change both — e.g. `'french'`, `'spanish'`. Mismatching them produces poor results silently.

@@ -83,7 +83,8 @@
               "understanding/subpages/select-basics",
               "understanding/subpages/filtering",
               "understanding/subpages/joins",
-              "understanding/subpages/aggregates"
+              "understanding/subpages/aggregates",
+              "understanding/subpages/full-text-search"
             ]
           },
           {
