@@ -1,0 +1,79 @@
+---
+title: "DELETE"
+description: "Removing rows from the Scram Database using the Execute SQL action."
+---
+
+## Deleting a single row
+
+The safest way to delete one row is to target it by its `id`:
+
+```sql
+DELETE FROM "Orders"
+WHERE "id" = :orderId
+```
+
+```js
+params: { orderId: vars.selectedOrderId }
+```
+
+Always use a named parameter rather than embedding the value directly in the query string.
+
+---
+
+## Deleting multiple rows
+
+You can delete by any condition — for example, all orders with a particular status:
+
+```sql
+DELETE FROM "Orders"
+WHERE "status" = :status
+```
+
+Or all rows belonging to the current user:
+
+```sql
+DELETE FROM "Orders"
+WHERE "ownerId" = :userId
+```
+
+<Warning>
+  A `DELETE` without a `WHERE` clause deletes every row in the table. PostgreSQL won't warn you — it will just do it. Always double-check your condition before running.
+</Warning>
+
+---
+
+## RETURNING
+
+PostgreSQL lets you return the deleted rows as part of the query — useful if you need to confirm what was removed, or use the deleted data in a subsequent workflow step:
+
+```sql
+DELETE FROM "Orders"
+WHERE "id" = :orderId
+RETURNING "id", "status", "amount"
+```
+
+The result comes back as an array, just like a `SELECT` — access the deleted record with `steps.deleteOrder.output.value[0]`.
+
+---
+
+## Scram-specific gotchas
+
+### RLS policies apply to deletes
+
+Row-Level Security runs on every query, including deletes. If a user doesn't have permission to delete a row under your RLS policies, the query won't throw an error — it will silently delete nothing. If a delete appears to succeed but the row is still there, check your RLS policies first.
+
+### Be careful with ownerId-based deletes
+
+If you're deleting by `ownerId`, always pass `user.id` from the global user object — never a user-supplied value. You don't want one user deleting another's rows.
+
+### No cascading deletes
+
+ScramDB doesn't enforce foreign key constraints, which means there are no automatic cascades. If an `Order` has related `OrderItems` in another table, deleting the order won't automatically delete its items. Handle this yourself by deleting child rows first, then the parent:
+
+```sql
+-- Step 1
+DELETE FROM "OrderItems" WHERE "orderId" = :orderId
+
+-- Step 2
+DELETE FROM "Orders" WHERE "id" = :orderId
+```
