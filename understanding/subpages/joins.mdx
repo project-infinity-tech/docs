@@ -1,0 +1,63 @@
+---
+title: "JOINs"
+description: "Combining data across related tables in the Execute SQL action."
+---
+
+Since ScramDB is PostgreSQL under the hood, all standard JOIN types are supported:
+
+| Type | Behaviour |
+|---|---|
+| `INNER JOIN` | Only rows where there's a match in both tables |
+| `LEFT JOIN` | All rows from the left table, with matching rows from the right (or `null` if no match) |
+| `RIGHT JOIN` | All rows from the right table, with matching rows from the left (or `null` if no match) |
+| `FULL JOIN` | All rows from both tables, `null` where there's no match on either side |
+
+---
+
+## A practical example
+
+Say you have an `Orders` table and a `Users` table, and you want to fetch every order along with the name of the user who placed it:
+
+```sql
+SELECT 
+  o."id" AS "orderId",
+  o."createdAt",
+  u."givenName",
+  u."familyName"
+FROM "Orders" o
+LEFT JOIN "Users" u ON o."ownerId" = u."id"
+```
+
+This returns every order, with the user's name attached where one exists. Where no matching user is found, the name fields will be `null`.
+
+---
+
+## Scram-specific gotchas
+
+### Always double-quote table and column names
+
+ScramDB uses PascalCase table names and camelCase column names. PostgreSQL lowercases unquoted identifiers, so your query will fail or return unexpected results without quotes.
+
+| ✅ Correct | ❌ Wrong |
+|---|---|
+| `"Orders"` | `Orders` |
+| `"givenName"` | `givenName` |
+
+### Also double-quote your aliases
+
+If you alias a column, use double quotes there too — this ensures the field name in the result matches exactly what you reference in your app:
+
+```sql
+o."id" AS "orderId"
+```
+
+Table aliases, however, don't need quotes. Short single-word aliases like `o` or `u` are fine unquoted — they're just shorthand for the query itself, not identifiers you're defining.
+
+### Watch out for column name collisions
+
+If both tables have an `id` column (which they will), always alias them explicitly — otherwise only one will appear in the results and it may not be the one you expect:
+
+```sql
+o."id" AS "orderId",
+u."id" AS "userId"
+```
