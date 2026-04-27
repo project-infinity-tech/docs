@@ -1,0 +1,52 @@
+---
+title: "Understanding Deployments"
+---
+
+### Overview
+
+When you build your app in Scram, you're working in the **editor** — a design and configuration environment where nothing is live yet. To make your app actually run — with real data, working buttons, and functional workflows — you need to **deploy** it.
+
+Scram has two deployment environments:
+
+---
+
+### Dev Deployment (Preview)
+
+This is your **test environment**. Every time you want to try out your app, you deploy to Dev.
+
+- Click the **Deploy** button to push your latest changes into the Dev environment
+- The app becomes fully interactive — workflows run, data loads, forms submit, navigation works
+- Use this to test features, catch bugs, and check that everything behaves as expected
+- The Dev environment is private — it's only accessible to you and your team, not the public
+
+**Important:** The editor canvas is not interactive. You cannot click buttons, fill in forms, or trigger workflows on the canvas. The canvas is only for designing. Always deploy to Dev to test your app's behaviour.
+
+---
+
+### Live Deployment (Production)
+
+This is your **public environment** — the real, live version of your app that end users access.
+
+- Once you're happy with how things work in Dev, you publish to Live
+- Live is what your users see and interact with
+- Changes made in the editor do not automatically appear in Live — you must deploy again to push updates
+
+---
+
+### The Deployment Flow
+
+A typical workflow looks like this:
+
+1. **Build** — make changes in the editor
+2. **Deploy to Dev** — test your changes in the preview environment
+3. **Review** — check that everything works correctly
+4. **Publish to Live** — push your tested changes to your real users
+
+---
+
+### Key Things to Know
+
+- **The editor and your live app are separate.** Nothing you do in the editor affects live users until you explicitly publish.
+- **Dev and Live have separate data.** Data entered while testing in Dev does not appear in Live, and vice versa. Each environment has its own database.
+- **Every deploy is a snapshot.** When you deploy, Scram captures the current state of your app at that moment and makes it live.
+- **You can keep iterating.** You can continue making changes in the editor after deploying — your live app stays as it was until you deploy again.

@@ -48,7 +48,8 @@
               "understanding/understanding-the-scram-database",
               "understanding/understanding-project-files",
               "understanding/understanding-server-logs",
-              "understanding/understanding-the-filestore"
+              "understanding/understanding-the-filestore",
+              "understanding/understanding-deployments"
             ]
           },
           {
@@ -166,10 +167,7 @@
               "components/html-element"
             ]
           },
-          {
-            "group": "Types",
-            "pages": []
-          }
+          "platform-types"
         ]
       }
     ]

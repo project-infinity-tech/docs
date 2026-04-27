@@ -1,168 +1,171 @@
+
 # Understanding Expressions
 
-When writing an Expression, you can access a range of local data if you know where to find them. In future the Expression Builder will abstract this all away so you don’t need to remember the right paths, but until then this page provides a reference:
+When writing an expression, you can access a range of local data depending on where the expression is used. The Expression Builder will eventually abstract this away, but until then this page serves as a reference.
 
-# On a Page
+---
 
-- `pageData.*<pageDataName>*`
-    - `.value` - the value returned by the Page Data request.
-        - You can then just traverse the returned structure, accessing fields and arrays.
-    - `.success` - check if the Page Data request was successful.
-    - *etc - see Workflow step output for other relevant properties.*
-- `queryParams*.<queryParam>*` - access the value of a page parameter.
-- `pathParams.*<pathParam>*` - access the value of a URI path parameter.
-- `component.vars.*<varname>` -* access variables on the current component.
-    - NOTE - this is now the **component’s variable only, not one added by the app (as they are on the page only now)**
-- `components.*<componentId>*.vars.*<varname>*` - access a component’s variable.
-    - Note that there are access rules controlling exactly what is visible from any particular place on the Page: [Composite Rules](https://www.notion.so/Composite-Rules-baa5dee5da5645ee86fff9848f9b8d91?pvs=21).
+## On a Page
 
-# Repeater
+| Expression | Description |
+|---|---|
+| `pageData.<pageDataName>.value` | The value returned by the Page Data request. Traverse the returned structure to access fields and arrays. |
+| `pageData.<pageDataName>.success` | Whether the Page Data request was successful. |
+| `queryParams.<queryParam>` | The value of a page query parameter. |
+| `pathParams.<pathParam>` | The value of a URI path parameter. |
+| `component.vars.<varname>` | A variable on the current component only — not page-level variables. |
+| `components.<componentId>.vars.<varname>` | A variable on any accessible component. Subject to composite access rules. |
 
-- `current.data.*<name>`* - access “this” data
-- `current.index` - access the index of “this” slot (starts from 0)
-- `repeater`
-    - `.data` - the data being repeated over
-        - `.length` - the number of entries the repeater will repeating over
-    - `.next` - the next value in the list
-    - `.prev` - the previous value in the list
-    - `parentRepeater` allows you to refer to the repeater that a repeater is within (and then `parentRepeater.parentRepeater` etc)
-- Make it stripey with background colour
-    - `current.index % 2 === 0 ? theme.colors.secondary["100"] : theme.colors.primary["100"]`
+---
 
-# Composite Components
+## In a Repeater
 
-## Properties
+| Expression | Description |
+|---|---|
+| `current.data.<name>` | The data for the current slot. |
+| `current.index` | The index of the current slot (starts at 0). |
+| `repeater.data` | The full dataset being repeated over. |
+| `repeater.data.length` | The number of entries the repeater will iterate over. |
+| `repeater.next` | The next value in the list. |
+| `repeater.prev` | The previous value in the list. |
+| `parentRepeater` | Refers to the repeater that contains this repeater. Chain with `parentRepeater.parentRepeater` for deeper nesting. |
 
-- `props.*<varName>*` - access any property exposed by this composite.
-- `vars.*<varname>` -* access variables on the current component (from within the component)
-- `components.*<componentId>*.vars.*<varname>*` - access external variables on any component within the composite or on the component on the page.
+### Striped Rows
 
-## Custom Events
+To alternate background colours on repeater rows:
 
-To specify an event payload when Emitting an Event you create a Javascript object where each payload field is assigned a value, ie. if you have two fields `payA` (a string) and `payB` (an integer) then you specify the payload input as `{ *payA*: "some value", *payB*: 42 }`.
+```js
+current.index % 2 === 0 ? theme.colors.secondary["100"] : theme.colors.primary["100"]
+```
 
-Within the Workflow, you then pull these back out with `trigger.payload.payA` (see below). 
+---
 
-### Sending Event Payload
+## In Composite Components
 
-If you are emitting events that have payload fields that need an expression, you will need to wrap the value in back ticks ` and then use ${} to add in the expression. Nope, not a clue either.
+### Accessing Data
 
-Example of sending firstname and familyname as two payload fields.
+| Expression | Description |
+|---|---|
+| `props.<varName>` | Any property exposed by this composite. |
+| `vars.<varname>` | A variable on the current component (from within the component). |
+| `components.<componentId>.vars.<varname>` | A variable on any component within the composite, or on the parent page. |
 
-```jsx
+### Custom Event Payloads
+
+When emitting an event, you define the payload as a JavaScript object. For example, if your event has two fields — `payA` (a string) and `payB` (an integer):
+
+```js
+{ payA: "some value", payB: 42 }
+```
+
+To include expressions in payload fields, wrap the value in backticks and use `${}` for the expression:
+
+```js
 { "firstName": `${components.cAI_001JM.vars.firstName}`, "familyName": `${components.cAI_001JM.vars.familyName}` }
 ```
 
- 
+To pass a query param as a payload field:
 
-```jsx
+```js
 `${queryParams.email}`
 ```
 
-# Workflows
+In the workflow that receives the event, access payload fields via `trigger.payload.<fieldName>`.
 
-- `steps.*<stepId>*.output`  *- **note: you will only get autocomplete of stepIds for steps that have some form of output; you won’t ever see IDs for events that log, etc.***
-- Rewriting as at April 2025 as below has changed considerably.
-    - `.success` - true if it succeeded, false if there was an error.
-    
-- Deprecated from here
-    - `.value` - the output of a previous step, if it was successful and returns something (else undefined).
-    - `.errorCode` - a Scram error code, always present if an error occurred.
-    - `.error` - the error response of the previous step, if it failed and returns something when an error occurs (else undefined).
-    - `.additional` - optional additional info about the step, which will be Action specific
-        - `.requestUrl` (for HTTP APIs) - the URL that was contacted, including any query parameters.
-        - `.status` (for HTTP APIs) - the integer HTTP status code that was received, eg. 200 or 404 (always present if the server responded, or undefined if we couldn’t connect).
-        - `.statusMessage` (for HTTP APIs) - the server’s string status message.
-        - `.headers` (for HTTP APIs) - a map of all headers sent by the server where key is in lower case, eg. to get the Content-Type header use `.headers['content-type']`. (think this should be ‘content-type’)
-- `trigger.payload.<payloadvarname>` - reference a variable on a Triggered event from a Component.
-- For “On - Change” actions on an input`trigger.payload.newValue`  - the new value in the input (also oldValue if needed)
-- Boolean Expression in Visibility
-    - Visibility does not need {{}}
-    - Expressions to control styles
-    - Method 1
-        - {{ something-to-evaluate-to-true ? value-if-true : value-if-false }}
-        - `{{ something to evaluate to true ? theme.colors.primary["200"] : theme.colors.secondary["200"] }}`
-    - If / Else
-        - You need to use == as equals or === as really really equals
-- If a variable / prop is Boolean you get `valueOf`  - what is this?
-- In Expressions, you can refer to the theme defaults with `theme.xxxxxx.xx`
-    - For example `theme.text.md`  or `theme.colour.primary["200"]`
-        - Note you MUST use straight quotes `"200"` not smart one like this > “200” so copying out of here can be dangerous!
+---
 
-An array inside an expression 
+## In Workflows
 
- `{{ [ { ...user1_stuff }, { ......user2_stuff } ] }}`
+| Expression | Description |
+|---|---|
+| `steps.<stepId>.output.success` | `true` if the step succeeded, `false` if there was an error. |
+| `trigger.payload.<fieldName>` | A variable from a triggered component event. |
+| `trigger.payload.newValue` | The new value from an `onChange` trigger. |
+| `trigger.payload.oldValue` | The previous value from an `onChange` trigger. |
 
-# User
+<Note>
+  Autocomplete only shows step IDs for steps that produce output. Steps that only log or perform side effects won't appear.
+</Note>
 
-You can access a logged-on User’s data via the User Context in expressions `user.xxxx`
+### HTTP API Steps
 
-- `User.id` - id of the user, an integer. You would usually use this to update the user details. Sequentially generated starting at 1.
-- `User.email` - id of the user, and integer. You would usually use this to update the user details
-- `User.firstname User.givenname` - name !
-- 
+For steps that call an HTTP API, the following are available on the step output:
 
-Checking if the user is logged on or not … `user?.id !== undefined` is safest 
+| Expression | Description |
+|---|---|
+| `steps.<stepId>.output.additional.requestUrl` | The full URL contacted, including query parameters. |
+| `steps.<stepId>.output.additional.status` | The HTTP status code received (e.g. `200`, `404`). |
+| `steps.<stepId>.output.additional.statusMessage` | The server's status message string. |
+| `steps.<stepId>.output.additional.headers['content-type']` | A specific response header. All header keys are lowercase. |
 
-# Useful Functions
+---
 
-- `.toString()` turns an integer into a string so you can display it nicely
-- JSONSTringify
+## Visibility & Style Expressions
 
-# Links
+Visibility conditions do not need `{{}}` — just write the boolean expression directly.
 
-The link type is an object as follows
+For style expressions, use the ternary pattern:
 
-# Examples
-
-current.index === 0 ? theme.colors.primary[’200’] : theme.colors.secondary[’200’] 
-
-current.index === components.cAC_00004.vars.currentStep ? theme.colors.primary[”200”]  : theme.colors.secondary[”200”] 
-
-```json
-{
-"id": 1,
-"created_at": "2024-08-09T08:25:14.540034+00:00",
-"code": "ABCF",
-"phoneType": "Phoney"
-}
+```js
+{{ something-to-evaluate ? value-if-true : value-if-false }}
 ```
 
-```json
-steps.sAB_0009S.output.value.id = 1
+For example, toggling a background colour:
+
+```js
+{{ something-to-evaluate ? theme.colors.primary["200"] : theme.colors.secondary["200"] }}
 ```
 
-If the prop leftisPrimary is true then set the colour to primary (200
+<Warning>
+  Always use straight quotes (`"200"`) not smart/curly quotes (`"200"`) inside expressions. Copying from some editors or documents can silently introduce smart quotes that will break your expression.
+</Warning>
 
-`{{ props.leftIsPrimary ? theme.colors.primary["200"] : theme.colors.secondary["200"] }}`
+Use `==` for loose equality or `===` for strict equality in conditions.
 
-`{{ !props.leftIsPrimary ? theme.colors.primary["200"] : theme.colors.secondary["200"] }}`
+---
 
-```json
-[
-{
-"id": 1,
-"created_at": "2024-08-09T08:25:14.540034+00:00",
-"code": "ABCF",
-"phoneType": "Phoney"
-},
-{
-"id": 2,
-"created_at": "2024-08-09T08:25:14.540034+00:00",
-"code": "SNVV",
-"phoneType": "Sammy"
-}
-]
+## Theme Values
+
+You can reference your app's theme defaults inside any expression:
+
+```js
+theme.text.md
+theme.colors.primary["200"]
 ```
 
-```json
-steps.sAB_0009S.output.value[1].id = 2
+---
+
+## The User Object
+
+When a user is logged in, their data is available via the `user` context:
+
+| Expression | Description |
+|---|---|
+| `user.id` | The user's ID (sequentially generated integer starting at 1). |
+| `user.email` | The user's email address. |
+| `user.firstname` / `user.givenname` | The user's first name. |
+
+To safely check whether a user is logged in:
+
+```js
+user?.id !== undefined
 ```
 
-`const a = 1;const b = 2;const together = `${a} + ${b}``
+---
 
-`together = “1 + 2”`
+## Arrays in Expressions
 
-`const together = ‘${a}+ ${b}’;`
+To define an inline array within an expression:
 
-`together = ‘${a}+ ${b}’`
+```js
+{{ [ { ...user1_stuff }, { ...user2_stuff } ] }}
+```
+
+---
+
+## Useful Functions
+
+| Function | Description |
+|---|---|
+| `.toString()` | Converts an integer to a string for display. |
+| `JSON.stringify()` | Serialises an object to a JSON string. |

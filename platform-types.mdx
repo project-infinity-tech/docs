@@ -1,0 +1,106 @@
+# Platform Types
+
+Platform Types are built-in types with specific validation rules, used to ensure data is in the correct format. They can be used on database fields, component properties, workflow inputs, and callable workflow parameters.
+
+---
+
+## Text Variant Types
+
+These are used anywhere you need to store or validate a specific kind of text value.
+
+<CardGroup cols={2}>
+  <Card title="Email">
+    Validates that the value matches email format (e.g. `name@example.com`).
+
+    Use this instead of plain text whenever you're storing or accepting an email address. Good for database fields, custom component properties, or callable workflow inputs that deal with email addresses.
+  </Card>
+  <Card title="URL">
+    Validates that the value is a properly formatted web address (e.g. `https://example.com`).
+
+    Use this when storing or accepting a web address. Good for profile links, website fields, or image source URLs passed as component props.
+  </Card>
+  <Card title="UUID">
+    Validates that the value follows UUID format (e.g. `a1b2c3d4-...`).
+
+    Use this when storing unique identifiers — most commonly when storing references to rows in other tables, or when a component or workflow needs to receive or return a record ID.
+  </Card>
+  <Card title="Base64">
+    Validates that the value is a Base64-encoded string.
+
+    Use this when working with encoded data — most commonly when a file or image has been converted to a Base64 string. Useful when integrating with APIs that send or expect encoded payloads.
+  </Card>
+  <Card title="IPAddress">
+    Validates that the value is a correctly formatted IP address, supporting both IPv4 (e.g. `192.168.1.1`) and IPv6.
+
+    Use this in admin tools, security logging, or API integrations that deal with network-level data.
+  </Card>
+  <Card title="TextNoEmojis">
+    Plain text that must not contain emoji characters.
+
+    Use this for usernames, codes, reference numbers, or any field where emoji characters would cause problems downstream — for example in a database query or external API call.
+  </Card>
+</CardGroup>
+
+---
+
+## Event Payload Types
+
+These types describe the data sent along with component events. When you define an event on a custom component, you choose a payload type to describe what data gets passed to any workflow listening to that event.
+
+<CardGroup cols={2}>
+  <Card title="MinimalEvent">
+    The simplest possible payload — just signals that something happened, with no extra data.
+
+    Use this for simple actions like "the user dismissed this panel" or "the animation finished."
+  </Card>
+  <Card title="PointerEvent">
+    Sent when a user clicks or double-clicks a component.
+
+    Use this for custom clickable components where workflows should respond to the user tapping or clicking something.
+  </Card>
+  <Card title="KeyboardEvent">
+    Sent when a user presses or releases a key while a component is focused.
+
+    Use this for custom input-like components where keyboard interactions matter — for example, triggering a search when the user presses Enter.
+  </Card>
+  <Card title="BooleanValueChanged">
+    Sent when a true/false value changes.
+
+    Use this for toggles, checkboxes, or switch components where the workflow needs to know the new on/off state.
+  </Card>
+  <Card title="TextValueChanged">
+    Sent when a text value changes.
+
+    The most common payload type for custom input components. Use it whenever a user types something or changes a text-based selection and you need to pass that value to a workflow.
+  </Card>
+  <Card title="NumberValueChanged">
+    Sent when a number value changes (supports decimals).
+
+    Use this on custom numeric inputs or sliders where the output may include decimal places — for example a price, rating, or measurement.
+  </Card>
+  <Card title="IntegerValueChanged">
+    Sent when a whole number value changes.
+
+    Similar to `NumberValueChanged` but signals that decimals are never expected. Use it for quantities, scores, step counts, or anything that should always be a whole number.
+  </Card>
+  <Card title="DateValueChanged">
+    Sent when a date value changes (no time component).
+
+    Use this on custom date pickers or calendar-style components.
+  </Card>
+  <Card title="DateTimeValueChanged">
+    Sent when a combined date-and-time value changes.
+
+    Use this on custom date-time picker components — for example when scheduling an event or booking an appointment.
+  </Card>
+  <Card title="TimeValueChanged">
+    Sent when a time-of-day value changes (no date component).
+
+    Use this on custom time picker components — for example setting opening hours or an alarm time.
+  </Card>
+  <Card title="JsonValueChanged">
+    Sent when a complex object value changes. No strict type enforcement.
+
+    Use this as a flexible fallback when none of the other payload types fit, or when a component emits structured data whose shape may vary.
+  </Card>
+</CardGroup>
