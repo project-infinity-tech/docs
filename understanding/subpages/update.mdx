@@ -1,0 +1,95 @@
+---
+title: "UPDATE"
+description: "Modifying existing rows in the Scram Database using the Execute SQL action."
+---
+
+## Basic UPDATE
+
+```sql
+UPDATE "Posts"
+SET "title" = :title,
+    "body" = :body
+WHERE "id" = :id
+RETURNING "id", "title"
+```
+
+```js
+{ title: vars.newTitle, body: vars.newBody, id: vars.postId }
+```
+
+---
+
+## WHERE clauses — the non-negotiable part
+
+Always include a `WHERE` clause. An `UPDATE` without one updates every row in the table. PostgreSQL won't warn you — it will just do it.
+
+The minimum safe pattern is filtering by `id`:
+
+```sql
+WHERE "id" = :id
+```
+
+For user-owned data, filter by both `id` and `ownerId` — this prevents one user from modifying another user's records:
+
+```sql
+WHERE "id" = :id
+AND "ownerId" = :userId
+```
+
+Pass `userId: user.id` in your params. Even if your RLS policies provide some protection, being explicit in the `WHERE` clause is the right habit.
+
+---
+
+## RETURNING with UPDATE
+
+Works identically to `INSERT` — append `RETURNING` to get the updated row back without a second query:
+
+```sql
+UPDATE "Posts"
+SET "title" = :title
+WHERE "id" = :id
+AND "ownerId" = :userId
+RETURNING "id", "title", "updatedAt"
+```
+
+The result is an array — access the updated record with `steps.stepId.output.value[0]`.
+
+<Tip>
+  If the `WHERE` clause matched nothing — for example, the wrong ID or a row belonging to a different user — `RETURNING` gives back an empty array `[]`. You can check `steps.stepId.output.value.length === 0` to detect that the update silently matched nothing.
+</Tip>
+
+---
+
+## Scram-specific gotchas
+
+### `ownerId` is not enforced automatically in SQL
+
+RLS policies protect reads, but a raw `UPDATE` can bypass them depending on how your policies are written. Explicitly including `AND "ownerId" = :userId` in your `WHERE` clause is the safest approach regardless.
+
+### No automatic `updatedAt`
+
+If you want an updated timestamp, you have to set it yourself:
+
+```sql
+SET "title" = :title,
+    "updatedAt" = NOW()
+```
+
+### Partial updates
+
+PostgreSQL has no native "update only the fields I pass" syntax. If you need to conditionally update some fields but not others, use the `COALESCE` pattern:
+
+```sql
+SET "title" = COALESCE(:title, "title"),
+    "body" = COALESCE(:body, "body")
+```
+
+When `:title` is `null`, `COALESCE` keeps the existing value. When it has a value, it updates. This lets you send a single `UPDATE` statement regardless of which fields changed.
+
+### UPDATE always returns an array
+
+Same as `INSERT` — even a single-row update returns `[{ ... }]`. Access the record with `output.value[0]`.
+
+### Silent success on no match
+
+If your `WHERE` clause matches zero rows, the query succeeds with an empty result — no error is thrown. Always check the returned array length if you need to confirm the update actually happened.
