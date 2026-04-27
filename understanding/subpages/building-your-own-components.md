@@ -1,3 +1,7 @@
+---
+title: "Building Your Own Components"
+---
+
 # Building Your Own Components
 
 A **component definition** is a reusable UI blueprint. You build it once, then place instances of it anywhere in your app — on any page, inside other components, inside Repeaters.
