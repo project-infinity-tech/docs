@@ -1,31 +1,56 @@
 # Understanding Data Sources
 
-**Data Sources** are Scram's way of connecting your app to external systems, APIs, databases, and services. They're the bridges between your frontend apps and the data/functionality your app needs.
+Data Sources are Scram's way of connecting your app to external systems, APIs, databases, and services. They're the bridges between your frontend apps and the data and functionality your app needs.
 
-The pre-built Data Sources are :
+---
 
-- The Scram Database
-    - **What:** PostgreSQL database included with every app
-    - **Purpose:** Store your application data (users, products, orders, etc.)
-    - **Actions:** Execute SQL queries (SELECT, INSERT, UPDATE, DELETE)
-    - **Usage:** Internal data storage, user records, app state
-- The Scram File Store
-    - **What:** Cloud file storage system
-    - **Purpose:** Upload and manage files (images, PDFs, documents)
-    - **Actions:** Prepare upload, upload files, list files
-    - **Usage:** User avatars, document uploads, media libraries
+## Built-in Data Sources
 
-In addition to the database and file store you can add incoming and outgoing API calls
+Every Scram project comes with two data sources ready to use out of the box.
 
-- Common Examples
-    - **Payment APIs:** Stripe, PayPal, Square
-    - **Email Services:** SendGrid, Mailgun, Postmark
-    - **SMS/Notifications:** Twilio, Slack, Discord
-    - **Third-party APIs:** GitHub, Google Maps, OpenAI, Weather APIs
-    - **Your own backend:** If you have a separate API server
+<CardGroup cols={2}>
+  <Card title="The Scram Database" icon="database" href="/data-sources/database">
+    A PostgreSQL database included with every project.
 
-[Data Sources - The Scram Database](Data%20Sources%20-%20The%20Scram%20Database%202e165b4769b5807b9b88c80d8a0e6a38.md)
+    Use it to store your application data — users, products, orders, and anything else your app needs to persist. Supports full SQL: `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.
+  </Card>
+  <Card title="The Scram File Store" icon="folder-open" href="/data-sources/file-store">
+    A built-in cloud file storage system.
 
-[The Scram File Store](The%20Scram%20File%20Store%202e165b4769b580788f5ccf1810c4fb90.md)
+    Use it to upload and manage files — images, PDFs, documents. Supports preparing uploads, uploading files, and listing stored files.
+  </Card>
+</CardGroup>
 
-[Data Sources - API Calls](Data%20Sources%20-%20API%20Calls%2014965b4769b58082bd85f86052bc4a7f.md)
+---
+
+## External API Calls
+
+In addition to the built-in sources, you can connect to any external service by adding outgoing API calls — or receive data from external systems via incoming API calls.
+
+<CardGroup cols={2}>
+  <Card title="Payment APIs" icon="credit-card">
+    Stripe, PayPal, Square
+  </Card>
+  <Card title="Email Services" icon="envelope">
+    SendGrid, Mailgun, Postmark
+  </Card>
+  <Card title="SMS & Notifications" icon="bell">
+    Twilio, Slack, Discord
+  </Card>
+  <Card title="Third-party APIs" icon="plug">
+    GitHub, Google Maps, OpenAI, Weather APIs
+  </Card>
+  <Card title="Your own backend" icon="server">
+    If you have a separate API server, you can connect to it as a data source.
+  </Card>
+</CardGroup>
+
+---
+
+## Learn More
+
+<CardGroup cols={3}>
+  <Card title="The Scram Database" href="/data-sources/database" />
+  <Card title="The Scram File Store" href="/data-sources/file-store" />
+  <Card title="API Calls" href="/data-sources/api-calls" />
+</CardGroup>

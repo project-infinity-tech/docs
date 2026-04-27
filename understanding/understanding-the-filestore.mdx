@@ -1,0 +1,122 @@
+# The Scram File Store
+
+Every Scram project has a File Store that is shared across all Apps in your Project.
+
+The Scram File Store is a built-in cloud storage system that allows you to store and manage files for your application. Think of it as your app's file cabinet in the cloud — perfect for user uploads, images, documents, PDFs, and any other files your app needs to handle.
+
+> **Not looking for Project Files?**
+> The File Store handles **runtime file uploads** — files that users upload while using your app. If you're looking to manage static design assets like logos, background images, or icons that you add while building your app, that's [Project Files](./scram-project-files).
+
+---
+
+## Key Features
+
+### 📁 File Storage
+
+- Store files in organised paths (like folders)
+- Each file gets a unique `fileUri` identifier
+- Supports any file type (images, PDFs, videos, documents, etc.)
+
+### 🔑 How It Works
+
+The File Store uses a three-step upload process:
+
+#### 1. Prepare File Upload
+
+Requests a pre-signed upload URL for a file. This step runs **on the server**.
+
+| Input | Description |
+|---|---|
+| `path` | Where to store the file (e.g. `uploads/photo.jpg`) |
+| `contentType` | The file's MIME type (e.g. `image/jpeg`) |
+
+| Output | Description |
+|---|---|
+| `uploadUrl` | A temporary pre-signed URL to upload to |
+| `fileUri` | The permanent S3 identifier for the file |
+
+#### 2. Upload File to URL
+
+Sends the actual file to the pre-signed URL. This step runs **in the browser**.
+
+| Input | Description |
+|---|---|
+| `file` | The file object from the user's file picker |
+| `uploadToUrl` | The `uploadUrl` returned from step 1 |
+
+> **Important:** Steps 1 and 2 run in different environments (server and browser). You must store `uploadUrl` in a page variable between these steps to bridge back to the browser context — otherwise you will see the error: `Step not found in given list of steps — likely a frontend step`.
+
+#### 3. List Files
+
+Lists files stored at a given path.
+
+| Input | Description |
+|---|---|
+| `path` | The folder path to list |
+
+Returns an array of file objects with this shape:
+
+```json
+{
+  "name": "filename.ext",
+  "fileUri": "s3://bucket/path/to/file",
+  "size": 1333,
+  "lastModified": {}
+}
+```
+
+> **Note:** `lastModified` always returns as an empty object — the storage system does not populate this field. Display `size` instead, formatted in KB (divide bytes by 1000).
+
+---
+
+## Common Use Cases
+
+- **📸 User profile photos** — Store avatars and profile images
+- **📄 Document management** — Upload and organise PDFs, contracts, invoices
+- **🖼️ Image galleries** — Photo collections, product images
+- **📎 Attachments** — Files attached to records (support tickets, messages)
+- **🎨 Media libraries** — Store and manage app assets
+
+---
+
+## Implementation Notes
+
+### Capturing the file
+
+The file input's `onChange` event returns the full browser event object. The actual file lives at:
+
+```
+trigger.payload.target.files[0]
+```
+
+Do not use the top-level trigger payload — it will send the raw event object to the upload step, which will fail with `file is required`.
+
+### Filename and content type
+
+By default, Scram saves every uploaded file with the hardcoded name `file` unless you explicitly pass the real filename in the upload path.
+
+- Read the filename from the file object: `file.name`
+- Read the content type from the file object: `file.type`
+
+If `file.type` is unavailable, fall back to `application/octet-stream`. Do not hardcode a content type — it will cause MIME type mismatches for images, PDFs, and other formats.
+
+### Resetting the file input after upload
+
+Browser file inputs cannot be reset with a simple value clear. The most reliable approach in Scram is to bind the input's `value` to a filename variable and clear that variable on successful upload. When the variable empties, the input resets visually.
+
+### Refreshing the file list
+
+The List Files action must be triggered on page load and re-triggered after each successful upload to stay current without a manual refresh.
+
+---
+
+## Common Pitfalls
+
+| Issue | Cause | Fix |
+|---|---|---|
+| `Step not found` error | Server and browser steps running out of order | Store `uploadUrl` in a page variable to bridge back to browser context |
+| Filename saves as `file` | Real filename not passed to the upload path | Read `file.name` directly from the file object |
+| `[object Object]` in file list | Raw object rendered as text | Use the correct field accessor (`.name`, `.size`) |
+| Content type mismatch | Hardcoded MIME type | Use `file.type` from the file object |
+| File input doesn't reset after upload | Browser input limitation | Bind input value to a variable and clear it on successful upload |
+| Date shows as `{}` | Storage system doesn't return `lastModified` | Don't display it — show `size` instead |

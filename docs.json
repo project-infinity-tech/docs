@@ -47,7 +47,9 @@
               "understanding/understanding-user-management",
               "understanding/understanding-the-scram-database",
               "understanding/understanding-project-files",
-              "understanding/understanding-server-logs"
+              "understanding/understanding-server-logs",
+              "understanding/understanding-the-filestore",
+              "understanding/understanding-deployments"
             ]
           },
           {
@@ -78,7 +80,8 @@
               "understanding/subpages/sending-query-parameters",
               "understanding/subpages/the-scram-file-store",
               "understanding/subpages/theme-management",
-              "understanding/subpages/custom-project-types"
+              "understanding/subpages/custom-project-types",
+              "understanding/subpages/page-path-parameters"
             ]
           },
           {
@@ -95,7 +98,7 @@
       },
       {
         "tab": "Reference",
-        "groups": [
+        "pages": [
           {
             "group": "Actions",
             "pages": [
@@ -163,7 +166,8 @@
               "components/page-template-full",
               "components/html-element"
             ]
-          }
+          },
+          "platform-types"
         ]
       }
     ]

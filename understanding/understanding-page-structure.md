@@ -1,35 +1,64 @@
-# Understanding Page Structure
+---
+title: "Understanding Page Structure"
+description: "How pages work in Scram and how they map to your live app."
+---
 
-# **The Basics**
+## The Basics
 
-Scram Apps have pages (or at least one Index page), and these are, unsurprisingly, mapped to "pages" on the web pages that Scram creates.
+Scram apps are built around pages — at minimum one Index page — and each page maps directly to a URL in your deployed web app.
 
-# **Index Page**
+## The Index Page
 
-Every app has an Index Page created by default when the App is created.
+Every app has an Index page created by default when the app is first created. You can rename it any time by double-clicking the name in the editor.
 
-You can rename this page to whatever you want by double-clicking the name. There is nothing special about this index page in that regard *
+By default, the Index page has a **blank slug**, which means it loads when someone visits your root URL.
 
-- Although if you set another page to have a blank slug, the page created initially will be shown.
+<Info>
+  If you set another page to have a blank slug, that page will become the new root — the originally created page will no longer load by default.
+</Info>
 
-Also, by default, the "slug" of the index page is set to "blank".
+**Example:** If your app is deployed to `mybrandnewsite.com`, any visitor hitting that URL will land on whichever page has the blank slug.
 
-What does this mean in practice?
+<Note>
+  You can change which page acts as the "index" by updating the slug of the old index page to something non-blank, and setting the new page's slug to blank.
+</Note>
 
-*Let's say we have deployed our app to mybrandnewsite.com*
+---
 
-Any link to that url will go the index page, assuming the slug is blank. 
+##Adding Pages##
 
-So you don't have
+To add a new page, click the **\+** button next to your app name in the pages panel. Give the page a name and a slug — the slug is what appears in the URL when someone visits that page.
 
-Note : You can change the "index" page by simply updating the slug of the "old"
+Example: A page with the slug `about` would be accessible at `mybrandnewsite.com/about`.
 
-Query Parameters
+> _Page slugs should be lowercase, with no spaces. Use hyphens to separate words (e.g._ `contact-us`_)._
 
-[Sending Query Parameters](Sending%20Query%20Parameters%2020665b4769b580c7be7ed7fa65ebad11.md)
+---
 
-Path Parameters
+##Child Pages##
 
-Page Authentication
+Pages can be nested inside other pages, creating a hierarchy. A child page's full URL is made up of its parent's slug followed by its own slug.
 
-[Page Authorisation](Page%20Authorisation%202e265b4769b580fba17bcc6c514affe3.md)
+Example: If you have a parent page with the slug `blog`, and a child page with the slug `getting-started`, that child page would be accessible at `mybrandnewsite.com/blog/getting-started`.
+
+This is useful for organising related pages together — for example, grouping all settings pages under a `/settings` parent, or all help articles under `/help`.
+
+> _A child page can itself have children, allowing you to build as many levels of nesting as your app requires._
+
+Child pages are created the same way as regular pages — use the **\+** button — and you can drag and drop pages in the panel to rearrange them or change their parent at any time.
+
+## Related Topics
+
+<CardGroup cols={2}>
+  <Card title="Sending Query Parameters" icon="circle-question" href="/understanding/subpages/sending-query-parameters">
+    Pass data between pages using URL query parameters.
+  </Card>
+
+  <Card title="Page Authorisation" icon="lock" href="/understanding/subpages/page-authorisation">
+    Control who can access each page in your app.
+  </Card>
+
+  <Card title="Page Path Parameters" icon="slash-forward" href="/understanding/subpages/page path parameters">
+    Control who can access each page in your app.
+  </Card>
+</CardGroup>

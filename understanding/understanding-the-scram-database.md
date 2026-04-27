@@ -7,13 +7,7 @@ Scram’s built-in data is a **relational database** — it's built on Postgre
 - **Indexes** for performance
 - **Transactions** for data consistency
 
-The Scram Database can be accessed either from the Side Bar menu ☁️ + 💽 or from the Backend Overview ☁️ and clicking Database
-
-Scram 
-
-[https://www.loom.com/share/3a0e492f5d184e63a98101e8a3d5536d](https://www.loom.com/share/3a0e492f5d184e63a98101e8a3d5536d)
-
-[Execute SQL](Execute%20SQL%2031065b4769b580ba820fd339be3a7598.md) 
+The Scram Database can be accessed either from the Side Bar menu ☁️ \+ 💽 or from the Backend Overview ☁️ and clicking Database
 
 ## Further Sections
 
