@@ -50,7 +50,8 @@
               "understanding/understanding-project-files",
               "understanding/understanding-server-logs",
               "understanding/understanding-the-filestore",
-              "understanding/understanding-deployments"
+              "understanding/understanding-deployments",
+              "understanding/understanding-row-level-security"
             ]
           },
           {
