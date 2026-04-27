@@ -1,0 +1,101 @@
+---
+title: "SELECT Basics"
+description: "Fetching rows from the Scram Database using SELECT queries in the Execute SQL action."
+---
+
+## Writing a basic SELECT
+
+SQL queries go into the **Query** field of the Execute SQL action. You write standard PostgreSQL — with one critical Scram rule: **table names and column names must always be wrapped in double quotes.**
+
+Scram uses PascalCase table names and camelCase column names. PostgreSQL lowercases anything unquoted, so `FROM Users` becomes `FROM users` — which doesn't exist and will throw an error.
+
+```sql
+SELECT "id", "firstName", "email"
+FROM "Users"
+```
+
+`SELECT * FROM "Users"` works, but listing columns explicitly is better practice — it keeps your output predictable and avoids pulling data you don't need.
+
+<Warning>
+  Double quotes are non-negotiable. Always quote every table and column name in your queries — `FROM "Users"`, `WHERE "firstName"`, and so on. Forgetting this is one of the most common sources of query errors in Scram.
+</Warning>
+
+---
+
+## Filtering with WHERE
+
+Never put values directly into your query string. Use **named parameters** instead — they're safe from SQL injection and clearly readable:
+
+```sql
+SELECT "id", "firstName", "email"
+FROM "Users"
+WHERE "email" = :email
+AND "isActive" = :active
+```
+
+The matching values go into the **Params** object on the same Execute SQL step:
+
+```js
+{ email: vars.searchEmail, active: true }
+```
+
+<Note>
+  Named parameters (`:paramName`) are the preferred style in Scram. Positional parameters (`$1`, `$2`) also work for backwards compatibility, but named params are clearer and recommended.
+</Note>
+
+<Tip>
+  Passing `null` as a named parameter works correctly — PostgreSQL receives it as SQL `NULL`. This is useful for optional filters where a value may or may not be present.
+</Tip>
+
+---
+
+## Ordering and limiting results
+
+`ORDER BY` and `LIMIT` use standard PostgreSQL syntax:
+
+```sql
+SELECT "id", "title", "createdAt"
+FROM "Posts"
+WHERE "ownerId" = :userId
+ORDER BY "createdAt" DESC
+LIMIT 20
+OFFSET 0
+```
+
+To make pagination dynamic, pass the offset as a named parameter:
+
+```sql
+LIMIT 20
+OFFSET :offset
+```
+
+Then increment `:offset` by 20 each time the user loads more results.
+
+---
+
+## Scram-specific behaviours
+
+### The result is always an array
+
+Even if your query returns a single row, the output is always an array:
+
+```js
+// ✅ Correct
+steps.myQuery.output.value[0]
+
+// ❌ Wrong — the output is never a plain object
+steps.myQuery.output.value
+```
+
+### Static vs dynamic query output
+
+How you write the query affects the output type:
+
+| Query type | Output type | Array methods available? |
+|---|---|---|
+| Static (fixed SQL, only params change) | Typed array | ✅ Yes — `.length`, `.filter`, etc. |
+| Dynamic (SQL built conditionally) | Untyped JSON | ❌ No — use a Repeater's `emptyState` slot instead of checking `.length` |
+
+### Row-level security applies
+
+Queries run under the application role, so your RLS policies are enforced. A query that looks correct can return zero rows if the current user's policy filters them out — always rule this out when debugging unexpected empty results.
