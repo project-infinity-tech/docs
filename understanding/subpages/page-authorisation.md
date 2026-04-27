@@ -1,3 +1,7 @@
+---
+title: "Page Authorisation"
+---
+
 # Page Authorisation
 
 Every page in your app has the ability to be "protected" so that only some users can view or interact with that page. This is linked to a User being signed in and having a role that you control.
