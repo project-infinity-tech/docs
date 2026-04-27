@@ -1,9 +1,6 @@
 ---
 title: "Filtering with Parameters"
----
-
-## description: "Safe, flexible query filtering in the Execute SQL action using named parameters."
-
+description: "Safe, flexible query filtering in the Execute SQL action using named parameters."
 ---
 
 Named parameters are the standard way to pass values into Execute SQL queries in Scram. They keep your queries safe from SQL injection and your code readable. This page covers the patterns you'll reach for most often.
@@ -25,7 +22,7 @@ WHERE "id" = ANY(:ids)
 ```
 
 ```js
-{ ids: [1, 2, 3] }
+{ ids: vars.selectedIds }
 ```
 
 `= ANY()` accepts a PostgreSQL array and behaves identically to `IN` for most purposes. This is the recommended pattern in Scram whenever you need to filter by a list of values.
@@ -87,6 +84,7 @@ Column names, table names, and SQL keywords cannot be passed as parameters — o
 ```sql
 -- ✅ Fine — value as a parameter
 WHERE "status" = :status
+
 -- ❌ Not possible — identifier as a parameter
 ORDER BY :sortColumn DESC
 ```
