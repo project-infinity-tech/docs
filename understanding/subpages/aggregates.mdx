@@ -1,0 +1,97 @@
+---
+title: "Aggregates"
+description: "Using COUNT, SUM, AVG, GROUP BY, and HAVING in the Execute SQL action."
+---
+
+Since ScramDB is PostgreSQL, all standard aggregate functions work as expected.
+
+---
+
+## COUNT
+
+Count all rows in a table:
+
+```sql
+SELECT COUNT(*) AS "totalOrders"
+FROM "Orders"
+```
+
+Or count per group:
+
+```sql
+SELECT "status", COUNT(*) AS "orderCount"
+FROM "Orders"
+GROUP BY "status"
+```
+
+---
+
+## SUM and AVG
+
+```sql
+SELECT 
+  "userId",
+  SUM("amount") AS "totalSpent",
+  AVG("amount") AS "averageOrderValue"
+FROM "Orders"
+GROUP BY "userId"
+```
+
+---
+
+## GROUP BY gotchas
+
+### Always double-quote column names
+
+The same quoting rules apply as everywhere else in ScramDB. It's easy to forget in `GROUP BY`:
+
+| ✅ Correct | ❌ Wrong |
+|---|---|
+| `GROUP BY "userId"` | `GROUP BY userId` |
+
+Without quotes, PostgreSQL lowercases the identifier and won't find the column.
+
+### Every selected column must be aggregated or grouped
+
+PostgreSQL is strict about this — unlike some other databases, it won't guess. Every column in your `SELECT` must either be wrapped in an aggregate function or appear in the `GROUP BY` clause:
+
+```sql
+-- ✅ Correct
+SELECT "userId", COUNT(*) AS "total"
+FROM "Orders"
+GROUP BY "userId"
+```
+
+```sql
+-- ❌ Fails — "status" is neither aggregated nor in GROUP BY
+SELECT "userId", "status", COUNT(*) AS "total"
+FROM "Orders"
+GROUP BY "userId"
+```
+
+---
+
+## HAVING — filtering aggregated results
+
+Use `HAVING` to filter after aggregation — think of it as `WHERE` for the results of aggregate functions.
+
+Only return users who have placed more than 5 orders:
+
+```sql
+SELECT "userId", COUNT(*) AS "orderCount"
+FROM "Orders"
+GROUP BY "userId"
+HAVING COUNT(*) > 5
+```
+
+You can combine `WHERE` and `HAVING` in the same query — `WHERE` filters rows before grouping, `HAVING` filters after:
+
+```sql
+SELECT "userId", COUNT(*) AS "orderCount"
+FROM "Orders"
+WHERE "status" = 'completed'
+GROUP BY "userId"
+HAVING COUNT(*) > 5
+```
+
+This first removes non-completed orders, then groups and counts, then removes any users with 5 or fewer completed orders.

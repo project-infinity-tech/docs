@@ -82,7 +82,8 @@
               "understanding/subpages/page-path-parameters",
               "understanding/subpages/select-basics",
               "understanding/subpages/filtering",
-              "understanding/subpages/joins"
+              "understanding/subpages/joins",
+              "understanding/subpages/aggregates"
             ]
           },
           {
