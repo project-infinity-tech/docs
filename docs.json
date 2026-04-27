@@ -72,9 +72,7 @@
             "pages": [
               "understanding/subpages/building-your-own-components",
               "understanding/subpages/dynamic-prop-setting-on-components",
-              "understanding/subpages/event-handling-in-components",
               "understanding/subpages/data-sources---api-calls",
-              "understanding/subpages/data-sources---the-scram-database",
               "understanding/subpages/signing-users-up",
               "understanding/subpages/workflow-auth",
               "understanding/subpages/sending-query-parameters",

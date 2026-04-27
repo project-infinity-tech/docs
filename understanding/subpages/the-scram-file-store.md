@@ -1,3 +1,7 @@
+---
+title: "The Scram File Store"
+---
+
 # The Scram File Store
 
 Every Scram project has a **File Store** that is shared across the Apps in your Project.

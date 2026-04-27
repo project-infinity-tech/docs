@@ -1,5 +1,5 @@
 ---
-title: "Understanding page structure"
+title: "Understanding Page Structure"
 description: "How pages work in Scram and how they map to your live app."
 ---
 

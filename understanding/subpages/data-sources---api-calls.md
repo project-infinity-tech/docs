@@ -1,3 +1,7 @@
+---
+title: "Data Sources - API Calls"
+---
+
 # Data Sources - API Calls
 
 Infinity handles API calls by importing text files (or URLS to those text files) that describe how these APIs function. This makes it quicker and simpler for the user, as most API calls have already been specified (often by the provider) and can, therefore, just be imported and used immediately rather than manually typing out URLs and Parameters.

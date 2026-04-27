@@ -1,3 +1,7 @@
+---
+title: "Signing Users Up"
+---
+
 # Signing Users Up
 
 Scram provides two ways to sign users up to your app.

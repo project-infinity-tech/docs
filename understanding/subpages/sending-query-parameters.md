@@ -1,3 +1,7 @@
+---
+title: "Sending Query Parameters"
+---
+
 # Sending Query Parameters
 
 **Query Parameters**
