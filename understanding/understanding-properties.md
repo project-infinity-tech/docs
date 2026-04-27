@@ -1,17 +1,54 @@
+---
+title: "Understanding Properties"
+---
+
 # Understanding Properties
 
-Properties (or "Props" if you want to sound cool and techy) are the very close relation to Variables. However, they behave quite differently.
+Properties (or "props") are how you configure a component — what it shows, how it behaves, and how it looks. They live on components: both the platform components Scram provides and any custom components you build yourself.
 
-Firstly, Props only live on Components. So the components that you create, or the Platform Components that Scram has already made.
+---
 
-You can think of a prop like a default value for a component. Something that is (mostly) static. So the text on a button, or the colour of an icon.
+## Props vs Variables
 
-So when you put a component on your page under the Properties tab you will see how you can customise that component. Note that not all components have Properties, a heading for example.
+The key distinction is direction:
 
-When building Components you can also specify your own Properties - we will discuss that more when we talk about component building.
+- **Props** are inputs *into* a component — they tell it what to display or how to behave
+- **Variables** are state the component holds and can change over time — like whether a menu is open, or what a user has typed
 
-# **Setting Properties**
+A prop says "show this." A variable remembers "this happened."
 
-Most Platform Components have default properties already set. For example, a button will have "Click Me" and default to a theme colour, so you don't have to set them at all; you should get some sensible default settings.
+---
 
-Of course, you probably don't want every button in your app to say “Click Me” and be the same colour.
+## Static vs dynamic values
+
+Props can hold two types of value:
+
+**Literal values** — fixed text, numbers, colours. The label on a button, the placeholder above a field. This is the most common starting point when setting things up.
+
+**Expressions** — props can also be wired to live data. A button label that changes based on whether a form is saving. An icon colour that reflects a status. Anything available on the page — variables, logged-in user data, database results — can be used as a prop value. Expressions re-evaluate automatically whenever the underlying data changes.
+
+<Warning>
+  Avoid using values that change on every render — like the current timestamp or a random number — directly in a prop expression. Since expressions re-run on every render, using something like `new Date()` in a prop can cause an infinite update loop. Compute those values once in a workflow and store them in a variable instead.
+</Warning>
+
+---
+
+## Default values
+
+Most platform components come with sensible defaults already set — a button says "Click Me", an icon picks a theme colour, an input has placeholder text. You don't have to configure anything to get something that works. Setting props is just overriding those defaults when you need something specific.
+
+---
+
+## Props on custom components
+
+When you build your own component, you define its props yourself. This is how you make a component reusable — instead of hardcoding a title or colour inside the component, you expose them as props so each instance can be configured differently.
+
+<Note>
+  For more on this, see the component building section.
+</Note>
+
+---
+
+## Discovering props on platform components
+
+Different platform components expose different props — a button has different options to a date picker or a data table. The best way to see what's available is to select a component on the canvas and check the **Properties panel**, which lists everything that component supports.

@@ -1,3 +1,7 @@
+---
+title: "Understanding Repeaters"
+---
+
 # Understanding Repeaters
 
 The Repeater is how you display lists of things. Search results, order history, team members, product cards — any time you need to show the same layout across multiple items of data, use a Repeater.

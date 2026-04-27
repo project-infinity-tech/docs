@@ -1,3 +1,7 @@
+---
+title: "Understanding Themes"
+---
+
 # Understanding Themes
 
 A theme is the visual foundation of your app. It defines the colours, typography, spacing, and shape that every component inherits. Rather than styling each component individually, you set your design intentions once in a theme, and the entire app reflects them consistently.

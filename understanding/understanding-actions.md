@@ -1,6 +1,10 @@
+---
+title: "Understanding Actions"
+---
+
 # Understanding Actions
 
-### Actions are the individual steps that make up a workflow. If a workflow is the script, actions are the lines.
+Actions are the individual steps that make up a workflow. If a workflow is the script, actions are the lines.
 
 ---
 

@@ -1,3 +1,7 @@
+---
+title: "Understanding Components"
+---
+
 # Understanding Components
 
 # Scram Components — Overview

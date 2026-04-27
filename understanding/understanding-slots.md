@@ -1,3 +1,7 @@
+---
+title: "Understanding Slots"
+---
+
 # Understanding Slots
 
 Some components aren't just a single thing — they're a *structure* that holds other components. Slots are how you put content inside them.
