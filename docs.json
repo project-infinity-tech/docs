@@ -100,7 +100,7 @@
       },
       {
         "tab": "Reference",
-        "pages": [
+        "groups": [
           {
             "group": "Actions",
             "pages": [
@@ -169,7 +169,12 @@
               "components/html-element"
             ]
           },
-          "platform-types"
+          {
+            "group": "Platform",
+            "pages": [
+              "platform-types"
+            ]
+          }
         ]
       }
     ]
