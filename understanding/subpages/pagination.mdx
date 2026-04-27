@@ -1,0 +1,84 @@
+---
+title: "Pagination"
+description: "Using LIMIT and OFFSET — and cursor-based pagination — in the Execute SQL action."
+---
+
+Scram supports two pagination approaches: the simpler LIMIT/OFFSET pattern, and cursor-based pagination for more demanding use cases.
+
+---
+
+## LIMIT and OFFSET
+
+`LIMIT` controls how many rows are returned. `OFFSET` controls how many rows to skip before starting. Together they return one "page" of results at a time.
+
+```sql
+SELECT *
+FROM "Products"
+ORDER BY "createdAt" DESC
+LIMIT 20 OFFSET 0
+```
+
+This returns the first 20 rows. To get the second page, set `OFFSET` to 20. Third page, 40. And so on.
+
+<Warning>
+  Always include `ORDER BY` with pagination. Without it, PostgreSQL doesn't guarantee a consistent order between queries — rows can appear on multiple pages or not at all.
+</Warning>
+
+---
+
+## Passing the offset dynamically
+
+Store the current offset in a page variable (e.g. `currentOffset`, starting at `0`), then pass it as a named parameter:
+
+```sql
+SELECT *
+FROM "Products"
+ORDER BY "createdAt" DESC
+LIMIT 20 OFFSET :offset
+```
+
+```js
+params: { offset: vars.currentOffset }
+```
+
+When the user clicks **Next**, a workflow adds 20 to `currentOffset` and reloads the data. **Previous** subtracts 20, floored at 0.
+
+---
+
+## Performance considerations
+
+LIMIT/OFFSET works well for small-to-medium datasets, but has a known limitation at scale: PostgreSQL still scans and discards all the skipped rows. So `OFFSET 10000` is meaningfully slower than `OFFSET 0` — the deeper you page, the more work the database does.
+
+For most apps this won't matter. If your table has tens of thousands of rows and users are expected to page deep into results, it's worth being aware of.
+
+---
+
+## Cursor-based pagination
+
+Cursor-based pagination is a different SQL pattern rather than a platform feature — it's fully supported in Scram's Execute SQL action.
+
+Instead of skipping rows by count, you remember the last value you saw and filter from there:
+
+```sql
+SELECT *
+FROM "Products"
+WHERE "createdAt" < :lastSeenDate
+ORDER BY "createdAt" DESC
+LIMIT 20
+```
+
+Store the `createdAt` value of the last row returned, and use it as the cursor for the next page.
+
+### Advantages over LIMIT/OFFSET
+
+- Consistent performance regardless of how deep you page
+- No risk of rows appearing twice or being skipped if new data is inserted between pages
+
+### Trade-offs
+
+- You can only go forwards — no jumping to page 7
+- Slightly more logic to manage the cursor value in your app
+
+<Tip>
+  For "load more" style interfaces, cursor-based pagination is generally the better choice. For traditional numbered pages, LIMIT/OFFSET is simpler and usually fine.
+</Tip>
