@@ -1,0 +1,75 @@
+---
+title: "Dates and Times"
+description: "Storing, querying, and formatting temporal data in ScramDB."
+---
+
+## Available field types
+
+ScramDB offers three distinct types for storing temporal data:
+
+| Type | Stores | Example |
+|---|---|---|
+| `date` | A calendar date only, no time | `2026-04-28` |
+| `time` | A time of day only, no date | `14:30:00` |
+| `datetime` | A combined date and time | `2026-04-28T14:30:00` |
+
+<Warning>
+  `date` and `datetime` are different types — don't mix them. A `date` field cannot store a time component, and comparing a `date` field to a full `datetime` value in a query may produce unexpected results.
+</Warning>
+
+---
+
+## Storing dates
+
+**Storing the current moment** — pass `new Date()` directly as a named parameter:
+
+```js
+params: { createdAt: new Date() }
+```
+
+<Warning>
+  Never call `.toISOString()` on a date before passing it as a parameter — PostgreSQL will reject the resulting string format. Equally, avoid `Now("UTC")` and Temporal objects, which also serialise incorrectly. Stick to `new Date()` for "right now".
+</Warning>
+
+**Storing a date string** — if you have a date as text (e.g. from a date picker component), cast it in the SQL query itself:
+
+```sql
+INSERT INTO "Events" ("date") VALUES (:eventDate::date)
+```
+
+<Note>
+  The date picker component returns a string, not a date object. Always cast it in SQL rather than relying on automatic type coercion.
+</Note>
+
+---
+
+## Querying by date
+
+Use PostgreSQL interval syntax for relative date ranges:
+
+```sql
+WHERE "createdAt" > NOW() - INTERVAL '7 days'
+```
+
+**Timezone handling** — `datetime` fields in ScramDB are stored in UTC. When displaying them, always convert to the user's timezone using Scram's built-in formatting functions rather than doing timezone arithmetic manually in SQL.
+
+---
+
+## Formatting dates for display
+
+Scram provides built-in functions for formatting temporal values in expressions and component bindings. These handle locale and timezone automatically using the project's default settings, or you can override per call.
+
+| Function | Output example |
+|---|---|
+| `FormatDate(date)` | 28 April 2026 |
+| `FormatDate(date, true)` | Monday, 28 April 2026 |
+| `FormatDateTime(datetime)` | 28 April 2026, 14:30 |
+| `FormatTime(time)` | 14:30 |
+| `FormatTime(time, true)` | 2:30 PM (12-hour clock) |
+| `FormatTimeBetween(datetime)` | 3 hours ago |
+
+All functions accept optional locale and timezone arguments if you need to override the project defaults for a specific display.
+
+<Note>
+  These functions are expression-only — they work in UI bindings and component expressions. They are not available inside raw SQL queries. Format dates for display on the frontend, not in the database.
+</Note>
