@@ -1,0 +1,75 @@
+---
+title: "Handling Errors"
+description: "Detecting, interpreting, and surfacing SQL errors in Scram workflows."
+---
+
+## Detecting that a query has failed
+
+Every Execute SQL step produces a flat output object. The key property for error handling is:
+
+```js
+steps.myStep.output.success  // true or false
+```
+
+This is the primary signal. Always place an `IfElse` step immediately after any Execute SQL that matters, branching on this value. Do not assume a query succeeded just because no error was thrown — execution continues either way.
+
+```
+ExecuteSQL → IfElse (steps.myStep.output.success)
+  true  → handle success
+  false → handle failure
+```
+
+---
+
+## What error information is available
+
+The output object has three properties relevant to failure:
+
+| Property | Type | Contains |
+|---|---|---|
+| `steps.myStep.output.success` | Boolean | `false` when the query failed |
+| `steps.myStep.output.errorCode` | Text | A short machine-readable code identifying the error type |
+| `steps.myStep.output.message` | Text | A human-readable description of what went wrong |
+
+`errorCode` is useful for branching logic — for example, handling a "not found" case differently from a "permission denied" case. `message` is more useful for logging or debugging, but is generally too raw to show directly to end users.
+
+---
+
+## Surfacing useful error messages to users
+
+The recommended pattern is to store a friendly error string in a page variable, then bind it to an `Alert` component or helper text that is only visible when the variable is non-empty.
+
+In the failure branch:
+
+```js
+SetVariable (vars.errorMessage = "We couldn't save your changes. Please try again.")
+```
+
+In the UI:
+
+```
+Alert — visible: vars.errorMessage !== ""
+Alert text — bound to: vars.errorMessage
+```
+
+Clear the variable at the start of each new attempt so stale errors don't persist:
+
+```js
+SetVariable (vars.errorMessage = "")  // first step, before the SQL
+```
+
+<Tip>
+  For non-critical feedback — such as after a delete or update — a Toast with an error variant is often cleaner than an inline alert.
+</Tip>
+
+---
+
+## Common error patterns
+
+| Pattern | What happens | How to handle |
+|---|---|---|
+| Missing required field | Query fails with a constraint violation | Validate inputs before submitting — check required fields are non-empty before the SQL step runs |
+| RLS blocks the query | Returns empty results or fails silently — not always a hard error | Check `user !== null` and that the user has the right role before running sensitive queries |
+| Wrong parameter type | Datetime or UUID mismatches fail at runtime with no build warning | Confirm parameter types match the column — especially dates (`new Date()`, not `.toISOString()`) and user IDs (text, not integer) |
+| No rows affected by UPDATE/DELETE | `success` may still be `true` — the query ran, it just matched nothing | Check the row count in `steps.myStep.output.value` if you need to confirm something was actually changed |
+| Execution continues past failure | Steps after Execute SQL always run | Every SQL step that can fail needs an `IfElse` guard — never chain dependent steps without checking `success` first |
