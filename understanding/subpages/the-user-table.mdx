@@ -1,0 +1,62 @@
+---
+title: "The Users Table"
+description: "Built-in fields, custom fields, and querying the Users table safely in ScramDB."
+---
+
+The `Users` table is created automatically for every Scram project. It behaves differently from regular tables in a few important ways — most significantly, its `id` is a UUID rather than an auto-increment integer.
+
+---
+
+## Built-in fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | Text (UUID) | Primary key — not an integer |
+| `email` | Text | The user's login email |
+| `roles` | Text array | List of role IDs assigned to the user |
+| `authType` | Text | How the account was created: `userpass`, `social`, `anon`, `api_key`, or `deleted` |
+| `directory` | Text | Internal auth directory identifier |
+| `givenName` | Text | First name |
+| `familyName` | Text | Last name |
+| `profilePhotoUrl` | Text | URL to profile photo |
+| `signedUpAt` | Datetime | When the account was created |
+| `firstLoggedInAt` | Datetime | First login timestamp |
+| `lastSeenAt` | Datetime | Most recent activity timestamp |
+| `suspendedAt` | Datetime | Set if the account has been suspended |
+| `deletedAt` | Datetime | Set if the account has been soft-deleted |
+
+---
+
+## Adding custom fields
+
+You can add custom fields to `Users` exactly the same way as any other table, using **Add Fields**. Common examples: `companyName`, `phoneNumber`, `onboardingCompleted`, `subscriptionTier`.
+
+The `id` and `ownerId` columns are still off-limits, but everything else is fair game.
+
+---
+
+## Querying Users safely with RLS
+
+Always think about what RLS policy is in place before writing a query against the `Users` table — a poorly considered `SELECT * FROM "Users"` in a user-facing workflow could expose all user rows.
+
+**A user reading their own row** — straightforward. RLS policies using `"ownerId" = auth.user_id()::text` work as normal, since each user's row has their own ID as `ownerId`.
+
+**Admin queries** — if you need to list all users (e.g. for an admin dashboard), the policy must explicitly allow this, typically via a role check:
+
+```sql
+'admin-role-id' = ANY(auth.roles())
+```
+
+**Service-role access** — backend workflows running server-side can bypass RLS if configured to do so, which is useful for admin operations.
+
+---
+
+## Gotchas unique to the Users table
+
+| Gotcha | Detail |
+|---|---|
+| `id` is UUID, not integer | Any table that references `Users.id` must use a text field, not integer |
+| You don't create it | Never try to create a `Users` table — it already exists and will conflict |
+| `authType` is required on INSERT | If you insert a row directly via SQL, `authType` and `roles` are required. `roles` can be an empty array: `ARRAY[]::text[]` |
+| Signup creates users with no roles | Signup and SocialSignup actions produce a user with an empty `roles` array. If any page requires a role, the signup workflow must immediately assign one via SQL and then call `ReloadUser` |
+| `deletedAt` is a soft delete | Deleted users aren't removed from the table — they're marked with a timestamp. Queries should filter these out where needed |
