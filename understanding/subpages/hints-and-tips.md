@@ -1,4 +1,6 @@
-# Hints and Tips
+---
+title: "Hints and Tips"
+---
 
 ## Handling long running processes
 
