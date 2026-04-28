@@ -1,0 +1,86 @@
+---
+title: "Execute SQL in Frontend Workflows"
+description: "Writing data in response to user actions using Execute SQL."
+---
+
+Frontend workflows run in response to user actions — a button click, a form submission, a selection change. Unlike page-data workflows, they can write data, navigate, show toasts, and run code.
+
+---
+
+## The typical pattern
+
+The standard write pattern is:
+
+1. **Execute SQL** — run the `INSERT`, `UPDATE`, or `DELETE`
+2. **IfElse** — check whether it succeeded
+3. **On success** — refresh the relevant data and/or navigate away
+4. **On failure** — show an error message to the user
+
+A typical `INSERT`:
+
+```sql
+INSERT INTO "Comments" ("body", "postId", "ownerId")
+VALUES (:body, :postId, :userId)
+```
+
+```js
+params: {
+  body: components.commentInput.vars.value,
+  postId: page.pathParams.id,
+  userId: user.id
+}
+```
+
+After a successful write, call `ReloadPageData` targeting the relevant page-data variable so the UI reflects the new state without a full page refresh.
+
+---
+
+## How frontend workflows differ from page-data workflows
+
+| | Page-data workflow | Frontend workflow |
+|---|---|---|
+| When it runs | Automatically on page load | In response to a user action |
+| Primary purpose | Fetching data to display | Writing data, or fetching after interaction |
+| Result storage | `page.data.name.value` | `steps.stepId.output.value` |
+| Can use RunCode | ❌ | ✅ |
+| Can navigate | ❌ | ✅ |
+| Can show toasts | ❌ | ✅ |
+| Re-runs automatically | On page reload | Only when triggered |
+
+In a frontend workflow, the Execute SQL result lives at `steps.myStep.output.value` and is only available within that workflow run — it isn't persisted to the page unless you explicitly store it with `SetVariable`.
+
+---
+
+## Handling success and failure
+
+Always use an `IfElse` step after Execute SQL, checking `steps.myStep.output.success`.
+
+**On success**, typical follow-up steps:
+- `ReloadPageData` — refresh the list or data that was affected
+- `NavigateToPath` — move to a confirmation or detail page
+- `Toast` — brief success confirmation
+
+**On failure**, typical follow-up steps:
+- Set a page variable to an error message string, then bind it to an `Alert` or helper text component
+- Or show a `Toast` with an error variant
+
+A minimal pattern:
+
+```
+ExecuteSQL → IfElse (steps.save.output.success)
+  true  → ReloadPageData → Toast ("Saved!")
+  false → SetVariable (vars.errorMessage = "Something went wrong. Please try again.")
+```
+
+---
+
+## Gotchas
+
+| Gotcha | Detail |
+|---|---|
+| Execution continues past failures | Steps after Execute SQL run regardless of whether it succeeded. Always use `IfElse` to branch — never assume success |
+| No steps after IfElse or CaseSwitch | Once you open a control flow block, all remaining logic must live inside its branches. You cannot add steps after the closing tag |
+| Reading form values | Read input values directly from component variables (`components.myInput.vars.value`) — don't create page variables just to mirror input state |
+| RLS still applies | A logged-out user running a workflow that hits a protected table will get no rows back or a silent failure, not an error. Check `user !== null` before triggering sensitive writes |
+| INSERT requires all non-nullable fields | If a required field is missing from the params, the query will fail silently at runtime — there's no build-time warning |
+| Refreshing after a write | Execute SQL does not automatically update the UI. You must call `ReloadPageData` explicitly, or the user will see stale data until they refresh the page |
