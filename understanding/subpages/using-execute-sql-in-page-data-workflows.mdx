@@ -1,0 +1,91 @@
+---
+title: "Execute SQL in Page-Data Workflows"
+description: "Loading data automatically when a page opens using Execute SQL."
+---
+
+A page-data workflow runs automatically when the page loads, before the user interacts with anything. The result is stored under `page.data.variableName.value` and is available to any component on the page.
+
+---
+
+## The typical pattern
+
+The standard pattern is a single Execute SQL step that fetches the data you need:
+
+```sql
+SELECT *
+FROM "Products"
+WHERE "deletedAt" IS NULL
+ORDER BY "createdAt" DESC
+```
+
+The output is always an array of rows — even if you expect only one row, you'll get an array of one. If you need a single object, access `page.data.myQuery.value[0]` in your bindings.
+
+<Note>
+  For static queries (where the SQL doesn't change at runtime), the result is typed as an array and supports `.length`, `.filter`, and other array methods in expressions. For dynamic queries (where the SQL is built conditionally), the result is typed as generic JSON — array methods won't work directly, so use a Repeater's `emptyState` slot rather than checking `.length`.
+</Note>
+
+---
+
+## Passing page context into queries
+
+Use named parameters in the SQL and pass values through the params object — parameters are never interpolated directly into the query string, so SQL injection isn't a concern.
+
+**URL path parameters** (e.g. `/products/:id`):
+
+```sql
+SELECT * FROM "Products" WHERE "id" = :productId
+```
+
+```js
+params: { productId: page.pathParams.id }
+```
+
+**URL query string parameters** (e.g. `?status=active`):
+
+```sql
+WHERE "status" = :status
+```
+
+```js
+params: { status: page.queryParams.status }
+```
+
+**The logged-in user's ID:**
+
+```sql
+WHERE "ownerId" = :userId
+```
+
+```js
+params: { userId: user.id }
+```
+
+**The current date/time:**
+
+```sql
+WHERE "expiresAt" > :now
+```
+
+```js
+params: { now: new Date() }
+```
+
+---
+
+## Step ordering and failure handling
+
+Steps execute top to bottom. If a later step depends on the result of an earlier one — for example, fetching a user's profile before fetching their orders — place the dependent step after the one it relies on and reference its output via `steps.stepId.output.value`.
+
+**When a query fails** — if Execute SQL fails (e.g. a bad query or a missing parameter), `page.data.myQuery.value` will be empty or undefined. Check `page.data.myQuery.success` in expressions to conditionally show an error state in the UI.
+
+---
+
+## Gotchas
+
+| Gotcha | Detail |
+|---|---|
+| Results are always arrays | Even `SELECT ... WHERE id = :id` returns an array. Use `[0]` to access the first row |
+| RunCode cannot be used here | RunCode actions do not work inside page-data workflows — use SetVariable with expressions instead |
+| Dynamic SQL loses type info | If the query string is built dynamically, the output is untyped JSON — avoid `.length` or array methods on it |
+| Parameters are untyped | The platform doesn't validate parameter types, so datetime mismatches will fail silently at runtime rather than showing a build error |
+| RLS still applies | The query runs as the current user, so RLS policies are enforced. If your query returns no rows unexpectedly, check whether the user has the right permissions on that table |
