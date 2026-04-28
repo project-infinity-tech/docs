@@ -95,7 +95,8 @@
               "understanding/subpages/data-modelling",
               "understanding/subpages/using-execute-sql-in-page-data-workflows",
               "understanding/subpages/execute-sql-in-front-end",
-              "understanding/subpages/handling-errors"
+              "understanding/subpages/handling-errors",
+              "understanding/subpages/dynamic-queries"
             ]
           },
           {

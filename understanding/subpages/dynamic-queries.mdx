@@ -1,0 +1,92 @@
+---
+title: "Dynamic Queries"
+description: "Building flexible SQL queries conditionally and safely in the Execute SQL action."
+---
+
+## Static vs dynamic — what's the difference?
+
+A query is **static** when the SQL string is fixed at build time — only the values change via named parameters:
+
+```sql
+SELECT * FROM "Products" WHERE "categoryId" = :categoryId
+```
+
+```js
+params: { categoryId: vars.selectedCategory }
+```
+
+A query is **dynamic** when the SQL string itself changes at runtime — typically because clauses are conditionally included or excluded. In Scram, this means writing the query as a JavaScript template literal rather than a plain string:
+
+```js
+`SELECT * FROM "Products"
+${vars.categoryId ? 'WHERE "categoryId" = :categoryId' : ''}
+ORDER BY "createdAt" DESC`
+```
+
+| | Static query | Dynamic query |
+|---|---|---|
+| Return type | Typed array — `.length`, `.filter` work | Generic JSON — array methods unavailable |
+| Build-time safety | Scram can catch some type errors | Fewer guardrails — errors surface at runtime |
+| Readability | Clear and predictable | Can become complex quickly |
+| PostgreSQL query plan | Can be cached | May prevent query plan reuse |
+
+---
+
+## Building dynamic queries safely
+
+Always use named parameters for values — never interpolate user-supplied values directly into the SQL string, even in a dynamic query. The safe pattern is to conditionally include the clause in the string, and always pass the value separately through params:
+
+```js
+query: `SELECT *
+FROM "Orders"
+WHERE "ownerId" = :userId
+${vars.status ? 'AND "status" = :status' : ''}
+${vars.fromDate ? 'AND "createdAt" >= :fromDate' : ''}
+ORDER BY "createdAt" DESC`
+
+params: {
+  userId: user.id,
+  status: vars.status,
+  fromDate: vars.fromDate ? new Date(vars.fromDate) : undefined
+}
+```
+
+<Note>
+  Unused params are harmless — passing a parameter that isn't referenced in the query string won't cause an error. You don't need to conditionally remove params to match the query.
+</Note>
+
+### Dynamic ORDER BY
+
+Column names cannot be passed as parameters — only values can. For a dynamic sort column, use a conditional in the template literal with a fixed whitelist of allowed column names:
+
+```js
+`SELECT * FROM "Products"
+ORDER BY ${vars.sortBy === 'price' ? '"price"' :
+           vars.sortBy === 'name' ? '"name"' :
+           '"createdAt"'} DESC`
+```
+
+<Warning>
+  Only allow known, whitelisted column names through this pattern — never pass raw user input as a column name directly into the SQL string.
+</Warning>
+
+---
+
+## When to avoid dynamic queries
+
+Prefer static queries whenever possible. For optional filters, consider whether separate queries — one per distinct case — would be cleaner than one dynamic query trying to cover all combinations.
+
+For simple "show everything vs. filter by one field" cases, two static queries behind an `IfElse` is often more maintainable than a single dynamic one.
+
+Reserve dynamic queries for situations where the shape of the SQL genuinely cannot be known in advance — for example, a search page with many independent optional filters.
+
+---
+
+## Gotchas
+
+| Gotcha | Detail |
+|---|---|
+| Output is untyped JSON | You lose typed array access — don't call `.length` or `.filter` on the result directly in expressions |
+| Use Repeater's emptyState slot | Since `.length` isn't reliable on dynamic output, use the Repeater's built-in empty state slot instead of checking row count in expressions |
+| Never interpolate user input as SQL | Only column names from a fixed whitelist should go into the string — all values must go through params |
+| Use template literals, not concatenation | Always use backtick template literals for dynamic queries — string concatenation with `+` is harder to read and easier to get wrong |
