@@ -1,6 +1,8 @@
-# For Bubble Developers !
+---
+title: "For Bubble Developers"
+---
 
-# **Welcome Bubble Developers !**
+## **Welcome Bubble Developers !**
 
 Many of the team at Scram have been Bubble users for many years, and of course users of other Visual Development tools, so a lot of the concepts in Scram will be familar to you. We have pages that have visual elements on, we have databases, we have ways to acccess that data.
 
