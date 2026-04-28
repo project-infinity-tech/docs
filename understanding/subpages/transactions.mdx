@@ -1,0 +1,59 @@
+---
+title: "Transactions"
+description: "Ensuring multiple writes succeed or fail together in the Execute SQL action."
+---
+
+Each individual Execute SQL step runs in its own implicit transaction — if a single query fails, that query is rolled back automatically. However, there is no built-in multi-step transaction wrapper in Scram. Two separate Execute SQL steps in the same workflow are two separate database operations, not one atomic unit.
+
+---
+
+## Manual transactions in a single step
+
+You can write `BEGIN`, `COMMIT`, and `ROLLBACK` manually within a single Execute SQL step to group multiple statements together:
+
+```sql
+BEGIN;
+
+INSERT INTO "Orders" ("customerId", "total")
+VALUES (:customerId, :total);
+
+UPDATE "Inventory"
+SET "stock" = "stock" - :quantity
+WHERE "productId" = :productId;
+
+COMMIT;
+```
+
+This works because a single Execute SQL step sends the entire string to PostgreSQL as one operation. The transaction lives and dies within that one step.
+
+---
+
+## Two patterns for multi-write workflows
+
+**Option 1 — Single step with manual transaction (recommended for true atomicity)**
+
+Put all related statements inside one Execute SQL step, wrapped in `BEGIN`/`COMMIT`. If any statement fails, PostgreSQL rolls back the entire block. This guarantees all-or-nothing behaviour.
+
+Use this when the writes are genuinely interdependent and a partial state would be invalid — for example, creating an order and decrementing stock together.
+
+**Option 2 — Sequential steps with IfElse guards (simpler, but not atomic)**
+
+Run each write as a separate step, check `steps.myStep.output.success` after each one, and only proceed if the previous succeeded. This prevents cascading writes on failure, but does not undo earlier steps that already succeeded.
+
+<Warning>
+  If you use sequential steps without a transaction and a mid-workflow step fails, earlier writes are permanent. Use a single-step transaction for anything where a partial state would be invalid.
+</Warning>
+
+Use this pattern for independent writes where partial success is acceptable.
+
+---
+
+## Gotchas
+
+| Gotcha | Detail |
+|---|---|
+| No cross-step transactions | There is no way to open a transaction in one workflow step and commit it in another — transactions must be contained within a single Execute SQL step |
+| Multiple statements in one step | PostgreSQL supports multiple statements separated by semicolons in a single query string — this is what makes the manual `BEGIN`/`COMMIT` pattern work |
+| Error handling inside transactions | If a statement inside a `BEGIN`/`COMMIT` block fails, PostgreSQL puts the transaction in an error state and ignores subsequent statements until `ROLLBACK` is called. For robust handling, use `BEGIN`/`EXCEPTION`/`END` blocks |
+| RLS still applies inside transactions | Row-level security is enforced on every statement within a transaction, not just at the transaction boundary |
+
