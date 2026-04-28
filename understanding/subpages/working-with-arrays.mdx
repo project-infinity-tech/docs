@@ -1,0 +1,120 @@
+---
+title: "Working with Arrays"
+description: "Storing, querying, and updating PostgreSQL array fields in ScramDB."
+---
+
+Any field type in ScramDB can be made into an array by enabling the array option when creating the field. For example, a `tags` field of type text with array enabled stores a list of text values in a single column.
+
+The `roles` column on the `Users` table is the most commonly encountered built-in array field, stored as `text[]`.
+
+---
+
+## Storing array values
+
+Pass a JavaScript array directly as a parameter — ScramDB handles the conversion to a PostgreSQL array:
+
+```sql
+INSERT INTO "Articles" ("tags", "authorId")
+VALUES (:tags, :authorId)
+```
+
+```js
+params: {
+  tags: ['news', 'technology', 'scram'],
+  authorId: user.id
+}
+```
+
+---
+
+## Querying arrays
+
+PostgreSQL provides several operators for working with array columns.
+
+**Check if an array contains a specific value** — use `ANY`:
+
+```sql
+SELECT * FROM "Articles"
+WHERE :tag = ANY("tags")
+```
+
+```js
+params: { tag: 'technology' }
+```
+
+**Check if an array contains all of a set of values** — use the contains operator `@>`:
+
+```sql
+SELECT * FROM "Articles"
+WHERE "tags" @> ARRAY['news', 'technology']
+```
+
+**Check if two arrays overlap** (share at least one value) — use `&&`:
+
+```sql
+SELECT * FROM "Articles"
+WHERE "tags" && ARRAY['news', 'sport']
+```
+
+**Check if an array is empty or null:**
+
+```sql
+WHERE "tags" IS NULL OR "tags" = '{}'
+```
+
+---
+
+## Updating array fields
+
+PostgreSQL doesn't have a direct "add item" or "remove item" command — you rebuild the array using functions.
+
+**Add an item** using `array_append`:
+
+```sql
+UPDATE "Articles"
+SET "tags" = array_append("tags", :newTag)
+WHERE "id" = :articleId
+```
+
+```js
+params: { newTag: 'featured', articleId: page.pathParams.id }
+```
+
+**Remove an item** using `array_remove`:
+
+```sql
+UPDATE "Articles"
+SET "tags" = array_remove("tags", :removeTag)
+WHERE "id" = :articleId
+```
+
+```js
+params: { removeTag: 'featured', articleId: page.pathParams.id }
+```
+
+**Replace the entire array** — the simplest approach when you're managing the full list on the frontend:
+
+```sql
+UPDATE "Articles"
+SET "tags" = :tags
+WHERE "id" = :articleId
+```
+
+```js
+params: { tags: vars.selectedTags, articleId: page.pathParams.id }
+```
+
+<Tip>
+  Use `array_append` and `array_remove` rather than replacing the whole array when the field is likely to be updated by multiple processes simultaneously — replacing the whole array can cause one update to silently overwrite another.
+</Tip>
+
+---
+
+## Gotchas
+
+| Gotcha | Detail |
+|---|---|
+| Pass JavaScript arrays directly | You don't need to format arrays as PostgreSQL literals in params — pass a plain JS array and it will be handled correctly |
+| Empty array syntax in SQL | When writing an empty array directly in SQL (not via params), use `ARRAY[]::text[]` with an explicit type cast — a bare `ARRAY[]` will cause a type error |
+| `ANY` operand order matters | The value goes on the left, the column on the right: `:value = ANY("column")` — not `ANY("column") = :value` |
+| Null vs empty array | A null array and an empty array (`{}`) behave differently. `ANY` on a null column returns null (not false), which can silently exclude rows — use `IS NOT NULL` guards where needed |
