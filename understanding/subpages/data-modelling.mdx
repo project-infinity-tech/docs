@@ -1,0 +1,59 @@
+---
+title: "Data Modelling"
+description: "Table conventions, automatic columns, and relating tables in ScramDB."
+---
+
+## Naming conventions
+
+ScramDB uses consistent casing throughout:
+
+- **Tables** use PascalCase — e.g. `Products`, `UserSessions`, `OrderLineItems`
+- **Columns** use camelCase — e.g. `firstName`, `userId`, `createdAt`
+
+These conventions are enforced by the double-quoting requirement in SQL queries. See [SELECT Basics](/understanding/subpages/select-basics) for more on quoting.
+
+---
+
+## Automatic columns
+
+Every table gets exactly two columns created automatically. You must never define these yourself:
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | Integer (auto-increment) | Primary key, unique per row |
+| `ownerId` | Text (nullable) | References `Users.id` — used for row-level ownership in RLS policies |
+
+There are no other reserved or auto-created columns beyond these two.
+
+### The `id` column
+
+Every table automatically gets an `id` column — an auto-incrementing integer that acts as the primary key. It's always present and always unique per row. Never include it in an `INSERT` query — the database generates it automatically.
+
+### The `ownerId` column
+
+`ownerId` is the basis for Row-Level Security policies. The standard ownership expression is:
+
+```sql
+"ownerId" = auth.user_id()::text
+```
+
+This restricts rows so users can only read or modify their own data. See [Row Level Security](/understanding/subpages/row-level-security) for full details.
+
+<Warning>
+  Raw `INSERT` queries don't populate `ownerId` automatically. You must pass `user.id` explicitly — otherwise rows are created with a null owner and may become inaccessible under RLS policies.
+</Warning>
+
+---
+
+## Relating tables
+
+ScramDB does not enforce foreign key constraints at the database level — there are no `REFERENCES` or `FOREIGN KEY` clauses. Instead, you relate tables by storing the `id` of a row from another table as a plain field.
+
+For example, to link an `Orders` table to a `Products` table, add a `productId` field of type integer to `Orders` — matching the auto-generated `id` on `Products`.
+
+<Note>
+  For references to the built-in `Users` table, the ID type is text (UUID) — so user reference fields should also be text, not integer.
+</Note>
+
+JOINs work normally in SQL queries. Referential integrity — ensuring referenced rows actually exist — is left to your application logic to manage.
+
