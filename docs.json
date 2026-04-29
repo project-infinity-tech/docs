@@ -66,8 +66,7 @@
               "understanding/subpages/page-settings",
               "understanding/subpages/page-data-tab",
               "understanding/subpages/page-authorisation",
-              "understanding/subpages/the-user-table",
-              "understanding/subpages/dates-and-times"
+              "understanding/subpages/the-user-table"
             ]
           },
           {
@@ -98,7 +97,8 @@
               "understanding/subpages/handling-errors",
               "understanding/subpages/dynamic-queries",
               "understanding/subpages/working-with-arrays",
-              "understanding/subpages/transactions"
+              "understanding/subpages/transactions",
+              "understanding/subpages/dates-and-times"
             ]
           },
           {
