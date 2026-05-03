@@ -1,0 +1,53 @@
+---
+title: "The Scram Database"
+description: "An overview of Scram's built-in relational database, powered by PostgreSQL."
+---
+
+Scram's built-in database is a relational database built on PostgreSQL, giving you all the standard relational features:
+
+- Tables with typed columns (text, integer, number, boolean, dates, enums, arrays, and more)
+- SQL queries with full `JOIN` support
+- Transactions for data consistency
+
+<Note>
+  The Scram Database can be accessed from the sidebar via the **☁️ + 💽** icon, or from the **Backend Overview** by clicking **Database**.
+</Note>
+
+---
+
+## Querying Data
+
+- [SELECT Basics](/understanding/subpages/select-basics) — fetching rows, filtering with `WHERE`, ordering, limiting
+- [Filtering with Parameters](/understanding/subpages/filtering) — named parameters, optional filters, `IN` clauses, and edge cases
+- [JOINs](/understanding/subpages/joins) — combining data across related tables
+- [Aggregates](/understanding/subpages/aggregates) — `COUNT`, `SUM`, `AVG`, `GROUP BY`, `HAVING`
+- [Full-Text Search](/understanding/subpages/full-text-search) — `LIKE`, `ILIKE`, and PostgreSQL text search
+- [Pagination](/understanding/subpages/pagination) — `LIMIT`/`OFFSET` and cursor-based pagination
+
+---
+
+## Writing Data
+
+- [INSERT](/understanding/subpages/insert) — adding new rows, returning the created record
+- [UPDATE](/understanding/subpages/update) — modifying existing rows safely with `WHERE` clauses
+- [DELETE](/understanding/subpages/delete) — removing rows, cascading deletes, and why `WHERE` clauses are non-negotiable
+
+---
+
+## Data Modelling
+
+- [Data Modelling](/understanding/subpages/data-modelling) — table conventions, automatic columns, relating tables
+- [The Users Table](/understanding/subpages/the-user-table) — built-in fields, custom fields, querying authenticated users
+- [Dates and Times](/understanding/subpages/dates-and-times) — storing, querying, and formatting temporal data
+- [Row Level Security](/understanding/understanding-row-level-security) — controlling which users can read, write, update, or delete which rows
+
+---
+
+## Patterns and Practices
+
+- [Execute SQL in Page-Data Workflows](/understanding/subpages/using-execute-sql-in-page-data-workflows) — loading data on page open
+- [Execute SQL in Frontend Workflows](/understanding/subpages/execute-sql-in-front-end) — writing data in response to user actions
+- [Handling Errors](/understanding/subpages/handling-errors) — interpreting error codes, surfacing useful messages to users
+- [Dynamic Queries](/understanding/subpages/dynamic-queries) — building flexible queries safely when filters are optional
+- [Working with Arrays](/understanding/subpages/working-with-arrays) — PostgreSQL array fields, `ANY`, `@>` operators
+- [Transactions](/understanding/subpages/transactions) — ensuring multiple writes succeed or fail together
