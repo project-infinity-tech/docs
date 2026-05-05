@@ -23,7 +23,7 @@ The codename of the OAuth provider to use. This must match a provider that has b
 | Google | `"google"` |
 | Facebook | `"facebook"` |
 | Microsoft | `"microsoft"` |
-| Custom OIDC | The auto-generated name |
+| Custom OIDC | The name you enter (must be unique) |
 
 This is a string literal — not a reference to a variable or component. You are choosing a specific provider at workflow design time.
 
@@ -36,8 +36,8 @@ This is a string literal — not a reference to a variable or component. You are
 3. The user authenticates with the provider (or is already authenticated and simply confirms)
 4. The provider redirects back to Scram with a verified identity token
 5. Scram checks whether an account with that provider identity already exists:
-    - **Returning user** — the existing account is signed in
-    - **New user** — a new account is created with `authType: "social"` and `roles: []`
+   - **Returning user** — the existing account is signed in
+   - **New user** — a new account is created with `authType: "social"` and `roles: []`
 6. Scram performs its automatic refresh and `/me` call — the `user` object is populated immediately
 
 ---
@@ -52,7 +52,7 @@ You must handle role assignment in the workflow — but only for new users. Retu
 
 ## The Recommended Pattern
 
-```
+```text
 1. Social Signup
    — provider: "google"
 
@@ -86,7 +86,7 @@ Social Signup only works if the provider has been set up beforehand. This involv
 
 The callback URL follows the pattern:
 
-```
+```text
 {previewBackendUrl}/{provider-codename}/callback
 ```
 
