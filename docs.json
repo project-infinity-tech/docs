@@ -57,21 +57,14 @@
           {
             "group": "The Editor",
             "pages": [
-              "understanding/subpages/scram-editor-overview",
-              "understanding/subpages/editor-canvas",
-              "understanding/subpages/editor-header",
-              "understanding/subpages/editor-sidebar",
-              "understanding/subpages/scram-chat-panel",
-              "understanding/subpages/page-management",
-              "understanding/subpages/page-settings",
-              "understanding/subpages/page-data-tab",
-              "understanding/subpages/page-authorisation",
-              "understanding/subpages/the-user-table"
+              "understanding/subpages/scram-editor-overview"
             ]
           },
           {
             "group": "Building",
             "pages": [
+              "understanding/subpages/page-authorisation",
+              "understanding/subpages/the-user-table",
               "understanding/subpages/building-your-own-components",
               "understanding/subpages/dynamic-prop-setting-on-components",
               "understanding/subpages/data-sources---api-calls",

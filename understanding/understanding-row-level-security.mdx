@@ -1,19 +1,25 @@
 ---
-title: "Understanding Row Level Security"
-description: "Controlling which users can read, write, update, or delete which rows in your Scram Database."
+title: "Table Security"
+description: "Controlling which users can read, write, update, or delete which rows in your Scram database."
 ---
 
-Row Level Security (RLS) is how Scram controls which users can read, write, update, or delete which rows in your database — enforced at the database level, not just in your app logic.
+Table Security (often known as Row Level Security - RLS) is how Scram controls which users can read, write, update, or delete which rows in your database — enforced at the database level, not just in your app logic.
 
 ---
 
 ## The core idea
 
-Without RLS, any query can read or modify any row. With RLS, every query is automatically filtered based on who is making the request. A user asking for their orders will only ever get their orders — the database itself enforces this, regardless of how the query is written.
+Without table security, any query can read or modify any row. With it, every query is automatically filtered based on who is making the request. A user asking for their orders will only ever get their orders — the database itself enforces this, regardless of how the query is written.
 
 <Note>
-  In Scram, every table you create must have at least one RLS policy before it can be used.
+  In Scram, every table you create must have at least one security policy before it can be used.
 </Note>
+
+---
+
+## Default behaviour
+
+When you ask Scram AI to create a new table, it will automatically apply a sensible default policy based on what the table is likely to be used for. A table for blog posts or products will typically be open for anyone to read, while a table for accounts, orders, or user-specific records will default to creator-only access. In most cases, Scram AI makes the right call without any extra instruction — but you can always describe the behaviour you want and it will adjust accordingly.
 
 ---
 
@@ -67,72 +73,4 @@ auth.email()      -- The logged-in user's email address
 auth.roles()      -- Array of the user's role IDs (text[])
 ```
 
-These return `null` for unauthenticated requests. A policy like `"ownerId" = auth.user_id()` automatically excludes anonymous users — since `null = null` is false in SQL, unauthenticated requests match nothing.
-
----
-
-## Common patterns
-
-### Owner-only access
-
-Users can only see and modify their own rows:
-
-```sql
--- USING (SELECT / UPDATE / DELETE)
-"ownerId" = auth.user_id()
-
--- WITH CHECK (INSERT / UPDATE)
-"ownerId" = auth.user_id()
-```
-
-### Public read, owner write
-
-Anyone can read; only the owner can modify:
-
-```sql
--- SELECT policy — USING
-true
-
--- INSERT / UPDATE / DELETE policy — USING / WITH CHECK
-"ownerId" = auth.user_id()
-```
-
-### Role-restricted access
-
-Only users with a specific role:
-
-```sql
-'admin' = ANY(auth.roles())
-```
-
----
-
-## What Scram manages automatically
-
-Scram manages two separate policy layers:
-
-**Application-role policies** — the ones you define. These control what your app's logged-in users can do.
-
-**Service-role policies** — managed by Scram internally. These allow the platform's own backend operations to function and cannot be edited.
-
-When you create a table, you set the application-role policies. If you don't add at least one permissive policy, no application user will be able to access the table at all.
-
----
-
-## Important behaviours
-
-### Silent filtering, not errors
-
-If a `SELECT` query is filtered by RLS, it returns fewer rows — not an error. A query that should return 10 rows might return 3 if the policy filters the rest. This can look like missing data if policies aren't configured as expected.
-
-### Raw SQL respects RLS
-
-Execute SQL actions run under the application role, so your RLS policies apply there too. A query that looks correct can return nothing if the policy is filtering the results. If you're getting unexpected empty results, check your policies first.
-
-### `ownerId` must be set explicitly in SQL
-
-RLS policies that check `"ownerId" = auth.user_id()` only work if `ownerId` is actually populated when the row is created. Raw `INSERT` queries don't set it automatically — you must pass `user.id` explicitly in your query.
-
-<Warning>
-  Forgetting to set `ownerId` in an INSERT is one of the most common RLS-related bugs in Scram. The row gets created, but becomes immediately inaccessible to the user who created it.
-</Warning>
+These return `null` for unauthenticated requests.

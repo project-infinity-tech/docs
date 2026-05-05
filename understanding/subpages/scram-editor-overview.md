@@ -1,104 +1,82 @@
 ---
-title: "Scram Editor Overview!!"
+title: "The Scram Editor"
+description: "An overview of the Scram editor and its three main views."
 ---
 
-Depending on your screen size, the Scram editor will likely open in one of two ways. On smaller screens, it may look like this.
+The Scram editor is where you build your app. It has three distinct views, each with a different purpose — the **Canvas**, the **Workflow Editor**, and **Resource View**. You switch between them depending on what you're working on.
 
-![image.png](image%204.png)
+---
 
-The Scram header 2️⃣ (with the Scram bot on the left) will always be displayed. As well as the Scram Chat 1️⃣ , the sidebar 3️⃣ and the main page drawer 4️⃣.
+## The three views
 
-To find the right-hand side drawers 5️⃣ , 6️⃣ you can hover your mouse over the edge of the (*whatever that thing is*) and drag it to the left. 
+**The Canvas** is where you design your app's pages. You place and arrange components, configure their properties, and define how the page looks and behaves. It's the view you'll spend most of your time in when building UI.
 
-![image.png](image%205.png)
+**The Workflow Editor** is where you define the logic of your app — what happens when a user clicks a button, submits a form, or triggers any other event. Workflows are sequences of actions that run in response to those events.
 
-Alternatively, you can click one of the icons at the bottom right to display the drawers. 
+**Resources** is the backend view. It gives you access to everything that lives outside of individual pages — your database, file storage, API integrations, user management, data types, deployments, and server logs.
 
-![image.png](image%206.png)
+---
 
-On larger screens, you may see the Page drawer 5️⃣ and the Component drawer 6️⃣ straight away.
+## Always-visible elements
 
-![image.png](image%207.png)
+Regardless of which view you're in, two areas are always present:
 
-Most elements in the Scram editor are right-clickable to show further options. So have a play, or read on, or both!
+**The Top Navigation** runs across the top of the editor. It gives you access to project-level settings and lets you switch between your apps.
 
-A video explaining the side panels is at the bottom of the page.
+**The Side Navigation** runs down the left edge. It contains the AI chat assistant, the page structure tree, and the component editor — the tools you reach for most often while building.
 
-1️⃣ Scram Chat
+---
 
-Here is where you can talk to Scram and ask it to do things for you. Type what you want into the bottom, click the ⬆️ icon, and Scram will start chatting with you. Try saying “Hello “?
+## Editor areas
 
-(You can close the Scram Chat drawer by clicking the Hide Drawer icon at the bottom, and open it again with the ✨ Icon.
+<CardGroup cols={2}>
+  <Card title="Canvas" href="/understanding/subpages/canvas">
+    Design your pages — place components, configure layouts, and set properties.
+  </Card>
+  <Card title="Workflow Editor" href="/understanding/subpages/workflow-editor">
+    Build the logic of your app — actions, events, and conditional flows.
+  </Card>
+  <Card title="Top Navigation" href="/understanding/subpages/top-navigation">
+    Project-level controls — manage apps and configure frontend settings.
+  </Card>
+  <Card title="Side Navigation" href="/understanding/subpages/side-navigation">
+    AI chat, page structure, and the component editor.
+  </Card>
+</CardGroup>
 
-[Scram Chat Panel](Scram%20Chat%20Panel%2030665b4769b58084bf22fcfed1366bd8.md)
+---
 
-2️⃣ Header
-As well as the Scrambot and your Project Name, we also have bookmarks and buttons to Preview your App and Report a bug.
+## Resource View
 
-[Editor Header](Editor%20Header%2030665b4769b58044aaacf3cf1ea75572.md)
-
-3️⃣ Sidebar
-
-The Sidebar display the high-level structure of your project. 
-
-- 📺 - This is your first app in your project that is created for you. You can create more apps by clicking the ➕ (you can change the colour and icon by right clicking)
-- ⚪ ⬜ - click here to go to the Components
-- ☁️ - click here to reveal the “backend” shortcuts for your project, the database, user setup etc. We will look at that in more detail in the link below.
-
-[Editor Sidebar](Editor%20Sidebar%2030665b4769b58065b1adf8d5487011a6.md)
-
-4️⃣ Canvas
-
-This is where the pages of your app start to come alive, as you add (or ask Scram to add) Components to your page.
-
-At the top you will see what page you are on (Home Page is set up for you) and you can manage your pages from in here as well.
-
-You can interact with both the canvas, and components on the canvas by right clicking. As you hover over components, they will display additional icons to help you.
-
-[Page Management](Page%20Management%2030665b4769b580a6bce2fc774b18d239.md)
-
-[Editor Canvas](Editor%20Canvas%2030665b4769b580838f78cb4529f0071e.md)
-
-5️⃣ Page Drawer
-
-The Page Drawer is where you control how your page is set up. 
-
-- Settings is where you control how the page behaves in a browser [Understanding Page Structure](Understanding%20Page%20Structure%202e165b4769b580718ce1f6abec1ea42b.md)  and any security [Page Authorisation](Page%20Authorisation%202e265b4769b580fba17bcc6c514affe3.md)
-- Data is where you set up Page Data [Understanding Server Logs](Understanding%20Server%20Logs%2030665b4769b580548601d0260adf0cdf.md) and Variables [Understanding Variables](Understanding%20Variables%2015a65b4769b580f49befef25a91812e5.md)
-- *Triggers is for future enhancements*
-
-[Page Settings](Page%20Settings%2030665b4769b580ea85d3e32935da242a.md)
-
-[Page Data Tab](Page%20Data%20Tab%2030665b4769b5805fa111ffa30532ec65.md)
-
-6️⃣ Component Drawer
-The Component Drawer is where you can see a tree of the components on your page. You can drag and drop components, and right-click to interact in here too. And open/close the sections too.
-
-- Components that are hidden have an 👁️ symbol
-- Components that have a workflow attached will show a grey dot ⚪to the side
-
-7️⃣ Theme and Status 
-
-- The theme icon will take you the theme management area.
-- Status
-    - ⚠️ - This will show you the number of warnings in your app
-    - ⛔ - This will show you the number of errors in your app
-    - Clicking on either of these icons will
-
-[Theme Management](Theme%20Management%2030665b4769b58045b566ecd9ba916bb0.md)
-
-## Scram Editor Panel Walkthrough
-
-[https://www.loom.com/share/28d49f7d2e30482b8626ecfa05ce9a97](https://www.loom.com/share/28d49f7d2e30482b8626ecfa05ce9a97)
-
-## Scram Editor Walkthrough Part 1
-
-[https://www.loom.com/share/213c22f3ed754e2b81e9e1762932a620](https://www.loom.com/share/213c22f3ed754e2b81e9e1762932a620)
-
-## Scram Editor Walkthrough Part 2
-
-[https://www.loom.com/share/9509e407812a4d06a5d0c6e405891527](https://www.loom.com/share/9509e407812a4d06a5d0c6e405891527)
-
-## Scram Editor Walkthrough Part 3
-
-[https://www.loom.com/share/d0d27e1094004a54a606df2df52551aa](https://www.loom.com/share/d0d27e1094004a54a606df2df52551aa)
+<CardGroup cols={2}>
+  <Card title="Component Gallery" href="/understanding/subpages/component-gallery">
+    Browse and manage the components available in your project.
+  </Card>
+  <Card title="Project Files" href="/understanding/subpages/project-files">
+    Static assets and files attached to your project.
+  </Card>
+  <Card title="Database" href="/understanding/subpages/database">
+    Create and manage your app's database tables and fields.
+  </Card>
+  <Card title="Storage" href="/understanding/subpages/storage">
+    File storage powered by the Scram File Store.
+  </Card>
+  <Card title="HTTP API" href="/understanding/subpages/http-api">
+    Configure external API integrations.
+  </Card>
+  <Card title="Users" href="/understanding/subpages/users">
+    Manage user accounts, roles, and authentication settings.
+  </Card>
+  <Card title="Workflows" href="/understanding/subpages/workflows">
+    Server-side workflows that run independently of page events.
+  </Card>
+  <Card title="Data Types" href="/understanding/subpages/data-types">
+    Define and manage the custom types used across your project.
+  </Card>
+  <Card title="Deployments" href="/understanding/subpages/deployments">
+    Manage your Dev and Live environments.
+  </Card>
+  <Card title="Server Logs" href="/understanding/subpages/server-logs">
+    Monitor and debug server-side activity.
+  </Card>
+</CardGroup>
