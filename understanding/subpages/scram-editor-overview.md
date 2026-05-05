@@ -1,5 +1,5 @@
 ---
-title: "The Scram Editor"
+title: "The Scram Editor Overview"
 description: "An overview of the Scram editor and its three main views."
 ---
 
@@ -33,12 +33,15 @@ Regardless of which view you're in, two areas are always present:
   <Card title="Canvas" href="/understanding/subpages/canvas">
     Design your pages — place components, configure layouts, and set properties.
   </Card>
+
   <Card title="Workflow Editor" href="/understanding/subpages/workflow-editor">
     Build the logic of your app — actions, events, and conditional flows.
   </Card>
+
   <Card title="Top Navigation" href="/understanding/subpages/top-navigation">
     Project-level controls — manage apps and configure frontend settings.
   </Card>
+
   <Card title="Side Navigation" href="/understanding/subpages/side-navigation">
     AI chat, page structure, and the component editor.
   </Card>
@@ -52,30 +55,39 @@ Regardless of which view you're in, two areas are always present:
   <Card title="Component Gallery" href="/understanding/subpages/component-gallery">
     Browse and manage the components available in your project.
   </Card>
+
   <Card title="Project Files" href="/understanding/subpages/project-files">
     Static assets and files attached to your project.
   </Card>
+
   <Card title="Database" href="/understanding/subpages/database">
     Create and manage your app's database tables and fields.
   </Card>
+
   <Card title="Storage" href="/understanding/subpages/storage">
     File storage powered by the Scram File Store.
   </Card>
+
   <Card title="HTTP API" href="/understanding/subpages/http-api">
     Configure external API integrations.
   </Card>
+
   <Card title="Users" href="/understanding/subpages/users">
     Manage user accounts, roles, and authentication settings.
   </Card>
+
   <Card title="Workflows" href="/understanding/subpages/workflows">
     Server-side workflows that run independently of page events.
   </Card>
+
   <Card title="Data Types" href="/understanding/subpages/data-types">
     Define and manage the custom types used across your project.
   </Card>
+
   <Card title="Deployments" href="/understanding/subpages/deployments">
     Manage your Dev and Live environments.
   </Card>
+
   <Card title="Server Logs" href="/understanding/subpages/server-logs">
     Monitor and debug server-side activity.
   </Card>

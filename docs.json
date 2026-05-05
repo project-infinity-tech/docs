@@ -57,7 +57,9 @@
           {
             "group": "The Editor",
             "pages": [
-              "understanding/subpages/scram-editor-overview"
+              "understanding/subpages/scram-editor-overview",
+              "understanding/subpages/top-navigiation",
+              "understanding/subpages/side-navigation"
             ]
           },
           {
