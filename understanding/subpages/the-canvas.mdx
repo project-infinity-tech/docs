@@ -1,0 +1,79 @@
+---
+title: "The Canvas"
+description: "The main editing area where you design and arrange your app's pages."
+---
+
+The Canvas is the main editing area in the Scram editor. It shows a live representation of the current page and is where you place, arrange, and configure components.
+
+---
+
+## Adding components
+
+There are two ways to add a component to a page:
+
+- **Right-click on the canvas** and select **Insert Component** to add a component at the page level
+- **Right-click in the Page Structure panel** and select **Insert Component** to add a component at a specific point in the page hierarchy
+
+Inside a container, the right-click option changes to **Insert Component into Slot** — reflecting that you're adding into a specific slot within that container.
+
+---
+
+## Selecting components
+
+Click any component on the canvas to select it. When selected, the component is highlighted with a blue outline and the **Context Bar** appears at the bottom of the canvas.
+
+---
+
+## The Context Bar
+
+The Context Bar appears at the bottom of the canvas whenever a component is selected. It provides quick access to the most important controls for that component without needing to open the full side panel.
+
+The contents of the Context Bar are contextual — they change depending on which component is selected:
+
+- **Properties** — a dropdown giving access to the component's properties
+- **Inline property chips** — key properties shown directly in the bar for quick editing. For example, a Button shows chips for size, variant, style, and fit
+- **Styles** — a dropdown for visual styling, with common layout and sizing controls shown inline
+- **Logic** — access to the component's events and workflows
+- **+** — add additional configuration to the component
+
+---
+
+## Right-click menus
+
+Right-clicking behaves differently depending on where you click.
+
+**On the canvas (empty area):**
+
+| Option | Description |
+|---|---|
+| Insert Component | Add a new component to the page |
+| Edit page settings | Open the settings for the current page |
+| Edit page data | Open the page data configuration |
+| Frontend configuration | Access frontend-level settings |
+
+**On a component directly on the canvas:**
+
+| Option | Description |
+|---|---|
+| Insert After | Add a new component after this one. Changes to **Insert Component into Slot** for components that have slots |
+| Wrap in Container | Wrap the selected component in a new container |
+| Copy | Copy the component |
+| Clone | Duplicate the component in place |
+| Delete | Remove the component from the page |
+| Open definition | Open the component's definition |
+| Workflows | Access workflows attached to this component |
+| Metadata | View and edit component metadata |
+
+**On a component in the Page Structure panel:**
+
+| Option | Description |
+|---|---|
+| Insert Component | Add a child component |
+| Wrap in Container | Wrap the selected component in a new container |
+| Copy | Copy the component |
+| Clone | Duplicate the component in place |
+| Delete | Remove the component from the page |
+| Open definition | Open the component's definition |
+| Rename | Rename the component |
+| Change Icon | Change the icon used to represent this component in the Page Structure |
+| Highlight | Highlight the component on the canvas |
