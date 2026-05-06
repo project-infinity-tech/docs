@@ -1,0 +1,42 @@
+---
+title: "Database"
+description: "Managing your app's database tables, data, and security policies from the Resource View."
+---
+
+The Database section of the Resource View is where you manage your app's built-in PostgreSQL database — creating tables, defining schemas, configuring security, and querying data directly.
+
+---
+
+## Tables
+
+All your database tables are listed in a row across the top. The **Users** table is always present — it's created automatically for every project and cannot be removed.
+
+Click the **+** button to add a new table.
+
+---
+
+## Table views
+
+Clicking any table opens it with three tabs:
+
+**Data** — a view of the table's actual row data. Use this to inspect what's in your database, verify that writes are working correctly, or manually add and edit records during development.
+
+**Security** — the RLS (Row Level Security) policies for this table. This is where you define which users can read, write, update, or delete rows. See [Row Level Security](/understanding/understanding-row-level-security) for full details on how policies work.
+
+**Schema** — the table's field definitions. This is where you add, edit, and remove columns — setting their name, type, and whether they accept arrays or null values.
+
+---
+
+## Manage Data
+
+The **Manage Data** tab provides a SQL query runner. Type any SQL query and click **Run Query** to execute it directly against your database. Useful for debugging, bulk updates, or running one-off queries during development.
+
+<Warning>
+  Queries run in Manage Data execute directly against your database with no RLS filtering. Use with care — especially on your Live environment.
+</Warning>
+
+---
+
+## Configuration
+
+The **Configuration** tab shows a log of migration jobs that have run against your database. This is a read-only record — you cannot trigger migrations manually from here.
