@@ -67,7 +67,8 @@
                 "pages": [
                   "resources/database",
                   "resources/storage",
-                  "resources/http-api"
+                  "resources/http-api",
+                  "resources/users"
                 ]
               }
             ]
