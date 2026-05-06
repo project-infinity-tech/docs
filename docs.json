@@ -66,7 +66,8 @@
                 "group": "Resources",
                 "pages": [
                   "resources/database",
-                  "resources/storage"
+                  "resources/storage",
+                  "resources/http-api"
                 ]
               }
             ]

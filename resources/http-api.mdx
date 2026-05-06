@@ -1,0 +1,48 @@
+---
+title: "HTTP API"
+description: "Configuring external API integrations in the Scram Resource View."
+---
+
+The HTTP API section of the Resource View is where you configure the external APIs your app connects to. Scram currently supports HTTP APIs, with REST and RPC-JSON both working. GraphQL support is planned.
+
+For a conceptual overview of how APIs work in Scram, see [Understanding Data Sources](/understanding/understanding-data-sources).
+
+---
+
+## Importing an API
+
+There are two ways to import an API definition:
+
+**From a URL** — paste an OpenAPI specification URL and click **Fetch**. Scram will import the API definition directly.
+
+**From a file** — upload an OpenAPI or Postman collection file from your computer and click **Upload**.
+
+Both methods support OpenAPI up to version 3.2.
+
+<Warning>
+  Only JSON format is supported — YAML files are not accepted. If you only have a YAML specification, use [Swagger Editor](https://editor.swagger.io/) to convert it to JSON before importing.
+</Warning>
+
+---
+
+## Manual setup
+
+If you prefer to configure an API by hand — or if you're working with a webhook — use the **Manual Setup** option. This lets you define:
+
+**Outgoing APIs** — calls your app makes to an external service. Configure the base URL, authentication, and any shared headers here.
+
+**Incoming APIs (Webhooks)** — endpoints that external services can call into your app. 
+
+<Note>
+  You must set up an Outgoing API shell before you can configure an Incoming API. The incoming endpoint is associated with an existing outgoing integration.
+</Note>
+
+---
+
+## Danger Zone
+
+The **Danger Zone** section contains the option to permanently delete the API integration. There is no undo — once deleted, the integration and all its configuration is gone.
+
+<Warning>
+  Deleting an API integration will break any workflows or data sources in your app that depend on it. Make sure nothing is using it before deleting.
+</Warning>
