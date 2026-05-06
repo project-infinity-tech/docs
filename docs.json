@@ -63,7 +63,7 @@
               "understanding/subpages/the-canvas",
               "understanding/subpages/workflow-editor",
               {
-                "group": "Resource Manager",
+                "group": "Resources",
                 "pages": [
                   "database"
                 ]
