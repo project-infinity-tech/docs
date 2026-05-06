@@ -65,7 +65,8 @@
               {
                 "group": "Resources",
                 "pages": [
-                  "resources/database"
+                  "resources/database",
+                  "resources/storage"
                 ]
               }
             ]
