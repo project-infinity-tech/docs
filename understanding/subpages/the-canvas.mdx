@@ -14,7 +14,9 @@ There are two ways to add a component to a page:
 - **Right-click on the canvas** and select **Insert Component** to add a component at the page level
 - **Right-click in the Page Structure panel** and select **Insert Component** to add a component at a specific point in the page hierarchy
 
-Inside a container, the right-click option changes to **Insert Component into Slot** — reflecting that you're adding into a specific slot within that container.
+Inside a container, or another component with a single slot, the right-click option changes to **Insert Component into Slot** — reflecting that you're adding into a specific slot within that container. \
+\
+If a component has multiple **Slots**, such as the Repeater, then you add Components into the Slot in the **Page Structure**. 
 
 ---
 
@@ -34,7 +36,7 @@ The contents of the Context Bar are contextual — they change depending on whic
 - **Inline property chips** — key properties shown directly in the bar for quick editing. For example, a Button shows chips for size, variant, style, and fit
 - **Styles** — a dropdown for visual styling, with common layout and sizing controls shown inline
 - **Logic** — access to the component's events and workflows
-- **+** — add additional configuration to the component
+- **\+** — add additional configuration to the component
 
 ---
 
@@ -45,7 +47,7 @@ Right-clicking behaves differently depending on where you click.
 **On the canvas (empty area):**
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | Insert Component | Add a new component to the page |
 | Edit page settings | Open the settings for the current page |
 | Edit page data | Open the page data configuration |
@@ -54,7 +56,7 @@ Right-clicking behaves differently depending on where you click.
 **On a component directly on the canvas:**
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | Insert After | Add a new component after this one. Changes to **Insert Component into Slot** for components that have slots |
 | Wrap in Container | Wrap the selected component in a new container |
 | Copy | Copy the component |
@@ -67,7 +69,7 @@ Right-clicking behaves differently depending on where you click.
 **On a component in the Page Structure panel:**
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | Insert Component | Add a child component |
 | Wrap in Container | Wrap the selected component in a new container |
 | Copy | Copy the component |
