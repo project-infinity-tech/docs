@@ -1,0 +1,42 @@
+---
+title: "Deployments"
+description: "Deploying to Dev and publishing to Live from the Scram Resource View."
+---
+
+Scram has two environments — **Dev** and **Live** — each serving a different purpose in your development workflow.
+
+When you deploy or publish, Scram builds and spins up a full server environment for your app. This is a real server build, not just a file copy — it can take several minutes to complete.
+
+---
+
+## Dev and Live
+
+**Deploy → Dev** — deploys your current app to the Dev environment, a preview environment for testing your changes before they go live. Dev is ephemeral — it is not a permanent environment and should not be treated as production.
+
+**Publish → Live** — publishes your app to the Live environment, your production URL. This is what your real users see.
+
+Both actions are available from the **Deployment Button** in the Top Navigation.
+
+---
+
+## Version history
+
+The Deployments page shows the full publication history of your Live app. Each version includes:
+
+- **Status** — either **Live** (the current version) or **Previous**
+- **Version number** — incrementing with each publish (e.g. v0.8)
+- **Timestamp** — when the version was published
+- **Change notes** — a description of what changed in that version
+- **Logs** — an expandable server migration log for that deployment
+
+---
+
+## Actions
+
+**Publish New Version** — publishes the current state of your app as a new Live version.
+
+**Republish Previous** — rolls back to the previous version, making it Live again. Use this if a new deployment has introduced a problem and you need to revert quickly.
+
+<Note>
+  The behaviour of Republish Previous with respect to database changes is worth verifying before relying on it in a production incident. Check with Scram support if you're unsure.
+</Note>

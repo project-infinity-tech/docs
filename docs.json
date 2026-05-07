@@ -73,7 +73,8 @@
                   "resources/workflows",
                   "resources/data-types",
                   "resources/component-gallery",
-                  "resources/project-files"
+                  "resources/project-files",
+                  "resources/deployments"
                 ]
               }
             ]
