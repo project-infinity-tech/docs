@@ -58,6 +58,16 @@
             "group": "The Editor",
             "pages": [
               "understanding/subpages/scram-editor-overview",
+              "understanding/subpages/editor-canvas",
+              "understanding/subpages/editor-header",
+              "understanding/subpages/editor-sidebar",
+              "understanding/subpages/scram-chat-panel",
+              "understanding/subpages/page-management",
+              "understanding/subpages/page-settings",
+              "understanding/subpages/page-data-tab",
+              "understanding/subpages/page-authorisation",
+              "understanding/subpages/the-user-table",
+              "understanding/subpages/dates-and-times",
               "understanding/subpages/top-navigiation",
               "understanding/subpages/side-navigation",
               "understanding/subpages/the-canvas",
@@ -76,8 +86,6 @@
           {
             "group": "Building",
             "pages": [
-              "understanding/subpages/page-authorisation",
-              "understanding/subpages/the-user-table",
               "understanding/subpages/building-your-own-components",
               "understanding/subpages/dynamic-prop-setting-on-components",
               "understanding/subpages/data-sources---api-calls",
@@ -103,8 +111,7 @@
               "understanding/subpages/handling-errors",
               "understanding/subpages/dynamic-queries",
               "understanding/subpages/working-with-arrays",
-              "understanding/subpages/transactions",
-              "understanding/subpages/dates-and-times"
+              "understanding/subpages/transactions"
             ]
           },
           {
