@@ -69,7 +69,8 @@
                   "resources/database",
                   "resources/storage",
                   "resources/http-api",
-                  "resources/users"
+                  "resources/users",
+                  "resources/users-1"
                 ]
               }
             ]

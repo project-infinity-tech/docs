@@ -1,4 +1,62 @@
 ---
-title: 'Users'
+title: "Users"
+description: "Managing authentication providers, roles, and API tokens in the Scram Resource View."
 ---
 
+The Users section of the Resource View is where you configure how users authenticate into your app, manage the roles available in your project, and generate API tokens for third-party access.
+
+---
+
+## Accepted Logins
+
+This section lists the authentication providers available to your app. **Email/Password** is enabled by default on every new project.
+
+Additional providers — Facebook, Google, and Microsoft — can be enabled by toggling them on and supplying the relevant credentials:
+
+| Field | Description |
+|---|---|
+| Client ID | Your app's client ID from the provider |
+| Client Secret | Your app's client secret from the provider |
+| Scopes | The OAuth scopes to request |
+| OIDC Discovery Endpoint | The provider's OpenID Connect discovery URL |
+| Redirect URL | The URL the provider redirects to after authentication |
+
+Click **Add Provider** to configure additional providers beyond those listed.
+
+---
+
+## Roles
+
+Roles control what users can access within your app. Every project starts with two default roles — **Registered User** and **Admin**.
+
+<Warning>
+  Roles cannot currently be deleted — add them with care. You can rename a role at any time, but its underlying ID is fixed and cannot be changed.
+</Warning>
+
+<Note>
+  Always use the role's **ID** — not its display name — when referencing roles in SQL queries or expressions. For example, in an RLS policy: `'role-id-here' = ANY(auth.roles())`.
+</Note>
+
+Click **Add Role** to create a new role.
+
+---
+
+## API Tokens
+
+API Tokens allow you to grant third parties programmatic access to your app's APIs without going through the normal signup flow.
+
+The pattern is:
+
+1. Create a dedicated user record directly in the Users table (not via a signup workflow)
+2. Generate a token for that user with a specific expiry — from 1 day up to 3 years
+3. Assign the token specific roles, controlling exactly what that third party can access
+4. Share the token with the third party — they pass it in the `Authorization` header using the `Bearer` scheme:
+
+```bash
+curl -X GET https://your-app.dev.buildwithscram.com/api/endpoint \
+     -H "Authorization: Bearer <your token here>"
+```
+
+**Blocking or updating access** — the token itself is not stored on your server. To block an existing token, block the user it belongs to in the database editor. To change what the token can access, update that user's roles.
+
+**Sharing users across apps** — users can be shared between apps and API calls. If you want to segregate app users from API users, create one set of roles for app pages and another for APIs.
