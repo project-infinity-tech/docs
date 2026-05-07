@@ -1,0 +1,57 @@
+---
+title: "Resource Overview"
+description: "An overview of the Resource View and project-level settings in Scram."
+---
+
+The Resource View is the backend section of the Scram editor. It gives you access to everything that lives outside of individual pages — your database, file storage, API integrations, user management, workflows, data types, deployments, and server logs.
+
+When you first open the Resource View you land on the **Overview** — a visual map of your project's structure showing how the main app, components, built-in services, integrations, and deployments relate to each other.
+
+---
+
+## Project settings
+
+The Overview page also contains project-level settings that apply across your entire app:
+
+**Description** — a free-text field describing what your project does. This is used by the Scram AI to provide more relevant and accurate assistance, so it's worth keeping it up to date as your app evolves.
+
+**Locale** — sets the default locale for your project. This is used whenever locale-sensitive formatting is applied — for example, date and number formatting — unless overridden at the component level.
+
+**Timezone** — sets the default timezone for your project. Used whenever displaying dates and times unless a specific timezone override is applied.
+
+---
+
+## Resource sections
+
+<CardGroup cols={2}>
+  <Card title="Database" href="/resources/database">
+    Create and manage tables, define schemas, configure RLS policies, and query data directly.
+  </Card>
+  <Card title="Storage" href="/resources/storage">
+    Browse and manage files in the Scram File Store.
+  </Card>
+  <Card title="HTTP API" href="/resources/http-api">
+    Configure external API integrations — import from OpenAPI or set up manually.
+  </Card>
+  <Card title="Users" href="/resources/users">
+    Manage user accounts, roles, and authentication settings.
+  </Card>
+  <Card title="Workflows" href="/resources/workflows">
+    Server-side workflows that run independently of page events.
+  </Card>
+  <Card title="Data Types" href="/resources/data-types">
+    Define and manage the custom types used across your project.
+  </Card>
+  <Card title="Component Gallery" href="/resources/component-gallery">
+    Browse and manage the components available in your project.
+  </Card>
+  <Card title="Project Files" href="/resources/project-files">
+    Static assets and files attached to your project.
+  </Card>
+  <Card title="Deployments" href="/resources/deployments">
+    Manage your Dev and Live environments.
+  </Card>
+  <Card title="Server Logs" href="/resources/server-logs">
+    Monitor and debug server-side activity.
+  </Card>
+</CardGroup>
