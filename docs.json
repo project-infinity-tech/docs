@@ -74,7 +74,8 @@
                   "resources/data-types",
                   "resources/component-gallery",
                   "resources/project-files",
-                  "resources/deployments"
+                  "resources/deployments",
+                  "resources/server-logs"
                 ]
               }
             ]
