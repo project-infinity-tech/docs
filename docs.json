@@ -71,7 +71,8 @@
                   "resources/http-api",
                   "resources/users",
                   "resources/workflows",
-                  "resources/data-types"
+                  "resources/data-types",
+                  "resources/component-gallery"
                 ]
               }
             ]
