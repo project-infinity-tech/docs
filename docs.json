@@ -72,7 +72,8 @@
                   "resources/users",
                   "resources/workflows",
                   "resources/data-types",
-                  "resources/component-gallery"
+                  "resources/component-gallery",
+                  "resources/project-files"
                 ]
               }
             ]
@@ -107,7 +108,8 @@
               "understanding/subpages/handling-errors",
               "understanding/subpages/dynamic-queries",
               "understanding/subpages/working-with-arrays",
-              "understanding/subpages/transactions"
+              "understanding/subpages/transactions",
+              "understanding/subpages/the-app-manager"
             ]
           },
           "understanding/subpages/the-user-table",

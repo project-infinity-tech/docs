@@ -1,0 +1,30 @@
+---
+title: "Project Files"
+description: "Managing static assets for your Scram project from the Resource View."
+---
+
+Project Files is where you store static assets for your project — images, logos, icons, or any other files your app needs at design or runtime.
+
+Files are displayed as cards with a preview. Click **Upload** to add new files.
+
+---
+
+## File options
+
+Right-clicking or hovering over a file reveals three options:
+
+| Option | Description |
+|---|---|
+| Download | Download the file to your computer |
+| Archive | Archive the file, removing it from active use |
+| File Info | View metadata about the file |
+
+---
+
+## Using Project Files in your app
+
+Project Files are integrated directly into the component system:
+
+**Platform components** — any Scram platform component that accepts an image allows you to choose a Project File directly, rather than entering an external URL.
+
+**Custom components** — if you create a property on your own component and give it a type of `imageFile`, users of that component can choose between a Project File or an external URL when configuring it. This means your custom components behave consistently with platform components.
