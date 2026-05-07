@@ -70,7 +70,8 @@
                   "resources/storage",
                   "resources/http-api",
                   "resources/users",
-                  "resources/workflows"
+                  "resources/workflows",
+                  "resources/data-types"
                 ]
               }
             ]
