@@ -65,11 +65,11 @@
               {
                 "group": "Resources",
                 "pages": [
+                  "resources/overview",
                   "resources/database",
                   "resources/storage",
                   "resources/http-api",
-                  "resources/users",
-                  "resources/overview"
+                  "resources/users"
                 ]
               }
             ]
