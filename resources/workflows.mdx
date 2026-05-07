@@ -1,0 +1,41 @@
+---
+title: "Workflows"
+description: "Managing reusable workflows in the Scram Resource View."
+---
+
+The Workflows section of the Resource View is where you create and manage **reusable workflows** — workflows that can be called from other workflows across your project, rather than being tied to a specific page event or component.
+
+---
+
+## The workflow list
+
+Each workflow in the list shows its name, trigger type, and a description. Workflows can be one of two trigger types:
+
+| Trigger type | Description |
+|---|---|
+| Frontend | Runs in the browser, in the context of the current page |
+| Backend | Runs server-side, independently of the frontend |
+
+Click **+ Add Workflow** to create a new reusable workflow.
+
+---
+
+## Built-in workflows
+
+Every project includes a pre-configured **Send Email** workflow. This provides a reusable email template with From, To, Cc, Bcc, Subject, and Body fields.
+
+<Note>
+  The built-in Send Email workflow is for testing only during development — it delivers only to the project owner and does not require signup. Replace or supplement it with a proper email integration before going live.
+</Note>
+
+---
+
+## Editing workflows
+
+Reusable workflows are edited in the same Workflow Editor as page workflows — click any workflow in the list to open it.
+
+---
+
+## Permissions
+
+Reusable workflows run with the same permissions and roles as the user who triggers them. There is no elevated authentication — a reusable workflow cannot do anything the calling user couldn't do themselves.

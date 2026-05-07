@@ -70,7 +70,7 @@
                   "resources/storage",
                   "resources/http-api",
                   "resources/users",
-                  "resources/users-1"
+                  "resources/workflows"
                 ]
               }
             ]
