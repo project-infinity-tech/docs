@@ -29,6 +29,7 @@
           },
           {
             "group": "Understanding Scram",
+            "icon": "head-side-brain",
             "pages": [
               "understanding/subpages/scram-project-structure",
               "understanding/understanding-page-structure",
@@ -56,6 +57,7 @@
           },
           {
             "group": "The Editor",
+            "icon": "pager",
             "pages": [
               "understanding/subpages/scram-editor-overview",
               "understanding/subpages/top-navigiation",
@@ -64,6 +66,7 @@
               "understanding/subpages/workflow-editor",
               {
                 "group": "Resources",
+                "icon": "cloud",
                 "pages": [
                   "resources/overview",
                   "resources/database",
@@ -81,37 +84,65 @@
             ]
           },
           {
-            "group": "Building",
+            "group": "Building with Scram",
+            "icon": "chart-network",
             "pages": [
-              "understanding/subpages/dates-and-times",
-              "understanding/subpages/page-authorisation",
               "understanding/subpages/building-your-own-components",
               "understanding/subpages/dynamic-prop-setting-on-components",
               "understanding/subpages/data-sources---api-calls",
-              "understanding/subpages/signing-users-up",
               "understanding/subpages/workflow-auth",
-              "understanding/subpages/sending-query-parameters",
+              "understanding/subpages/signing-users-up",
               "understanding/subpages/the-scram-file-store",
               "understanding/subpages/theme-management",
               "understanding/subpages/custom-project-types",
-              "understanding/subpages/page-path-parameters",
-              "understanding/subpages/select-basics",
               "understanding/subpages/filtering",
-              "understanding/subpages/joins",
-              "understanding/subpages/aggregates",
               "understanding/subpages/full-text-search",
-              "understanding/subpages/pagination",
-              "understanding/subpages/insert",
-              "understanding/subpages/update",
-              "understanding/subpages/delete",
-              "understanding/subpages/data-modelling",
-              "understanding/subpages/using-execute-sql-in-page-data-workflows",
-              "understanding/subpages/execute-sql-in-front-end",
-              "understanding/subpages/handling-errors",
-              "understanding/subpages/dynamic-queries",
-              "understanding/subpages/working-with-arrays",
-              "understanding/subpages/transactions",
-              "understanding/subpages/the-app-manager"
+              "understanding/subpages/the-app-manager",
+              {
+                "group": "Pages",
+                "pages": [
+                  "understanding/subpages/page-path-parameters",
+                  "understanding/subpages/sending-query-parameters",
+                  "understanding/subpages/page-authorisation"
+                ]
+              },
+              {
+                "group": "Components",
+                "pages": []
+              },
+              {
+                "group": "Data",
+                "pages": [
+                  "understanding/subpages/dates-and-times",
+                  "understanding/subpages/using-execute-sql-in-page-data-workflows",
+                  "understanding/subpages/data-modelling",
+                  "understanding/subpages/execute-sql-in-front-end",
+                  {
+                    "group": "SQL Reference",
+                    "pages": [
+                      "understanding/subpages/select-basics",
+                      "understanding/subpages/handling-errors",
+                      "understanding/subpages/transactions",
+                      "understanding/subpages/dynamic-queries",
+                      "understanding/subpages/aggregates",
+                      "understanding/subpages/update",
+                      "understanding/subpages/delete",
+                      "understanding/subpages/pagination",
+                      "understanding/subpages/joins",
+                      "understanding/subpages/insert",
+                      "understanding/subpages/working-with-arrays"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Users and Auth",
+                "pages": []
+              },
+              {
+                "group": "Integrations",
+                "pages": []
+              }
             ]
           },
           "understanding/subpages/the-user-table",
