@@ -9,19 +9,16 @@ The Users section of the Resource View is where you configure how users authenti
 
 ## Accepted Logins
 
-This section lists the authentication providers available to your app. **Email/Password** is enabled by default on every new project.
+This section lists your currently enabled authentication providers. **Email/Password** is enabled by default on every new project.
 
-Additional providers — Facebook, Google, and Microsoft — can be enabled by toggling them on and supplying the relevant credentials:
+To add a new provider, click **Add Provider** and select from the available options — Google, Facebook, and Microsoft are supported. Each provider requires its own credentials (Client ID, Client Secret, and callback URL configuration).
 
-| Field | Description |
-|---|---|
-| Client ID | Your app's client ID from the provider |
-| Client Secret | Your app's client secret from the provider |
-| Scopes | The OAuth scopes to request |
-| OIDC Discovery Endpoint | The provider's OpenID Connect discovery URL |
-| Redirect URL | The URL the provider redirects to after authentication |
+For step-by-step setup guides see:
+- [Setting Up Google Login](/setting-up-google-login)
 
-Click **Add Provider** to configure additional providers beyond those listed.
+<Note>
+  When configuring a social provider, Scram gives you both a Dev and a Live callback URL. Make sure you register both with your provider — without the Live URL, social login will work in Dev but fail in production.
+</Note>
 
 ---
 

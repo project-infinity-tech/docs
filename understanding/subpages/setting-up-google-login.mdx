@@ -1,0 +1,79 @@
+---
+title: "Setting Up Google Login"
+description: "Configuring Google OAuth as a login provider in your Scram app."
+---
+
+Scram supports Google OAuth as a login provider. Setting it up involves three stages — configuring Scram, configuring Google Cloud Platform, and adding the login button to your app.
+
+---
+
+## 1. Add Google as a provider in Scram
+
+In the [Users](/resources/users) section of the Resource View, click **Add Provider** and select **Google**.
+
+You'll see two callback URLs — copy both:
+
+- **Dev URL** — used for your development environment
+- **Live URL** — used when your app is published to Live
+
+You'll need both when configuring Google Cloud Platform. Keep this panel open — you'll be coming back to paste in your credentials.
+
+---
+
+## 2. Configure Google Cloud Platform
+
+### Create OAuth credentials
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com)
+2. Create a new project or select an existing one
+3. Navigate to **APIs & Services** > **Credentials**
+4. Click **Create Credentials** > **OAuth 2.0 Client ID**
+
+### Configure the OAuth consent screen
+
+Before creating credentials, Google requires you to configure an OAuth consent screen. If you haven't done this yet, you'll be prompted to do so. Set the application type to **External** unless you're building an internal tool for a Google Workspace organisation.
+
+### Create the Client ID
+
+1. Set the application type to **Web application**
+2. Under **Authorised redirect URIs**, add both callback URLs you copied from Scram — the Dev URL and the Live URL
+3. Click **Create**
+
+### Save your credentials
+
+Google will display your **Client ID** and **Client Secret**.
+
+<Warning>
+  Copy and save your Client Secret somewhere secure immediately. Google hides it after you leave this screen and Scram also hides it once entered — if you lose it, you'll need to generate a new one.
+</Warning>
+
+---
+
+## 3. Enter credentials in Scram
+
+Back in the Scram Users panel, enter your:
+
+- **Client ID**
+- **Client Secret**
+
+Save the provider configuration.
+
+---
+
+## 4. Add a Google login button to your app
+
+1. Add a button to your login page
+2. Open the **Logic** tab on the button
+3. Add an **On Click** event
+4. Add the **Login with Social Provider** action
+5. Select **Google** from the provider list
+
+<Note>
+  Google will only appear in the provider list if you've completed the configuration above. If you don't see it, check that the provider has been saved correctly in the Users section.
+</Note>
+
+---
+
+## Going live
+
+When you publish your app to Live, make sure you've added the **Live callback URL** to your Google Cloud Console redirect URIs. Without it, Google login will work in Dev but fail in production.

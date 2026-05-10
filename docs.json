@@ -133,7 +133,8 @@
                 "group": "Users and Auth",
                 "pages": [
                   "understanding/subpages/signing-users-up",
-                  "understanding/subpages/workflow-auth"
+                  "understanding/subpages/workflow-auth",
+                  "understanding/subpages/setting-up-google-login"
                 ]
               },
               {
