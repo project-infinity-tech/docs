@@ -62,8 +62,7 @@
               "understanding/subpages/scram-editor-overview",
               "understanding/subpages/side-navigation",
               "understanding/subpages/the-canvas",
-              "understanding/subpages/workflow-editor",
-              "understanding/subpages/top-navigation"
+              "understanding/subpages/workflow-editor"          
               {
                 "group": "Resources",
                 "icon": "cloud",
