@@ -2,7 +2,7 @@
 title: "Understanding Expressions"
 ---
 
-When writing an expression, you can access a range of local data depending on where the expression is used. The Expression Builder will eventually abstract this away, but until then this page serves as a reference.
+Expressions are how you access and transform data throughout Scram — in component properties, visibility conditions, workflow steps, and more. The available context depends on where the expression is used.
 
 ---
 
@@ -10,8 +10,8 @@ When writing an expression, you can access a range of local data depending on wh
 
 | Expression | Description |
 |---|---|
-| `pageData.<pageDataName>.value` | The value returned by the Page Data request. Traverse the returned structure to access fields and arrays. |
-| `pageData.<pageDataName>.success` | Whether the Page Data request was successful. |
+| `page.data.<pageDataName>.value` | The value returned by the Page Data request. Traverse the returned structure to access fields and arrays. |
+| `page.data.<pageDataName>.success` | Whether the Page Data request was successful. |
 | `queryParams.<queryParam>` | The value of a page query parameter. |
 | `pathParams.<pathParam>` | The value of a URI path parameter. |
 | `component.vars.<varname>` | A variable on the current component only — not page-level variables. |
@@ -118,7 +118,7 @@ For example, toggling a background colour:
 ```
 
 <Warning>
-  Always use straight quotes (`"200"`) not smart/curly quotes (`"200"`) inside expressions. Copying from some editors or documents can silently introduce smart quotes that will break your expression.
+  Always use straight quotes (`"200"`) not smart/curly quotes inside expressions. Copying from some editors or documents can silently introduce curly quotes that will break your expression.
 </Warning>
 
 Use `==` for loose equality or `===` for strict equality in conditions.
@@ -142,7 +142,7 @@ When a user is logged in, their data is available via the `user` context:
 
 | Expression | Description |
 |---|---|
-| `user.id` | The user's ID (sequentially generated integer starting at 1). |
+| `user.id` | The user's UUID (text). |
 | `user.email` | The user's email address. |
 | `user.firstname` / `user.givenname` | The user's first name. |
 
@@ -166,7 +166,32 @@ To define an inline array within an expression:
 
 ## Useful Functions
 
+### General
+
 | Function | Description |
 |---|---|
 | `.toString()` | Converts an integer to a string for display. |
 | `JSON.stringify()` | Serialises an object to a JSON string. |
+
+### Date and Time
+
+| Function | Description |
+|---|---|
+| `Now(timezone)` | Current datetime in a given timezone |
+| `FormatDate(date)` | Human-readable date, e.g. 28 April 2026 |
+| `FormatDate(date, true)` | Long form, e.g. Monday, 28 April 2026 |
+| `FormatDateTime(date)` | Human-readable date and time |
+| `FormatTime(time)` | Human-readable time, e.g. 14:30 |
+| `FormatTime(time, true)` | 12-hour clock, e.g. 2:30 PM |
+| `FormatTimeBetween(a, b)` | Relative time, e.g. 3 hours ago |
+| `ParseDate(string)` | Converts text to a `PlainDate` |
+| `ParseDateTime(string, timezone)` | Converts text to a `PlainDateTime` |
+| `Add(date, duration)` | Date arithmetic — add a duration |
+| `Subtract(date, duration)` | Date arithmetic — subtract a duration |
+| `DaysBetween(a, b)` | Difference in days between two dates |
+| `IsToday(date)` | Returns true if the date is today |
+| `IsPast(date)` | Returns true if the date is in the past |
+| `IsFuture(date)` | Returns true if the date is in the future |
+| `Year(date)` | Extracts the year |
+| `Month(date)` | Extracts the month |
+| `DayOfMonth(date)` | Extracts the day of the month |
