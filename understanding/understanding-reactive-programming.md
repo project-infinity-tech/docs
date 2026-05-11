@@ -2,24 +2,40 @@
 title: "Understanding Reactive Programming"
 ---
 
-### Or at least how Scram implements Reactive programming !
+Scram builds React apps under the hood, which means the frontend is **reactive** — components automatically update when the data they depend on changes. You don't need to manually tell the page to refresh or re-render anything.
 
-Scram's front end builds React Apps. If you already know about React then you will be familiar with Reactive Programming.
+---
 
-If not then buckle in for a quick tour.
+## How It Works
 
-Let's start with a very simple example. Let's say you have a component on your page that is displaying the First Name of your User and some data about the user.
+When you bind a component property to a variable, the component watches that variable. If the variable changes, the component re-renders automatically — and so does any expression that references it.
 
-Your component has a "Prop" which passes in the First Name (you could of course reference the first name directly by reading the database or user table but to make your components flexible in case your database changes, let's pass it in).
+A simple example: you have a page variable holding a user's first name, and you pass it into a text component as a prop. When the variable updates, the component instantly displays the new name. If you have three components all bound to the same variable, all three update at once.
 
-So you create a variable on your page to hold the first name, you pass this into the prop and it displays on the page.
+---
 
-Now, if you update that variable the Component "reacts" to the change in the prop, and displays the new name. And also any expressions that might be linked to that prop also recalulate. So maybe if there is no firstname you change the greeting.
+## A More Complex Example
 
-So, instead of having to think "oh, my first name has changed, I better update the page" it all happens reactively for you.
+Say you're building an invoice management screen. You have a list of invoices in one component and a detail panel in another. Both are bound to a `currentInvoice` page variable.
 
-Now imagine we have several components, that we are passing the first name to (we are very friendly and like to greet our users a lot) then we can point the props of all those components to the same variable. When that changes they all automatically recalculate.
+When the user clicks an invoice in the list, a workflow sets `currentInvoice` to the selected item. The detail panel immediately updates to show that invoice's data, and the list highlights the selected row — without you writing any update logic. The reactivity handles it.
 
-OK, so that is a very simple example, but we could have a list of outstanding invoices and we are holding the "current" invoice we are working on in a variable and we pass this to the components. The main component updates to show the current invoice, and another shows the list you are working on and highlights the current one.
+---
 
-Reactive programming means that you don't need to worry about your components updating when data changes. Scram components are reactive. They change when their data changes.
+## What This Means in Practice
+
+- **Variables drive the UI** — store the right data in variables and your components stay in sync automatically
+- **Expressions recalculate** — any expression referencing a variable re-evaluates when that variable changes. A greeting that shows "Hello" when a name is empty and "Hello, Sarah" when it's set will switch automatically
+- **Props are the link** — binding a component prop to a variable is what makes the component reactive to that data
+
+<Tip>
+  If a component isn't updating when you expect it to, check that its prop is actually bound to a variable — not set to a static value.
+</Tip>
+
+---
+
+## Related
+
+- [Understanding Variables](/understanding/understanding-variables)
+- [Understanding Properties](/understanding/understanding-properties)
+- [Understanding Expressions](/understanding/understanding-expressions)
