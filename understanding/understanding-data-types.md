@@ -1,3 +1,4 @@
+
 ---
 title: "Understanding Data Types"
 ---
@@ -34,17 +35,17 @@ These are the basic building blocks. Most values in your app will be one of thes
   <Card title="Date">
     A calendar date with no time component.
 
-    Use for birthdays, deadlines, and publication dates — situations where the time of day is irrelevant.
+    Use for birthdays, deadlines, and publication dates — situations where the time of day is irrelevant. Represented internally as a `PlainDate` Temporal object.
   </Card>
   <Card title="Time">
     A time of day with no date.
 
-    Use for opening hours and scheduled times within a day.
+    Use for opening hours and scheduled times within a day. Represented internally as a `PlainTime` Temporal object.
   </Card>
   <Card title="Datetime">
     A combined date and time.
 
-    Use for events, timestamps, and created/updated records. In Scram, datetimes are represented as **Temporal objects** — not JavaScript Date objects. Use the built-in expression functions (`Now()`, `FormatDateTime()`, `Add()`, `Subtract()`) to work with them.
+    Use for events, timestamps, and created/updated records. Represented internally as a `PlainDateTime` Temporal object. Use Scram's built-in expression functions (`Now()`, `FormatDateTime()`, `Add()`, `Subtract()`) to work with them in expressions.
   </Card>
   <Card title="File">
     A file reference.
@@ -131,8 +132,8 @@ Scram will flag type mismatches when it can detect them. If a property expects a
   <Accordion title="Be as specific as you can">
     Use `integer` instead of `number` when the value will always be whole. Use `enum` instead of `text` when the value comes from a fixed set. Specificity catches errors early.
   </Accordion>
-  <Accordion title="Datetime is not a JavaScript Date">
-    Scram uses the Temporal standard. Don't use `new Date()` or `.toISOString()` — use Scram's built-in date/time expression functions instead.
+  <Accordion title="Datetime uses Temporal, not JavaScript Date">
+    Scram represents date and time values as Temporal objects (`PlainDate`, `PlainDateTime`, `PlainTime`) — not JavaScript Date objects. In expressions and bindings, use Scram's built-in functions like `Now()`, `FormatDateTime()`, and `Add()`. When passing a datetime as a SQL parameter, use `new Date()` for the current time, or a cast string for a specific date. See [Dates and Times](/understanding/subpages/dates-and-times) for full details.
   </Accordion>
   <Accordion title="Arrays are first-class">
     Any type can be an array. A variable, property, or field declared as `text[]` holds a list of strings. This is distinct from a single `text` value and they are not interchangeable.
@@ -144,7 +145,7 @@ Scram will flag type mismatches when it can detect them. If a property expects a
 ## Related
 
 <CardGroup cols={3}>
-  <Card title="Working with the Database" href="/database" />
-  <Card title="Working with Expressions" href="/expressions" />
-  <Card title="Custom Project Types" href="/project-types" />
+  <Card title="The Scram Database" href="/understanding/understanding-the-scram-database" />
+  <Card title="Understanding Expressions" href="/understanding/understanding-expressions" />
+  <Card title="Custom Project Types" href="/understanding/subpages/custom-project-types" />
 </CardGroup>
