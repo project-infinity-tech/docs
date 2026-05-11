@@ -2,60 +2,72 @@
 title: "Understanding Scram Project Structure"
 ---
 
-A project in Scram is like a folder containing quite a few of the elements that make up a web app or a web site. At first it can look a little overwhelming as it isn’t like many tools that “build a website” where you are starting off…just building the website.
+A Scram project is the top-level container for everything that makes up your app — the frontend, backend, data, users, and configuration. Understanding how a project is structured helps you navigate the editor and know where to find things.
 
-The good news is that you don’t need all of the elements of project to start with, and you can start with a simple template to “just build a website”.
+---
 
-Let’s look at them all at a high level.
-
-# Frontend
+## Frontend
 
 ### Apps
 
-An Scram App is the thing you want to build. That might be a website like a marketing page. It might be a more interactive Web App like a job board. It might be a mobile app that you want to publish to an App Store. It might even be a browser plugin.
+A Scram App is the thing you're building — a marketing site, a web app, a mobile app, or a browser extension. A project can contain one app or many.
 
-Your project can just have a single App, or it can have multiple Apps. So you could have a Web App, a simpler Mobile App, and another App for Admin users. 
+Having multiple apps in a single project means they can share the same database, components, themes, and user base. You could have a customer-facing web app, a stripped-down mobile version, and a separate admin tool — all built from the same project, accessing the same data.
 
-All your Scram Apps in a project share a lot of the same resources that we will talk about next.
+### Theme
 
-But what this means is that you can build many Apps, and have the looks similar, use similar components, and access the same data.  This will make app building faster, as you don’t need to start from scratch each time.
+Every project has a Theme that controls the visual style of all its apps — typography, colours, spacing, border styles, and icon library. Changing a theme value updates every component across every app that uses it.
 
-But of course you can still just have one app if you want!
+See [Understanding Themes](/understanding/understanding-themes) for more detail.
 
-## Theme
+### Components
 
-A project has a Theme that determines the initial look of all your Apps. It covers Typography (fonts), Colours, Icons, Spacing and everything that determines how your site looks.
+Components are the building blocks of your app's pages — buttons, inputs, headings, images, containers, and more. Scram provides a library of platform components covering both individual UI elements and higher-level layout components like hero sections, navigation bars, and page templates.
 
-## Components
+You can also build your own components, either by composing existing ones or starting from scratch.
 
-Scram components are the building blocks of your app. They are the Input Fields, the Icons, the Headings and the Buttons that make up what we see on the internet. 
+All apps in a project share the same component library, so a custom component built once is available everywhere.
 
-However, Scram also provides high level components that let you really quickly build pages that look great - and will look great in your chosen theme as well. 
+---
 
-Need a simple “hero” section on your main page, with an image, some text, and a form to allow people to sign up? Instead of building this up from multiple smaller components, you can choose from a range of Scram Hero Sections.
+## Backend
 
-And of course you can build your own Components too, either by modifying the Scram supplied ones, or starting with a blank canvas. 
+### Database
 
-# Backend ☁️
+Every Scram project includes a built-in PostgreSQL database. You define your tables and fields, and Scram handles the hosting and infrastructure. All apps in a project share the same database.
 
-## Database 💽
+See [Understanding the Scram Database](/understanding/understanding-the-scram-database) for more detail.
 
-The Scram database..
+### File Store
 
-## Filestore 📁
+The Scram File Store is S3-backed cloud storage for files your app needs to store or serve — user uploads, images, documents, and so on. Like the database, it is shared across all apps in the project.
 
-## Data Sources 🔌
+See [Understanding the File Store](/understanding/understanding-the-filestore) for more detail.
 
-In Scram, a Data Source is anything that can bring data into your Project’s App, or send it out.
+### Data Sources
 
-OK, this might seem a little scary at first, but at its simplest this is just your internal database. And also this is where you might set up an API to get some data from an external system. 
+A Data Source is anything that brings data into your app or sends it out. At its simplest, that's your internal database. It also covers external APIs — HTTP endpoints you configure to fetch or push data to third-party services.
 
-Yes, it can get quite complex, but for now just think of Data Sources as being your database, APIs and where you might store files. 
+All apps in a project share the same data sources, so an API integration configured once is available to every app.
 
-All the Apps in a Project can access the same Data Sources. This means you only need to set up your database, or your API once. 
+See [Understanding Data Sources](/understanding/understanding-data-sources) for more detail.
 
-## Users 👥
+### Users
 
-## Server Logs 🗒️
+Every Scram project has a built-in user management system — authentication, roles, and access control included. You don't need a third-party auth service; it's part of the platform.
+
+All apps in a project share the same user base, which means a user who signs up through one app is automatically available across all apps in the project.
+
+See [Understanding User Management](/understanding/understanding-user-management) for more detail.
 
 ### Data Types
+
+Scram has a rich type system covering custom project types, database types, platform types, and style types. Types are used throughout the editor to validate data, define component properties, and power expressions.
+
+See [Understanding Data Types](/understanding/understanding-data-types) for more detail.
+
+### Server Logs
+
+Server Logs records server-side activity for your project. You can write messages to the log from any workflow using the Log Message action, making it useful for debugging and monitoring.
+
+See [Understanding Server Logs](/understanding/understanding-server-logs) for more detail.
