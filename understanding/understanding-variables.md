@@ -2,158 +2,85 @@
 title: "Understanding Variables"
 ---
 
+Variables are containers that store data in your Scram app — holding user inputs, UI state, workflow results, and temporary values while users interact with your application. Unlike database data, variables reset when the page reloads.
 
-Variables are containers that store data in your Scram app. They're like your app's short-term memory — holding user inputs, API responses, UI state, and temporary data while users interact with your application.
+---
 
-🎯 What Are Variables?
-Variables store dynamic data that changes during your app's lifetime:
+## Types of Variables
 
-* User form inputs (search queries, filter selections)
-* Temporary UI state (selected items, active tabs, modal open/closed)
-* Results from workflows (API responses before displaying)
-* Computed values (cart total, filtered lists)
-Unlike database data (which persists), variables reset when the page reloads.
+### Page Variables
 
-📍 Types of Variables
-1. Page Variables
-Stored at the page level — shared across all components on that page.
+Page variables are stored at the page level and are available to every component on that page.
 
-* Scope: Available anywhere on the same page Lifetime: Exists while page is open, resets on page reload Access: vars.variableName
+- **Scope** — anywhere on the same page
+- **Lifetime** — exists while the page is open, resets on reload
+- **Access** — `vars.variableName`
 
-```javascript
-vars.searchQuery        // "laptop"
-vars.selectedProduct    // {id: 123, name: "MacBook"}
-vars.isModalOpen        // true
-vars.cartItems          // [{id: 1, qty: 2}, {id: 5, qty: 1}]
+Use page variables for search and filter inputs shared across the page, selected items, modal open/closed states, and coordinating state between multiple components.
+
+### Component Variables
+
+Component variables are stored inside a component definition and are private to that component.
+
+- **Scope** — within that specific component instance
+- **Lifetime** — exists while the component is rendered
+- **Access from inside** — `vars.variableName`
+- **Access from outside** — `components.componentId.vars.variableName`
+
+Use component variables for internal component state (hover, focus, expanded), temporary editing buffers, and component-specific calculations where each instance should behave independently.
+
+### Page Data Variables
+
+Page data variables are a special type — created automatically by page-data workflows and available as read-only values in expressions.
+
+- **Access** — `page.data.variableName.value`
+- **Success state** — `page.data.variableName.success`
+- **Loading state** — `page.dataMeta.variableName.loading`
+
+See [Understanding Page Data](/understanding/understanding-page-data) for full details.
+
+---
+
+## Variable Types
+
+Variables can hold any of Scram's standard data types — text, number, integer, boolean, date, datetime, time, file, or enum. They can also hold structured types — a reference to a database table type, a custom project type, or an array of any of these.
+
+See [Understanding Data Types](/understanding/understanding-data-types) for the full type reference.
+
+---
+
+## Reading Input Values
+
+Platform input components expose their current value as a built-in component variable. You can read `components.inputId.vars.value` directly in expressions — you don't need a workflow to copy the value into a page variable first.
+
+---
+
+## Using Variables in Expressions
+
+Access variable values directly in component properties and expressions:
+
+```js
+vars.searchQuery              // a page variable
+vars.selectedProduct.name     // accessing a field on a structured variable
+components.myInput.vars.value // reading an input component's current value
 ```
-Use page variables for:
 
-* Search/filter inputs shared across the page
-* Selected items (clicked product, active tab)
-* Modal/drawer open states
-* Coordinating state between multiple components
-2. Component Variables
-Stored inside a component definition — private to that component instance.
+<Tip>
+  Prop expressions re-run on every render. Avoid heavy computations directly in a prop — filter a large array in a workflow instead, store the result in a variable, and bind that variable to the prop.
+</Tip>
 
-* Scope: Only accessible within that specific component Lifetime: Exists while component is rendered, resets when unmounted Access (inside component): vars.variableName Access (from outside): components.componentId.vars.variableName
+---
 
-```javascript
-vars.isEditing          // false
-vars.editedText         // "Updated todo text"
-vars.isHovered          // true
+## Gotchas
 
-// Access from page:
-components.todo123.vars.isEditing
-```
-Use component variables for:
+<Warning>
+  **Repeater limitation** — components inside a Repeater cannot be addressed by component ID from outside. `components.childId.vars.x` will fail because rows are dynamically rendered. Inside a Repeater's workflow, use `current.data.fieldName` to access row data instead.
+</Warning>
 
-* Internal component state (hover, focus, expanded)
-* Temporary editing buffers
-* Component-specific calculations
-* Encapsulated behaviour (each instance independent)
-⚠️ Repeater limitation: Components inside a Repeater cannot be addressed by component ID from outside. components.childId.vars.x will fail because rows are dynamically rendered. Inside a Repeater's own workflow, use current.data.fieldName to access row data instead.
+<Warning>
+  **SetVariable limitation** — a workflow triggered by a component cannot use SetVariable to write to that same trigger component's own variables. Use a page variable or another component's variable as the target instead.
+</Warning>
 
-⚠️ SetVariable limitation: A workflow triggered by a component cannot use SetVariable to write to that same trigger component's own variables. Use a page variable or another component's variable as the target instead.
-
-⚠️ No optional: true on workflow-set variables: Variables that will be written to by workflows must not be marked optional — doing so causes validation errors when the workflow runs.
-
-3. Page Data Variables (Special Type)
-Not regular variables — these are created automatically by page-data workflows.
-
-* Scope: Page-level, read-only in expressions Lifetime: Loads on page open, can be reloaded on demand Access: page.data.variableName.value / page.data.variableName.success Loading state: page.dataMeta.variableName.loading (true while fetching)
-
-Page data is discussed in greater detail in [Understanding Page Data].
-
-📝 Variable Types
-Primitive Types
-```json
-{ type: "text" }        // String: "hello"
-{ type: "number" }      // Float: 123.45
-{ type: "integer" }     // Integer: 42
-{ type: "boolean" }     // Boolean: true/false
-{ type: "date" }        // Date: 2024-01-15
-{ type: "datetime" }    // DateTime: 2024-01-15 14:30:00
-{ type: "time" }        // Time: 14:30:00
-{ type: "File" }        // A file object (e.g. from a file picker)
-{ type: "enum",
-  values: ["a","b"] }   // One of a fixed set of values
-```
-Complex Types
-```json
-// Database record
-{
-  type: "ref",
-  ref: "Users",
-  namespace: "o_scramdb",
-  validators: {}
-}
-
-// Custom type
-{
-  type: "ref",
-  ref: "CartItem",
-  namespace: "o_project-types",
-  validators: {}
-}
-
-// Array of items
-{
-  type: "ref",
-  ref: "Products",
-  namespace: "o_scramdb",
-  validators: {},
-  array: true
-}
-```
-🎨 Using Variables
-1. In Component Properties
-Bind variable values to component props:
-
-```html
-{/* Display variable in text */}
-<p scram-name="resultCount">
-  Found {vars.filteredProducts.length} results for "{vars.searchQuery}"
-</p>
-
-{/* Conditional visibility */}
-<div scram-name="modal" scram-visible={vars.isModalOpen}>
-  Modal content
-</div>
-```
-Reading input values directly Platform input components (text fields, dropdowns, etc.) expose their current value as a built-in component variable. You can read components.inputId.vars.value directly in expressions — you don't need a workflow to copy the value into a page variable first.
-
-A note on expressions in props Prop expressions re-run on every render. Avoid putting heavy computations directly in a prop (e.g. filtering a large array inline) — it will run continuously as the page updates. Instead, compute the result once in a workflow, store it in a variable, and bind that variable to the prop.
-
-2. In Workflows
-Read and write variables in workflow actions:
-
-```xml
-<!-- Set a variable -->
-<step action="SetVariable"
-      id="saveSearch"
-      variable="vars.searchQuery"
-      value={trigger.payload} />
-
-<!-- Use variable in an action -->
-<step action="api-SearchProducts"
-      id="search"
-      query={vars.searchQuery}
-      limit={20} />
-
-<!-- Store result in variable -->
-<step action="SetVariable"
-      id="saveResults"
-      variable="vars.searchResults"
-      value={steps.search.output.value} />
-```
-3. In Expressions
-```javascript
-// Conditional logic
-{vars.isLoggedIn ? 'Welcome back!' : 'Please log in'}
-
-// String interpolation
-{`Showing ${vars.filteredItems.length} of ${vars.totalItems} items`}
-
-// Accessing a nested value
-{vars.selectedProduct.name}
-```
+<Warning>
+  **No `optional: true` on workflow-set variables** — variables that will be written to by workflows must not be marked optional. Doing so causes validation errors when the workflow runs.
+</Warning>
