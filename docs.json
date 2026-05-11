@@ -19,7 +19,7 @@
     "tabs": [
       {
         "tab": "Documentation",
-        "pages": [
+        "groups": [
           {
             "group": "Getting Started",
             "pages": [
@@ -63,7 +63,7 @@
               "understanding/subpages/side-navigation",
               "understanding/subpages/the-canvas",
               "understanding/subpages/workflow-editor",
-              "understanding/subpages/top-navigation"
+              "understanding/subpages/top-navigation",
               {
                 "group": "Resources",
                 "icon": "cloud",
@@ -135,6 +135,7 @@
                 "pages": [
                   "understanding/subpages/signing-users-up",
                   "understanding/subpages/workflow-auth",
+                  "understanding/subpages/the-user-table",
                   "understanding/subpages/setting-up-google-login"
                 ]
               },
@@ -161,7 +162,6 @@
               }
             ]
           },
-          "understanding/subpages/the-user-table",
           {
             "group": "Guides",
             "pages": [
