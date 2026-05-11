@@ -1,0 +1,40 @@
+---
+title: "Frontend Configuration"
+description: "App-level frontend settings including error handling and redirect behaviour in Scram."
+---
+
+Frontend Configuration contains app-level settings that apply across your entire frontend. It is accessed from the **App Manager** in the Top Navigation.
+
+---
+
+## AI Description
+
+A free-text field describing this specific app's frontend — what it does, who it's for, and any relevant context. This is used by the Scram AI to provide more relevant assistance when you're working within this app.
+
+<Tip>
+  Keep this description up to date as your app evolves — the more context the AI has, the more accurate its suggestions will be.
+</Tip>
+
+---
+
+## Error Handling
+
+Controls what happens when a user tries to access a page they're not allowed to see. Rather than showing an error, Scram redirects them to a page you specify.
+
+**Login Required** — the page a user is redirected to if they try to access a page that requires them to be logged in and they're not. Typically your login page.
+
+**Missing Role** — the page a user is redirected to if they're logged in but don't have the role required to access a particular page. Typically an "access denied" or home page.
+
+<Note>
+  These redirects are configured at the app level but can be overridden per page in the page's authorisation settings. See [Page Authorisation](/understanding/subpages/page-authorisation) for more detail.
+</Note>
+
+---
+
+## Danger Zone
+
+**Delete Frontend** — permanently deletes this app from your project.
+
+<Warning>
+  You cannot delete an app if it is the only one in your project — a project must always have at least one app. To delete the last app, delete the project instead.
+</Warning>

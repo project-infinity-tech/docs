@@ -92,7 +92,8 @@
                 "pages": [
                   "understanding/subpages/page-path-parameters",
                   "understanding/subpages/sending-query-parameters",
-                  "understanding/subpages/page-authorisation"
+                  "understanding/subpages/page-authorisation",
+                  "understanding/subpages/frontend-configuration"
                 ]
               },
               {
