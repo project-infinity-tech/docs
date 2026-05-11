@@ -3,9 +3,17 @@ title: "Dates and Times"
 description: "Storing, querying, and formatting temporal data in ScramDB."
 ---
 
-## Available field types
+Scram represents date and time values as **Temporal objects** from the TC39 Temporal proposal — not JavaScript Date objects. There are three types depending on the field:
 
-ScramDB offers three distinct types for storing temporal data:
+- `PlainDate` — a calendar date with no time
+- `PlainTime` — a time of day with no date
+- `PlainDateTime` — a combined date and time
+
+In expressions and component bindings, use Scram's built-in date functions to work with these. When passing dates as SQL parameters, the rules are different — see below.
+
+---
+
+## Available field types
 
 | Type | Stores | Example |
 |---|---|---|
@@ -19,19 +27,24 @@ ScramDB offers three distinct types for storing temporal data:
 
 ---
 
-## Storing dates
+## Storing dates as SQL parameters
 
-**Storing the current moment** — pass `new Date()` directly as a named parameter:
+The rules for passing date values as named parameters:
+
+| Approach | Works? | Notes |
+|---|---|---|
+| `new Date()` | ✅ | Use for "right now" |
+| Date string with SQL cast | ✅ | e.g. `:myDate::date` or `:myDate::timestamptz` |
+| `new Date().toISOString()` | ❌ | Serialises to a string PostgreSQL rejects |
+| `Now("UTC")` or Temporal objects | ❌ | Also rejected as SQL parameters |
+
+**Storing the current moment:**
 
 ```js
 params: { createdAt: new Date() }
 ```
 
-<Warning>
-  Never call `.toISOString()` on a date before passing it as a parameter — PostgreSQL will reject the resulting string format. Equally, avoid `Now("UTC")` and Temporal objects, which also serialise incorrectly. Stick to `new Date()` for "right now".
-</Warning>
-
-**Storing a date string** — if you have a date as text (e.g. from a date picker component), cast it in the SQL query itself:
+**Storing a date string from user input** — cast it in the SQL query:
 
 ```sql
 INSERT INTO "Events" ("date") VALUES (:eventDate::date)
@@ -55,20 +68,30 @@ WHERE "createdAt" > NOW() - INTERVAL '7 days'
 
 ---
 
-## Formatting dates for display
+## Built-in date functions for expressions
 
-Scram provides built-in functions for formatting temporal values in expressions and component bindings. These handle locale and timezone automatically using the project's default settings, or you can override per call.
+These functions work directly in expressions and component bindings — no workflow step needed.
 
-| Function | Output example |
+| Function | What it does |
 |---|---|
-| `FormatDate(date)` | 28 April 2026 |
-| `FormatDate(date, true)` | Monday, 28 April 2026 |
-| `FormatDateTime(datetime)` | 28 April 2026, 14:30 |
-| `FormatTime(time)` | 14:30 |
-| `FormatTime(time, true)` | 2:30 PM (12-hour clock) |
-| `FormatTimeBetween(datetime)` | 3 hours ago |
-
-All functions accept optional locale and timezone arguments if you need to override the project defaults for a specific display.
+| `Now(timezone)` | Current datetime in a given timezone |
+| `FormatDate(date)` | Human-readable date string, e.g. 28 April 2026 |
+| `FormatDate(date, true)` | Long form, e.g. Monday, 28 April 2026 |
+| `FormatDateTime(date)` | Human-readable date and time, e.g. 28 April 2026, 14:30 |
+| `FormatTime(time)` | Human-readable time, e.g. 14:30 |
+| `FormatTime(time, true)` | 12-hour clock, e.g. 2:30 PM |
+| `FormatTimeBetween(a, b)` | Relative time, e.g. 3 hours ago |
+| `ParseDate(string)` | Converts text to a `PlainDate` |
+| `ParseDateTime(string, timezone)` | Converts text to a `PlainDateTime` |
+| `Add(date, duration)` | Date arithmetic — add a duration |
+| `Subtract(date, duration)` | Date arithmetic — subtract a duration |
+| `DaysBetween(a, b)` | Difference in days between two dates |
+| `IsToday(date)` | Returns true if the date is today |
+| `IsPast(date)` | Returns true if the date is in the past |
+| `IsFuture(date)` | Returns true if the date is in the future |
+| `Year(date)` | Extracts the year |
+| `Month(date)` | Extracts the month |
+| `DayOfMonth(date)` | Extracts the day of the month |
 
 <Note>
   These functions are expression-only — they work in UI bindings and component expressions. They are not available inside raw SQL queries. Format dates for display on the frontend, not in the database.
