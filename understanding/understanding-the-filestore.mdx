@@ -2,28 +2,19 @@
 title: "Understanding The Scram File Store"
 ---
 
-Every Scram project has a File Store that is shared across all Apps in your Project.
+Every Scram project has a File Store that is shared across all apps in your project. It's a built-in cloud storage system for files your app needs to handle at runtime — user uploads, images, documents, PDFs, and any other files users create or submit while using your app.
 
-The Scram File Store is a built-in cloud storage system that allows you to store and manage files for your application. Think of it as your app's file cabinet in the cloud — perfect for user uploads, images, documents, PDFs, and any other files your app needs to handle.
-
-> **Not looking for Project Files?**
-> The File Store handles **runtime file uploads** — files that users upload while using your app. If you're looking to manage static design assets like logos, background images, or icons that you add while building your app, that's [Project Files](./scram-project-files).
+<Note>
+  The File Store handles **runtime file uploads** — files that users upload while using your app. If you're looking to manage static design assets like logos, background images, or icons that you add while building your app, that's [Project Files](/understanding/understanding-project-files).
+</Note>
 
 ---
 
-## Key Features
+## How It Works
 
-### 📁 File Storage
+The File Store uses a three-step upload process.
 
-- Store files in organised paths (like folders)
-- Each file gets a unique `fileUri` identifier
-- Supports any file type (images, PDFs, videos, documents, etc.)
-
-### 🔑 How It Works
-
-The File Store uses a three-step upload process:
-
-#### 1. Prepare File Upload
+### 1. Prepare File Upload
 
 Requests a pre-signed upload URL for a file. This step runs **on the server**.
 
@@ -37,7 +28,7 @@ Requests a pre-signed upload URL for a file. This step runs **on the server**.
 | `uploadUrl` | A temporary pre-signed URL to upload to |
 | `fileUri` | The permanent S3 identifier for the file |
 
-#### 2. Upload File to URL
+### 2. Upload File to URL
 
 Sends the actual file to the pre-signed URL. This step runs **in the browser**.
 
@@ -46,9 +37,11 @@ Sends the actual file to the pre-signed URL. This step runs **in the browser**.
 | `file` | The file object from the user's file picker |
 | `uploadToUrl` | The `uploadUrl` returned from step 1 |
 
-> **Important:** Steps 1 and 2 run in different environments (server and browser). You must store `uploadUrl` in a page variable between these steps to bridge back to the browser context — otherwise you will see the error: `Step not found in given list of steps — likely a frontend step`.
+<Warning>
+  Steps 1 and 2 run in different environments — server and browser. You must store `uploadUrl` in a page variable between these steps to bridge back to the browser context. Without this, you will see the error: `Step not found in given list of steps — likely a frontend step`.
+</Warning>
 
-#### 3. List Files
+### 3. List Files
 
 Lists files stored at a given path.
 
@@ -67,17 +60,9 @@ Returns an array of file objects with this shape:
 }
 ```
 
-> **Note:** `lastModified` always returns as an empty object — the storage system does not populate this field. Display `size` instead, formatted in KB (divide bytes by 1000).
-
----
-
-## Common Use Cases
-
-- **📸 User profile photos** — Store avatars and profile images
-- **📄 Document management** — Upload and organise PDFs, contracts, invoices
-- **🖼️ Image galleries** — Photo collections, product images
-- **📎 Attachments** — Files attached to records (support tickets, messages)
-- **🎨 Media libraries** — Store and manage app assets
+<Note>
+  `lastModified` always returns as an empty object — the storage system does not populate this field. Display `size` instead, formatted in KB by dividing bytes by 1000.
+</Note>
 
 ---
 
@@ -87,7 +72,7 @@ Returns an array of file objects with this shape:
 
 The file input's `onChange` event returns the full browser event object. The actual file lives at:
 
-```
+```js
 trigger.payload.target.files[0]
 ```
 
