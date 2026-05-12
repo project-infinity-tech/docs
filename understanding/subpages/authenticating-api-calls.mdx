@@ -1,0 +1,71 @@
+---
+title: "Authenticating API Calls"
+description: "Configuring authentication for outgoing API calls in Scram."
+---
+
+When you configure an outgoing API in the [HTTP API](/resources/http-api) section of the Resource View, you can specify how requests should be authenticated. Sensitive values like tokens and passwords are stored as **secrets** in the API's Environments configuration rather than hardcoded into the request.
+
+---
+
+## Authentication Methods
+
+Scram supports the following authentication methods on outgoing APIs:
+
+| Method | Description |
+|---|---|
+| None | No authentication. Suitable for public APIs. |
+| Basic | Username and password. The password is stored as a secret. |
+| HTTP Token | Token-based auth. Scram assumes Bearer and sends the token as an `Authorization: Bearer <token>` header. The token is stored as a secret. |
+| API Key | A named key. You choose where it is sent and specify its name. The key value is stored as a secret. |
+| OAuth2 | Not yet implemented. |
+| OpenID Connect | Not yet implemented. |
+
+---
+
+## Storing Secrets
+
+Sensitive values — tokens, passwords, API keys — are stored in the **Environments** section of the API's Configuration settings, not in the request definition itself. This keeps credentials out of your app logic and allows Dev and Live environments to use different values.
+
+<Warning>
+  After entering or updating a secret, you must click the **tick icon** to save it. The secret will not be stored if you navigate away without confirming.
+</Warning>
+
+---
+
+## HTTP Token (Bearer)
+
+Select **HTTP Token** as the auth method. Scram will send the token as a Bearer token in the `Authorization` header automatically.
+
+In the API's Configuration > Environments section, add your token as a secret. You can set different tokens for your Dev and Live environments, or check the **use same token for Preview and Live** option to share one value across both.
+
+---
+
+## API Key
+
+Select **API Key** as the auth method. You then choose where the key is sent and specify its name:
+
+| Placement | Description |
+|---|---|
+| Header | Sent as a request header — e.g. `x-api-key` |
+| Query Parameter | Appended to the request URL as a query string parameter |
+| Cookie | Not yet implemented |
+
+In the API's Configuration > Environments section, add the key value as a secret.
+
+<Note>
+  For the Anthropic API (Claude), set the auth method to **API Key**, placement to **Header**, name to `x-api-key`, and store your Anthropic API key as the secret.
+</Note>
+
+---
+
+## Basic Auth
+
+Select **Basic** as the auth method. Enter your username directly in the configuration. Your password is stored as a secret in the Environments section.
+
+---
+
+## Dev vs. Live Secrets
+
+Each API has separate secret values for your Dev (Preview) and Live environments. For HTTP Token auth, a checkbox lets you use the same token for both environments if needed.
+
+For other methods, set the appropriate value for each environment separately in the Environments section.

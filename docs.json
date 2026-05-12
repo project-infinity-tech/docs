@@ -63,7 +63,7 @@
               "understanding/subpages/side-navigation",
               "understanding/subpages/the-canvas",
               "understanding/subpages/workflow-editor",
-              "understanding/subpages/top-navigation",    
+              "understanding/subpages/top-navigation",
               {
                 "group": "Resources",
                 "icon": "cloud",
@@ -143,7 +143,8 @@
                 "group": "Integrations",
                 "pages": [
                   "understanding/subpages/data-sources---api-calls",
-                  "understanding/subpages/the-scram-file-store"
+                  "understanding/subpages/the-scram-file-store",
+                  "understanding/subpages/authenticating-api-calls"
                 ]
               },
               {
