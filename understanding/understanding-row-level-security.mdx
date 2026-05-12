@@ -3,7 +3,7 @@ title: "Understanding Table Security"
 description: "Controlling which users can read, write, update, or delete which rows in your Scram database."
 ---
 
-Table Security (often known as Row Level Security - RLS) is how Scram controls which users can read, write, update, or delete which rows in your database — enforced at the database level, not just in your app logic.
+Table Security (often known as Row Level Security — RLS) is how Scram controls which users can read, write, update, or delete which rows in your database — enforced at the database level, not just in your app logic.
 
 ---
 
@@ -73,4 +73,35 @@ auth.email()      -- The logged-in user's email address
 auth.roles()      -- Array of the user's role IDs (text[])
 ```
 
-These return `null` for unauthenticated requests.
+These return `null` for unauthenticated requests. A policy like `"ownerId" = auth.user_id()` automatically excludes anonymous users — since `null = null` is false in SQL, unauthenticated requests match nothing.
+
+---
+
+## Important behaviours
+
+### Silent filtering, not errors
+
+If a `SELECT` query is filtered by RLS, it returns fewer rows — not an error. A query that should return 10 rows might return 3 if the policy filters the rest. This can look like missing data if policies aren't configured as expected.
+
+### `ownerId` must be set explicitly in SQL
+
+RLS policies that check `"ownerId" = auth.user_id()` only work if `ownerId` is actually populated when the row is created. Raw `INSERT` queries don't set it automatically — you must pass `user.id` explicitly in your query.
+
+<Warning>
+  Forgetting to set `ownerId` in an INSERT is one of the most common RLS-related bugs in Scram. The row gets created, but becomes immediately inaccessible to the user who created it.
+</Warning>
+
+### RLS does not react to changes while a page is open
+
+RLS is evaluated at query time. If a policy changes while a user is on a page, the data already loaded stays on screen until the next query runs. `ReloadPageData` will pick up the new policy, but nothing updates automatically.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Row Level Security (full reference)" href="/understanding/understanding-row-level-security" />
+  <Card title="The Scram Database" href="/understanding/understanding-the-scram-database" />
+  <Card title="The Users Table" href="/understanding/subpages/the-user-table" />
+  <Card title="Execute SQL in Page-Data Workflows" href="/understanding/subpages/using-execute-sql-in-page-data-workflows" />
+</CardGroup>
