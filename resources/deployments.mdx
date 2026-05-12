@@ -37,6 +37,6 @@ The Deployments page shows the full publication history of your Live app. Each v
 
 **Republish Previous** — rolls back to the previous version, making it Live again. Use this if a new deployment has introduced a problem and you need to revert quickly.
 
-<Note>
-  The behaviour of Republish Previous with respect to database changes is worth verifying before relying on it in a production incident. Check with Scram support if you're unsure.
-</Note>
+<Warning>
+  Republish Previous rolls back the app only — the database is not affected. Any data changes that occurred under the newer version remain in place. If a database migration ran as part of that deployment, it will not be reversed.
+</Warning>
