@@ -1,0 +1,61 @@
+---
+title: "Streaming API Responses"
+description: "Handling streaming responses from APIs like OpenAI and Anthropic in Scram."
+---
+
+Scram supports streaming API responses — where the server sends data incrementally rather than waiting until the full response is ready. This is particularly useful for AI APIs like Anthropic (Claude) and OpenAI, where responses can take several seconds and streaming lets you display output to the user as it arrives.
+
+---
+
+## Enabling Streaming in Scram
+
+In the outgoing API configuration, open the **Endpoint Response** section and enable **Enable Streaming Response**. This tells Scram to handle the response as a stream and update the target variable incrementally as data arrives.
+
+---
+
+## Enabling Streaming in the API Request
+
+For AI APIs like Anthropic and OpenAI, streaming must also be enabled in the **request body itself** — it's not enough to enable it in Scram alone.
+
+For Anthropic:
+```json
+{
+  "stream": true
+}
+```
+
+For OpenAI:
+```json
+{
+  "stream": true
+}
+```
+
+<Warning>
+  Both the Scram streaming setting and the API request body `stream` parameter must match. If one is enabled and the other isn't, results will be unpredictable. Always make sure both are set consistently — either both on or both off.
+</Warning>
+
+---
+
+## How It Works
+
+When streaming is enabled, the API response flows incrementally into a page variable as each chunk arrives. Components bound to that variable update in real time, giving users the appearance of the response being typed out progressively.
+
+---
+
+## A Typical Pattern
+
+1. Create a page variable to hold the streaming response (type: `text`)
+2. Configure the API action to write its output to that variable
+3. Bind a text component to the variable — it will update as each chunk arrives
+4. Optionally, show a loading indicator while streaming is in progress by checking whether the variable is empty
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Authenticating API Calls" href="/understanding/subpages/authenticating-api-calls" />
+  <Card title="HTTP API" href="/resources/http-api" />
+  <Card title="Understanding Data Sources" href="/understanding/understanding-data-sources" />
+</CardGroup>

@@ -144,7 +144,8 @@
                 "pages": [
                   "understanding/subpages/data-sources---api-calls",
                   "understanding/subpages/the-scram-file-store",
-                  "understanding/subpages/authenticating-api-calls"
+                  "understanding/subpages/authenticating-api-calls",
+                  "understanding/subpages/streaming-api-responses"
                 ]
               },
               {
