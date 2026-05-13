@@ -37,7 +37,7 @@ Common examples include:
 - **Third-party APIs** — GitHub, Google Maps, OpenAI, weather services
 - **Your own backend** — if you have a separate API server, you can connect to it as a data source
 
-API integrations are configured in the [HTTP API](/resources/http-api) section of the Resource View. For details on securing API calls with tokens, API keys, and other auth methods, see [Authenticating API Calls](/understanding/subpages/authenticating-api-calls).
+API integrations are configured in the [HTTP API](/resources/http-api) section of the Resource View. For details on securing API calls with tokens, API keys, and other auth methods, see [Authenticating API Calls](/understanding/subpages/authenticating-api-calls). For AI and other APIs that support incremental responses, see [Streaming API Responses](/understanding/subpages/streaming-api-responses).
 
 ---
 
