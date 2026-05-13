@@ -25,3 +25,7 @@ Project Files are for design-time assets — files that are part of how the app 
 ## In Short
 
 Think of Project Files as your app's asset library — a shared folder of images and media that you, the developer, manage and use while building.
+
+## Currently allowed file types
+
+You can upload images such as .png .jpg .svg as well as .pdf. 
