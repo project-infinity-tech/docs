@@ -28,4 +28,4 @@ Think of Project Files as your app's asset library — a shared folder of images
 
 ## Currently allowed file types
 
-You can upload images such as .png .jpg .svg as well as .pdf. 
+You can upload images such as .png .jpg .svg .webp .tiff .gif as well as .pdf. 
