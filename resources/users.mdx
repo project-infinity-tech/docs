@@ -9,9 +9,32 @@ The Users section of the Resource View is where you configure how users authenti
 
 ## Accepted Logins
 
-This section lists your currently enabled authentication providers. **Email/Password** is enabled by default on every new project.
+This section displays a card for each enabled authentication provider. **Email/Password** is enabled by default on every new project.
 
-To add a new provider, click **Add Provider** and select from the available options — Google, Facebook, and Microsoft are supported. Each provider requires its own credentials (Client ID, Client Secret, and callback URL configuration).
+Each card shows:
+- **Status** — either **Configured** or **Needs Configuring**
+- **Signed Up Users** — total users who have registered via this provider
+- **Logged In Users** — users who have ever logged in via this provider (not currently active users)
+- **Suspended Users** — accounts that have been suspended
+- **Removed Users** — accounts that have been removed
+
+<Note>
+  "Logged In Users" reflects users who have logged in at any point — it is not a count of currently active sessions.
+</Note>
+
+Click a card to expand it and access the full configuration, including Client ID, Client Secret, Scopes, and the Dev and Live callback URLs to register with your provider. You can also remove a provider integration from the expanded card.
+
+### Available providers
+
+The following providers are available out of the box:
+
+- **Email/Password** — enabled by default
+- **Google** — requires OAuth credentials from Google Cloud Console
+- **Facebook** — requires credentials from Meta for Developers
+- **Microsoft** — requires credentials from Azure Active Directory
+- **Cognito** — used internally by Scram for its own dashboard
+
+You can also add a custom provider by entering a kebab-case name and supplying the credentials manually, including the **OIDC Discovery Endpoint** for OpenID Connect providers.
 
 For step-by-step setup guides see:
 - [Setting Up Google Login](/understanding/subpages/setting-up-google-login)
