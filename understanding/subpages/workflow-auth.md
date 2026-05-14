@@ -11,15 +11,19 @@ For page-level authorisation settings, see [Page Authorisation](/understanding/s
 
 ---
 
-## Two levels of protection
+## How authentication works
 
-**Requires login** — the workflow will only run if the user is signed in. If they're not, it won't execute.
+When you enable **Authentication Required**, you must select which roles are permitted. The user must be logged in and have one of the listed roles to proceed.
 
-**Requires a specific role** — on top of login, you can restrict the workflow to users with a particular role. For example, only users with the "Admin" role can trigger a delete action.
+By default, all roles are listed — which means any logged-in user with any role can access the workflow. You can narrow this down by removing roles from the list.
 
 <Warning>
-  If you enable role-based protection, you must select at least one role. Leaving roles empty while requiring authentication will block everyone from triggering the workflow — including admins.
+  Leaving the roles list empty blocks everyone — including admins. Always select at least one role when authentication is enabled.
 </Warning>
+
+<Note>
+  Users sign up with no roles by default. Make sure your signup workflow assigns at least one role — otherwise newly signed-up users will be blocked from any authenticated workflow or page, even if all roles are listed.
+</Note>
 
 ---
 
