@@ -100,7 +100,8 @@
                 "group": "Components",
                 "pages": [
                   "understanding/subpages/dynamic-prop-setting-on-components",
-                  "understanding/subpages/building-your-own-components"
+                  "understanding/subpages/building-your-own-components",
+                  "understanding/subpages/event-handling-in-components"
                 ]
               },
               {
@@ -179,7 +180,7 @@
       },
       {
         "tab": "Reference",
-        "groups": [
+        "pages": [
           {
             "group": "Actions",
             "pages": [
@@ -253,7 +254,8 @@
             "pages": [
               "platform-types"
             ]
-          }
+          },
+          "keyboard-shortcuts"
         ]
       }
     ]

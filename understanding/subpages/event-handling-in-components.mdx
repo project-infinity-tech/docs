@@ -1,0 +1,90 @@
+---
+title: "Event Handling in Components"
+description: "Attaching workflows to component events in Scram."
+---
+
+Events are how components signal that something has happened. You attach a workflow to an event in the **Logic tab** of the Component Editor — when that event fires, the workflow runs.
+
+The events available depend on the component. Not every component supports every event.
+
+---
+
+## Available Events
+
+| Event | Description |
+|---|---|
+| `click` | The user clicked the component |
+| `doubleClick` | The user double-clicked the component |
+| `contextMenu` | The user right-clicked the component |
+| `mouseEnter` | The pointer moved onto the component |
+| `mouseLeave` | The pointer moved off the component |
+| `blur` | The component lost focus |
+| `everyChange` | Fires on every keystroke or value change — useful for live search |
+| `committedChange` | Fires when the user commits a value — pressing Enter on an input, selecting a chip |
+
+---
+
+## Event Payloads
+
+Every event passes a payload to the triggered workflow, accessible via `trigger.payload`.
+
+### MinimalEvent
+
+Used by `mouseEnter`, `mouseLeave`, and `blur`.
+
+```js
+{
+  timestamp: new Date(),
+  componentId: component.id,
+  componentName: component.name
+}
+```
+
+### PointerEvent
+
+Used by `click`, `doubleClick`, and `contextMenu`.
+
+```js
+{
+  x: trigger.payload.clientX,
+  y: trigger.payload.clientY,
+  keyAlt: trigger.payload.keyAlt,
+  keyCtrl: trigger.payload.keyCtrl,
+  keyMeta: trigger.payload.keyMeta,
+  keyShift: trigger.payload.keyShift,
+  timestamp: new Date()
+}
+```
+
+### Change events
+
+For `everyChange` and `committedChange`, the payload carries the new and previous values:
+
+```js
+trigger.payload.newValue   // the current value
+trigger.payload.oldValue   // the previous value
+```
+
+<Note>
+  These payloads are derived from standard HTML events but simplified in some cases. The underlying browser event data is the source.
+</Note>
+
+---
+
+## Custom Component Events
+
+Custom components can emit their own events using the **Emit Event** action. The parent component or page listens for these in its Logic tab, just like platform component events.
+
+See [Building Your Own Components](/understanding/subpages/building-your-own-components) for how to define and emit custom events, and [Understanding Events and Workflows](/understanding/understanding-events-and-workflows) for how event propagation works in Scram.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Understanding Events and Workflows" href="/understanding/understanding-events-and-workflows" />
+  <Card title="Building Your Own Components" href="/understanding/subpages/building-your-own-components" />
+  <Card title="Understanding Expressions" href="/understanding/understanding-expressions" />
+  <Card title="Action Directory" href="/actions/action-directory" />
+</CardGroup>
+
