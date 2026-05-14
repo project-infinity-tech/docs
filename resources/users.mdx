@@ -14,13 +14,30 @@ This section lists your currently enabled authentication providers. **Email/Pass
 To add a new provider, click **Add Provider** and select from the available options — Google, Facebook, and Microsoft are supported. Each provider requires its own credentials (Client ID, Client Secret, and callback URL configuration).
 
 For step-by-step setup guides see:
-
-- [Setting Up Google Login](understanding/subpages/setting-up-google-login)
-
-
+- [Setting Up Google Login](/understanding/subpages/setting-up-google-login)
 
 <Note>
   When configuring a social provider, Scram gives you both a Dev and a Live callback URL. Make sure you register both with your provider — without the Live URL, social login will work in Dev but fail in production.
+</Note>
+
+---
+
+## Adding Users Directly
+
+For Email/Password authentication, you can add users directly from the Users section without going through the signup flow. This is useful for creating admin accounts, test users, or seeding initial user data.
+
+Click **Add User** and fill in the details:
+
+| Field | Required | Notes |
+|---|---|---|
+| Email address | ✅ | Must be unique |
+| Roles | ❌ | Assign one or more roles, or leave empty |
+| Given Name | ❌ | Optional |
+| Family Name | ❌ | Optional |
+| Password | ❌ | Toggle on to set your own password, or leave off to let Scram generate one |
+
+<Note>
+  Add User is only available for Email/Password authentication. Users who sign in via social providers are created automatically on their first login.
 </Note>
 
 ---
