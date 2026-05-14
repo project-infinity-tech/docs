@@ -45,10 +45,20 @@ When streaming is enabled, the API response flows incrementally into a page vari
 
 ## A Typical Pattern
 
-1. Create a page variable to hold the streaming response (type: `text`)
-2. Configure the API action to write its output to that variable
-3. Bind a text component to the variable — it will update as each chunk arrives
-4. Optionally, show a loading indicator while streaming is in progress by checking whether the variable is empty
+<Steps>
+  <Step title="Create a page variable">
+    Add a page variable of type `text` to hold the streaming response.
+  </Step>
+  <Step title="Configure the API action">
+    Set the API action to write its output to that variable.
+  </Step>
+  <Step title="Bind a text component">
+    Bind a text component to the variable — it will update in real time as each chunk arrives.
+  </Step>
+  <Step title="Add a loading indicator">
+    Optionally, show a loading indicator while streaming is in progress by checking whether the variable is empty.
+  </Step>
+</Steps>
 
 ---
 
