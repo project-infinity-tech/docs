@@ -20,7 +20,7 @@ Passwords must be at least 6 characters and include at least one capital letter 
 
 ### After signup
 
-Users are created with **no roles by default**. Your signup workflow must immediately assign at least one role after a successful signup — otherwise the user will be locked out of any role-protected pages or workflows.
+Users are created with **no roles by default**. In most cases your signup workflow should immediately assign at least one role — otherwise the user will be locked out of any role-protected pages or workflows.
 
 The recommended pattern after a successful signup:
 
@@ -31,6 +31,16 @@ The recommended pattern after a successful signup:
 <Warning>
   If you skip the role assignment step, users who sign up will appear to be logged in but will be blocked from accessing any page or workflow that requires a role. This is a common source of confusion during testing.
 </Warning>
+
+### Intentionally roleless users
+
+There are valid cases where you may want to leave a user without a role on signup:
+
+- **Pending approval** — the user exists but cannot access anything until an admin manually grants a role
+- **Onboarding flow** — the user completes additional steps (e.g. profile setup, phone verification) before being granted access
+- **Verification gates** — the user must verify their email or phone before a role is assigned and pages become accessible
+
+In these cases, the roleless state is temporary and deliberate. You would typically show a single unprotected page (a "complete your setup" or "awaiting approval" screen) until the role is assigned and `ReloadUser` is called.
 
 ---
 
