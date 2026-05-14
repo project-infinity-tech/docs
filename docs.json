@@ -136,7 +136,8 @@
                   "understanding/subpages/signing-users-up",
                   "understanding/subpages/workflow-auth",
                   "understanding/subpages/the-user-table",
-                  "understanding/subpages/setting-up-google-login"
+                  "understanding/subpages/setting-up-google-login",
+                  "understanding/subpages/running-workflows-with-elevated-permissions"
                 ]
               },
               {

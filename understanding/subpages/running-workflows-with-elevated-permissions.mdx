@@ -1,0 +1,64 @@
+---
+title: "Running Workflows with Elevated Permissions"
+description: "A pattern for triggering backend workflows with service-level access in Scram."
+---
+
+Sometimes a logged-in user needs to trigger a backend process that requires access beyond their own permissions — for example, setting up database records for other users, running administrative tasks, or performing writes that RLS would otherwise block.
+
+Scram doesn't have a built-in service role or sudo mechanism, but this can be achieved using a dedicated service user and an incoming API call. It's a deliberate workaround for now.
+
+---
+
+## The Pattern
+
+<Steps>
+  <Step title="Create an API integration">
+    In the [HTTP API](/resources/http-api) section of the Resource View, click **Add Integration** to create a new outgoing API. This is required even if you don't use the outgoing side — the incoming API must be attached to an integration.
+
+    Once the integration exists, add an **Incoming API** (webhook endpoint) to it. This is the endpoint your workflow will call.
+  </Step>
+  <Step title="Create a service role">
+    In the [Users](/resources/users) section of the Resource View, add a new role — for example, `Service User`. This role will carry the elevated permissions needed for the backend process.
+
+    Configure your database RLS policies to permit the operations this role needs to perform.
+  </Step>
+  <Step title="Create a service user">
+    Still in the Users section, click **Add User** and create a user with a dummy email address. This user represents the service identity, not a real person.
+
+    Assign the `Service User` role to this user.
+  </Step>
+  <Step title="Generate an API token">
+    Generate an API token for the service user with an appropriate expiry. This token carries the `Service User` role and will be used to authenticate calls to the incoming API.
+
+    Copy and store the token securely — it won't be shown again.
+  </Step>
+  <Step title="Call the incoming API from your workflow">
+    In the workflow that needs elevated permissions, add an API call action that calls the incoming API endpoint. Pass the token as a Bearer token in the `Authorization` header.
+
+    The incoming API runs under the service user's identity and role, bypassing the calling user's RLS restrictions.
+  </Step>
+</Steps>
+
+---
+
+## Security Considerations
+
+<Warning>
+  The service user token grants elevated access — treat it like a password. Store it as an API secret in your integration's Environments configuration rather than hardcoding it anywhere.
+</Warning>
+
+- **Scope the role carefully** — give the service role only the permissions it actually needs, not blanket access
+- **Use a separate role** — don't reuse Admin or other broad roles for service calls
+- **Audit your incoming API** — make sure the endpoint only performs the specific operations intended, and validates its inputs
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="HTTP API" href="/resources/http-api" />
+  <Card title="Users" href="/resources/users" />
+  <Card title="Authenticating API Calls" href="/understanding/subpages/authenticating-api-calls" />
+  <Card title="Row Level Security" href="/understanding/understanding-row-level-security" />
+</CardGroup>
+
