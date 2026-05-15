@@ -180,7 +180,7 @@
       },
       {
         "tab": "Reference",
-        "pages": [
+        "groups": [
           {
             "group": "Actions",
             "pages": [
@@ -255,7 +255,12 @@
               "platform-types"
             ]
           },
-          "keyboard-shortcuts"
+          {
+            "group": "Editor",
+            "pages": [
+              "keyboard-shortcuts"
+            ]
+          }
         ]
       }
     ]
