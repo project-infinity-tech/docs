@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Scram",
   "colors": {
-    "primary": "#a9dd7b",
-    "light": "#a9dd7b",
-    "dark": "#a9dd7b"
+    "primary": "#94d65b",
+    "light": "#94d65b",
+    "dark": "#94d65b"
   },
   "logo": {
     "light": "/logo/light.svg",
