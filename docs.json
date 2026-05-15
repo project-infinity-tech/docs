@@ -25,7 +25,8 @@
             "pages": [
               "index",
               "quickstart"
-            ]
+            ],
+            "icon": "rocket"
           },
           {
             "group": "Understanding Scram",
@@ -174,7 +175,8 @@
               "ai-tools/cursor",
               "ai-tools/claude-code",
               "ai-tools/windsurf"
-            ]
+            ],
+            "icon": "map"
           }
         ]
       },
@@ -203,7 +205,8 @@
               "actions/reload-all-page-data",
               "actions/upload-file-to-url",
               "actions/terminate"
-            ]
+            ],
+            "icon": "bolt"
           },
           {
             "group": "Components",
@@ -247,19 +250,22 @@
               "components/page-templates",
               "components/page-template-full",
               "components/html-element"
-            ]
+            ],
+            "icon": "puzzle-piece"
           },
           {
             "group": "Platform",
             "pages": [
               "platform-types"
-            ]
+            ],
+            "icon": "layer-group"
           },
           {
             "group": "Editor",
             "pages": [
               "keyboard-shortcuts"
-            ]
+            ],
+            "icon": "keyboard"
           }
         ]
       }
