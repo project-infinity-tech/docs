@@ -1,57 +1,110 @@
 ---
-title: "Resource Overview"
-description: "An overview of the Resource View and project-level settings in Scram."
+title: "The Scram Editor"
+description: "An overview of the Scram editor and its three main views."
 ---
 
-The Resource View is the backend section of the Scram editor. It gives you access to everything that lives outside of individual pages — your database, file storage, API integrations, user management, workflows, data types, deployments, and server logs.
-
-When you first open the Resource View you land on the **Overview** — a visual map of your project's structure showing how the main app, components, built-in services, integrations, and deployments relate to each other.
-
----
-
-## Project settings
-
-The Overview page also contains project-level settings that apply across your entire app:
-
-**Description** — a free-text field describing what your project does. This is used by the Scram AI to provide more relevant and accurate assistance, so it's worth keeping it up to date as your app evolves.
-
-**Locale** — sets the default locale for your project. This is used whenever locale-sensitive formatting is applied — for example, date and number formatting — unless overridden at the component level.
-
-**Timezone** — sets the default timezone for your project. Used whenever displaying dates and times unless a specific timezone override is applied.
+The Scram editor is where you build your app. It has three distinct views, each with a different purpose — the **Canvas**, the **Workflow Editor**, and **Resources**. You switch between them depending on what you're working on.
 
 ---
 
-## Resource sections
+## The three views
+
+**The Canvas** is where you design your app's pages. You place and arrange components, configure their properties, and define how the page looks and behaves. It's the view you'll spend most of your time in when building UI.
+
+**The Workflow Editor** is where you define the logic of your app — what happens when a user clicks a button, submits a form, or triggers any other event. Workflows are sequences of actions that run in response to those events.
+
+**Resources** is the backend view. It gives you access to everything that lives outside of individual pages — your database, file storage, API integrations, user management, data types, deployments, and server logs.
+
+---
+
+## Always-visible elements
+
+Regardless of which view you're in, two areas are always present:
+
+**The Top Navigation** runs across the top of the editor. It gives you access to project-level settings and lets you switch between your apps.
+
+**The Side Navigation** runs down the left edge. It contains the AI chat assistant, the page structure tree, and the component editor — the tools you reach for most often while building.
+
+---
+
+## Editor areas
 
 <CardGroup cols={2}>
-  <Card title="Database" href="/resources/database">
-    Create and manage tables, define schemas, configure RLS policies, and query data directly.
+  <Card title="Canvas" href="/understanding/subpages/canvas"
+    cta="Learn more"
+  >
+    Design your pages — place components, configure layouts, and set properties.
   </Card>
-  <Card title="Storage" href="/resources/storage">
-    Browse and manage files in the Scram File Store.
+  <Card title="Workflow Editor" href="/understanding/subpages/workflow-editor"
+    cta="Learn more"
+  >
+    Build the logic of your app — actions, events, and conditional flows.
   </Card>
-  <Card title="HTTP API" href="/resources/http-api">
-    Configure external API integrations — import from OpenAPI or set up manually.
+  <Card title="Top Navigation" href="/understanding/subpages/top-navigation"
+    cta="Learn more"
+  >
+    Project-level controls — manage apps and configure frontend settings.
   </Card>
-  <Card title="Users" href="/resources/users">
-    Manage user accounts, roles, and authentication settings.
+  <Card title="Side Navigation" href="/understanding/subpages/side-navigation"
+    cta="Learn more"
+  >
+    AI chat, page structure, and the component editor.
   </Card>
-  <Card title="Workflows" href="/resources/workflows">
-    Server-side workflows that run independently of page events.
-  </Card>
-  <Card title="Data Types" href="/resources/data-types">
-    Define and manage the custom types used across your project.
-  </Card>
-  <Card title="Component Gallery" href="/resources/component-gallery">
+</CardGroup>
+
+---
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Component Gallery" href="/understanding/subpages/component-gallery"
+    cta="Learn more"
+  >
     Browse and manage the components available in your project.
   </Card>
-  <Card title="Project Files" href="/resources/project-files">
+  <Card title="Project Files" href="/understanding/subpages/project-files"
+    cta="Learn more"
+  >
     Static assets and files attached to your project.
   </Card>
-  <Card title="Deployments" href="/resources/deployments">
+  <Card title="Database" href="/understanding/subpages/database"
+    cta="Learn more"
+  >
+    Create and manage your app's database tables and fields.
+  </Card>
+  <Card title="Storage" href="/understanding/subpages/storage"
+    cta="Learn more"
+  >
+    File storage powered by the Scram File Store.
+  </Card>
+  <Card title="HTTP API" href="/understanding/subpages/http-api"
+    cta="Learn more"
+  >
+    Configure external API integrations.
+  </Card>
+  <Card title="Users" href="/understanding/subpages/users"
+    cta="Learn more"
+  >
+    Manage user accounts, roles, and authentication settings.
+  </Card>
+  <Card title="Workflows" href="/understanding/subpages/workflows"
+    cta="Learn more"
+  >
+    Server-side workflows that run independently of page events.
+  </Card>
+  <Card title="Data Types" href="/understanding/subpages/data-types"
+    cta="Learn more"
+  >
+    Define and manage the custom types used across your project.
+  </Card>
+  <Card title="Deployments" href="/understanding/subpages/deployments"
+    cta="Learn more"
+  >
     Manage your Dev and Live environments.
   </Card>
-  <Card title="Server Logs" href="/resources/server-logs">
+  <Card title="Server Logs" href="/understanding/subpages/server-logs"
+    cta="Learn more"
+  >
     Monitor and debug server-side activity.
   </Card>
 </CardGroup>
