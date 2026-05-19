@@ -11,12 +11,13 @@ Scram provides two ways to sign users up to your app — email and password, and
 Use the **Signup New User with Email and Password** action in a workflow triggered by your signup form's submit button.
 
 The action requires:
+
 - An email address
 - A password
 
 ### Password requirements
 
-Passwords must be at least 6 characters and include at least one capital letter and one symbol.
+Passwords must be at least 8 characters, fewer than 128 and not have leading or training spaces.
 
 ### After signup
 
@@ -59,8 +60,15 @@ The same role assignment requirement applies — social signups also create user
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Setting Up Google Login" href="/understanding/subpages/setting-up-google-login" />
-  <Card title="Workflow Auth" href="/understanding/subpages/workflow-auth" />
-  <Card title="The Users Resource" href="/resources/users" />
-  <Card title="Understanding User Management" href="/understanding/understanding-user-management" />
+  <Card title="Setting Up Google Login" href="/understanding/subpages/setting-up-google-login">
+  </Card>
+
+  <Card title="Workflow Auth" href="/understanding/subpages/workflow-auth">
+  </Card>
+
+  <Card title="The Users Resource" href="/resources/users">
+  </Card>
+
+  <Card title="Understanding User Management" href="/understanding/understanding-user-management">
+  </Card>
 </CardGroup>
