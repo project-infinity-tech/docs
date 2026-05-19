@@ -55,6 +55,10 @@ Before this action will work, the relevant provider must be configured in the [U
 
 The same role assignment requirement applies — social signups also create users with no roles. Apply the same post-signup pattern: assign a role via Execute SQL, then call Reload User.
 
+### Logout Acount
+
+The logout acount signs the user out of both Email / Password or the Social Provider that they signed up with.
+
 ---
 
 ## Related
