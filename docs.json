@@ -139,7 +139,8 @@
                   "understanding/subpages/workflow-auth",
                   "understanding/subpages/the-user-table",
                   "understanding/subpages/setting-up-google-login",
-                  "understanding/subpages/running-workflows-with-elevated-permissions"
+                  "understanding/subpages/running-workflows-with-elevated-permissions",
+                  "understanding/subpages/setting-up-auth0-login"
                 ]
               },
               {

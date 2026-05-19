@@ -1,0 +1,92 @@
+---
+title: "Setting Up Auth0 Login"
+description: "Configuring Auth0 as an OIDC login provider in your Scram app."
+---
+
+Scram supports Auth0 as an OIDC login provider. Setting it up involves three stages — configuring Scram, configuring Auth0, and adding the login button to your app.
+
+---
+
+## 1. Add Auth0 as a provider in Scram
+
+In the [Users](/resources/users) section of the Resource View, click **Add Provider** and select **Auth0**.
+
+You'll see two callback URLs — copy both:
+
+- **Dev URL** — used for your development environment
+- **Live URL** — used when your app is published to Live
+
+You'll need both when configuring Auth0. Keep this panel open — you'll be coming back to paste in your credentials.
+
+---
+
+## 2. Configure Auth0
+
+### Create an application
+
+1. Go to the [Auth0 Dashboard](https://manage.auth0.com)
+2. Navigate to **Applications** \> **Applications**
+3. Click **Create Application**
+4. Give it a name and select **Regular Web Applications** as the application type
+5. Click **Create**
+
+### Configure the application URIs
+
+Open the **Settings** tab of your new application and scroll to **Application URIs**.
+
+1. Under **Allowed Callback URLs**, add both callback URLs you copied from Scram — the Dev URL and the Live URL
+2. Under **Allowed Logout URLs**, add the URLs Auth0 should be allowed to redirect users to after they sign out — typically the root URLs of your Dev and Live apps
+3. Scroll to the bottom and click **Save Changes**
+
+### Collect your credentials
+
+Scroll back up to **Basic Information** at the top of the Settings tab. You'll need three values:
+
+- **Domain** — e.g. `your-tenant.eu.auth0.com`
+- **Client ID**
+- **Client Secret** — click the eye icon to reveal it
+
+<Warning>
+  Copy and save your Client Secret somewhere secure. Scram hides it once entered — if you lose it, you'll need to rotate it in Auth0 and re-enter the new value.
+</Warning>
+
+<Warning>
+  If your Auth0 tenant uses a **custom domain** (e.g. `auth.yourcompany.com`), use the custom domain in place of the `*.auth0.com` Domain shown above. The OIDC issuer must match the domain that Auth0 actually serves tokens from.
+</Warning>
+
+---
+
+## 3. Enter credentials in Scram
+
+Back in the Scram Users panel, enter:
+
+- **Client ID** — from Auth0's Basic Information
+- **Client Secret** — from Auth0's Basic Information
+- **OIDC Discovery URL** — built from your Auth0 Domain: `https://YOUR_DOMAIN/.well-known/openid-configuration`
+- **Scopes** — `openid profile email`
+
+<Note>
+  `openid` is required for OIDC. `profile` returns the user's name and similar profile claims; `email` returns the email address and an `email_verified` flag. Add further scopes here if you need additional claims from Auth0.
+</Note>
+
+Save the provider configuration.
+
+---
+
+## 4. Add an Auth0 login button to your app
+
+1. Add a button to your login page
+2. Open the **Logic** tab on the button
+3. Add an **On Click** event
+4. Add the **Login with Social Provider** action
+5. Select **Auth0** from the provider list
+
+<Note>
+  Auth0 will only appear in the provider list if you've completed the configuration above. If you don't see it, check that the provider has been saved correctly in the Users section.
+</Note>
+
+---
+
+## Going live
+
+## When you publish your app to Live, make sure the **Live callback URL** is in your Auth0 application's **Allowed Callback URLs**, and that the Live app's logout URL is in **Allowed Logout URLs**. Without these, Auth0 login will work in Dev but fail in production.--- title: "Setting Up Auth0 Login"
