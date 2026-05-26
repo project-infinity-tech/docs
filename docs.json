@@ -61,10 +61,10 @@
             "icon": "pager",
             "pages": [
               "understanding/subpages/scram-editor-overview",
+              "understanding/subpages/top-navigation",
               "understanding/subpages/side-navigation",
               "understanding/subpages/the-canvas",
               "understanding/subpages/workflow-editor",
-              "understanding/subpages/top-navigation",
               {
                 "group": "Resources",
                 "icon": "cloud",
