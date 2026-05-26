@@ -65,6 +65,7 @@
               "understanding/subpages/side-navigation",
               "understanding/subpages/the-canvas",
               "understanding/subpages/workflow-editor",
+              "understanding/subpages/the-component-editor",
               {
                 "group": "Resources",
                 "icon": "cloud",
@@ -81,8 +82,7 @@
                   "resources/deployments",
                   "resources/server-logs"
                 ]
-              },
-              "understanding/subpages/the-component-editor"
+              }
             ]
           },
           {
