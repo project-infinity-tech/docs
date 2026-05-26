@@ -81,7 +81,8 @@
                   "resources/deployments",
                   "resources/server-logs"
                 ]
-              }
+              },
+              "understanding/subpages/the-component-editor"
             ]
           },
           {

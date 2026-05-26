@@ -1,0 +1,132 @@
+---
+title: "The Component Editor"
+description: "Edit reusable component definitions — the templates that instances are built from."
+---
+
+The Component Editor is where you edit a **component definition** — the underlying template that every instance on every page is built from. Changes here propagate automatically to every instance across your app.
+
+This is different from configuring a component **instance** on a page. An instance is one placement of the component, with its own property values and styling overrides. The definition is the shared blueprint. See [Understanding Components](/understanding/understanding-components) for the full distinction.
+
+<Note>
+  Only **custom** components are editable. Platform components can be opened to inspect their structure but their definitions cannot be modified.
+</Note>
+
+---
+
+## Opening the Component Editor
+
+You can open a component definition in two ways:
+
+- **Resource View → Component Gallery dropdown** — select a component from the dropdown to open its definition directly.
+- **Right-click a component** on the Canvas or in the Page Structure → **Open Definition**.
+
+When you open a definition, the **Page Structure** pane is replaced by the **Component Structure** pane, which shows the internal layout of the component itself. You're now editing the component, not the page.
+
+---
+
+## The Component Structure pane
+
+The Component Structure pane behaves like the Page Structure pane, but its contents are the internal makeup of the component rather than a page.
+
+Selecting things in the Component Structure changes what the right panel shows:
+
+- **Select the component itself** (the top of the tree) — the right panel shows the **definition-level** Properties and Logic tabs, covered below. This is where you configure the component as a whole.
+- **Select an internal element** (e.g. the label inside a custom button) — the right panel switches to the same Properties / Styles / Logic tabs you'd see when editing an instance on a page. You're now configuring that element as it appears inside the component.
+
+In other words, the root selection edits the _definition_; any deeper selection edits an _instance within_ the definition.
+
+### Kebab menu
+
+The kebab menu at the top of the Component Structure pane has three options, which apply to the component definition itself:
+
+| Option | Description |
+| --- | --- |
+| Copy | Copy the component definition |
+| Clone | Duplicate the component definition |
+| Delete | Delete the component definition |
+
+### Filter
+
+The same filter available in the Page Structure is available here. It lets you highlight elements within the component that have:
+
+- **Workflows attached** — useful for finding where events are emitted from
+- **Style overrides** — useful for auditing styling inside the component
+
+---
+
+## The Properties tab
+
+When the component itself is selected in the Component Structure, the Properties tab defines everything about the component as a whole. It contains three sections.
+
+### Metadata
+
+| Field | Description |
+| --- | --- |
+| Group | Which group the component appears under in the component picker |
+| Icon | The icon used to represent the component in the component list |
+| Visibility | Controls where the component can be used |
+
+**Visibility** has three values:
+
+- **Public** — available throughout the app, surfaced in the component picker like any other component
+- **Internal** — usable inside other component definitions but not directly on pages
+- **Hidden** — not surfaced in the picker; useful for components you're working on but aren't ready to expose
+
+### Variables
+
+The state your component tracks. Examples: whether a dropdown is open, the currently selected value of a custom input, whether an accordion item is expanded.
+
+Variables come in two kinds, shown by a lock icon next to each one:
+
+- **Internal (locked)** — only the component itself can read or write the variable. Use this for state that's none of the outside world's business.
+- **External (unlocked)** — the variable is exposed beyond the component. It can be read _and_ set from outside, via `components.componentId.vars.variableName` in page-level expressions or workflows.
+
+Click the lock icon to toggle a variable between internal and external. See [Understanding Variables](/understanding/understanding-variables).
+
+### Properties
+
+The **props** the component exposes — the configurable inputs that users of the component set on each instance.
+
+Each property has:
+
+- A **name** — how it's referenced inside the component as `props.name`
+- A **type** — text, number, boolean, date, enum, and so on
+- An optional **default value** — so instances work sensibly out of the box
+
+These are what appear in the Properties tab of the Component Instance editor when someone places your component on a page.
+
+---
+
+## The Logic tab
+
+When the component itself is selected, the Logic tab declares the **events** the component can emit — `click`, `change`, `submit`, and so on. Each event has a name and a payload shape.
+
+Declaring an event here doesn't fire it. Events are actually emitted from workflows attached to the internal components inside the definition (typically the underlying HTML components like buttons or inputs). When one of those internal workflows runs, it emits the event up to whoever is using the component.
+
+On the instance side, users attach workflows to these events in the Logic tab of the Component Instance editor.
+
+For more on events and payloads, see [Event Handling in Components](/building/event-handling-in-components).
+
+---
+
+## Exiting the Component Editor
+
+Use the **Top Navigation** to leave the Component Editor. From there you can return to your app, jump to another component, or move into any other area of the editor. There's no dedicated "back" button — the top nav is the way you move between contexts.
+
+---
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Understanding Components" href="/understanding/understanding-components">
+  </Card>
+
+  <Card title="Building Your Own Components" href="/building/building-your-own-components">
+  </Card>
+
+  <Card title="Understanding Slots" href="/understanding/understanding-slots">
+  </Card>
+
+  <Card title="Event Handling in Components" href="/building/event-handling-in-components">
+  </Card>
+</CardGroup>
