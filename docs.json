@@ -24,7 +24,8 @@
             "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart"
+              "quickstart",
+              "current-limitations"
             ],
             "icon": "rocket"
           },

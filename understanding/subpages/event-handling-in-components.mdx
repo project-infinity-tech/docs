@@ -12,7 +12,7 @@ The events available depend on the component. Not every component supports every
 ## Available Events
 
 | Event | Description |
-|---|---|
+| --- | --- |
 | `click` | The user clicked the component |
 | `doubleClick` | The user double-clicked the component |
 | `contextMenu` | The user right-clicked the component |
@@ -69,6 +69,31 @@ trigger.payload.oldValue   // the previous value
   These payloads are derived from standard HTML events but simplified in some cases. The underlying browser event data is the source.
 </Note>
 
+## Debouncing event workflows
+
+Some events fire very frequently — `everyChange` on a text input fires on every keystroke, `mouseMove` fires constantly as the pointer moves. Running a full workflow on every one of those firings is wasteful and can make your app feel sluggish, especially if the workflow hits the database.
+
+Every workflow has a **debounce** setting in its **Workflow Config**. It delays the workflow from running until the triggering event has stopped firing for a specified number of milliseconds.
+
+With a debounce of `300ms`, a workflow attached to `everyChange` on a search input will wait until the user pauses typing for 300ms before running — once, with the final value — rather than running on every keystroke.
+
+### When to use it
+
+| Scenario | Typical debounce |
+| --- | --- |
+| Search-as-you-type against the database | 250–400ms |
+| Auto-save on a form | 500–1000ms |
+| Live filtering of an in-memory list | 100–200ms |
+| Resizing a chart on window resize | 100–200ms |
+
+<Tip>
+  For most typeahead and search inputs, 300ms is a good default — long enough to avoid firing on every key, short enough that the user doesn't notice the wait.
+</Tip>
+
+<Note>
+  Debounce is configured per workflow, not per event. The same event can have one workflow that fires immediately and another that fires only after the user pauses, if that's useful.
+</Note>
+
 ---
 
 ## Custom Component Events
@@ -82,9 +107,15 @@ See [Building Your Own Components](/understanding/subpages/building-your-own-com
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Understanding Events and Workflows" href="/understanding/understanding-events-and-workflows" />
-  <Card title="Building Your Own Components" href="/understanding/subpages/building-your-own-components" />
-  <Card title="Understanding Expressions" href="/understanding/understanding-expressions" />
-  <Card title="Action Directory" href="/actions/action-directory" />
-</CardGroup>
+  <Card title="Understanding Events and Workflows" href="/understanding/understanding-events-and-workflows">
+  </Card>
 
+  <Card title="Building Your Own Components" href="/understanding/subpages/building-your-own-components">
+  </Card>
+
+  <Card title="Understanding Expressions" href="/understanding/understanding-expressions">
+  </Card>
+
+  <Card title="Action Directory" href="/actions/action-directory">
+  </Card>
+</CardGroup>
