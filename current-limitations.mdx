@@ -3,20 +3,158 @@ title: "Current limitations"
 description: "Things Scram doesn't currently support. If any of these are blockers, get in touch."
 ---
 
-This page is an honest snapshot of what Scram doesn't support today. If you're hitting any of these as a blocker, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can understand the demand and see what we can do.
+This page lists what Scram doesn't currently support. If you're using Scram's AI and hit one of these limitations, the AI will surface the relevant entry rather than improvising a workaround. If any of these are blockers for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can understand the demand and see what we can do.
 
-## CSV upload
+Entries come off this page as gaps close, so check back if something here is critical to your plans.
 
-Scram doesn't currently support uploading and parsing CSV files as a data source.
+## Background processing over many records
 
-This applies whenever you want users to bulk-import data via a CSV, populate a table from an uploaded spreadsheet, or accept CSVs as a workflow input.
+Scram doesn't currently support iterating over a set of records and performing work on each one in the background — patterns like "go through all 5,000 contacts and send a personalised email" or "for each unprocessed row in this table, call an external API and store the result".
+
+This applies whenever you need bulk processing, batch operations, data syncs that iterate over collections, queued work spread over time, or any "do X for every Y" pattern that exceeds a single synchronous request.
 
 If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
 
-## Realtime updates
+## Scheduled background work (CRON)
 
-Scram doesn't currently support server-sent events or WebSocket connections for pushing updates from the server to the browser.
+Scram doesn't currently support running scheduled jobs on a recurring basis — there's no built-in CRON for things like "every night at 2am" or "every hour on the hour".
 
-This applies whenever you're building chat-style apps, live collaborative editing, presence indicators, in-app notifications, or anything else that needs the server to push updates to the browser as they happen.
+This applies whenever you need recurring tasks that run independently of user activity: nightly data syncs, daily digest emails, hourly metric rollups, weekly cleanup of expired records, scheduled report generation, and similar.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Real-time push updates (SSE / WebSocket)
+
+Scram doesn't currently support server-sent events or WebSocket connections for pushing updates from the server to the browser in real time.
+
+This applies whenever you're building chat-style apps, live collaborative editing, presence indicators, in-app notifications, live dashboards, or anything else where the server needs to push updates to the browser as they happen.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Database triggers
+
+Scram doesn't currently support running a workflow automatically when a row in a table is inserted, updated, or deleted.
+
+This applies whenever you want side effects to fire off changes to your data — sending a notification when a new order is created, generating a derived record when something is updated, cascading clean-up when something is deleted, or maintaining audit logs and computed fields without relying on every write path remembering to do it.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## External database access
+
+Scram doesn't currently support accessing the underlying database from outside the platform — there's no connection string, no direct SQL access, and no replication feed for syncing data to other systems.
+
+This applies whenever you need to read or write Scram's data from an external tool (analytics, BI, reverse ETL, backup), sync data with another system, or integrate with services that expect direct database access.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## CSV import and export
+
+Scram doesn't currently support uploading and parsing CSV files as a data source, or exporting table data as a CSV download.
+
+This applies whenever you want users to bulk-import data via a CSV, populate or update a table from an uploaded spreadsheet, accept CSVs as a workflow input, or offer a "download as CSV" button on a table or report.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Fuzzy, full-text, and semantic search
+
+Scram doesn't currently support search that goes beyond what plain SQL `LIKE` and `ILIKE` can do — no typo tolerance, no fuzzy matching, no ranked results, no faceting, no semantic / vector / embedding-based search.
+
+This applies whenever you're building anything you'd reach for Algolia, Elasticsearch, Meilisearch, Typesense, or a vector store for — site-wide search across documents, product catalogues, knowledge bases, support tickets, or anywhere search results need to be smarter than exact substring matching.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Private file storage with secure URLs
+
+Scram doesn't currently support storing files privately with signed or time-limited URLs for access. Files uploaded to Scram's storage are served from public URLs, so anyone with the URL can access them indefinitely.
+
+This applies whenever you're handling user-uploaded documents that should be private (medical records, financial documents, contracts), paid content that should only be accessible to entitled users, or anything else where unauthenticated URL access is unacceptable.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## JWT signing (server-side)
+
+Scram doesn't currently support minting or signing JWTs in server-side functions. There's no way to sign a token with a private key (RS256) or shared secret (HS256) before returning it to the client.
+
+This applies whenever you're integrating with a service that requires a signed JWT for authentication or session handoff — LiveKit (video/audio), Mux (video), Stream (chat), Algolia (search), GitHub Apps, and many enterprise APIs.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Verifying incoming webhook signatures
+
+Scram doesn't currently expose the raw request body in webhook handlers, which is required to verify HMAC signatures sent by services like Stripe, GitHub, Slack, Twilio, and Shopify.
+
+This applies whenever you're accepting webhooks from a third party that requires signature verification — typically payment confirmations, repository events, message events, or anywhere you need to confirm the request genuinely came from the claimed sender.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Third-party OAuth (sign in / connect)
+
+Scram doesn't currently support OAuth as a consumer — there's no built-in way to let users sign in with Google, GitHub, Microsoft, or similar providers, and no way to authorise the app against a third-party API on the user's behalf (the "connect your X account" flow).
+
+This applies whenever you want users to sign in with an existing identity provider rather than creating a Scram-specific account, or whenever your app needs to act on a user's behalf with a third-party service — reading their Gmail, posting to their Slack, managing their Stripe data via their account, and so on.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Persistent login ("stay logged in")
+
+Scram doesn't currently support persistent login — there's no built-in "remember me" mechanism that keeps users signed in across browser sessions or extended idle periods.
+
+This applies whenever you're building an app where users should stay signed in over days or weeks rather than being prompted to re-authenticate each session.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Password reset and change flows
+
+Scram doesn't currently support self-service password management — there's no built-in "forgot password" email flow, no "change password" form for logged-in users, and no related primitives like password complexity rules or breached-password checks.
+
+This applies whenever you're building an app with user accounts where users need to reset forgotten passwords, change their own password, or where you need to enforce password policies.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Cookie consent
+
+Scram-built apps set cookies (including for authentication) without a built-in consent mechanism. There's no way to show an "Accept / Manage cookies" banner and have it gate which cookies fire.
+
+This applies whenever you're building a public-facing app that needs to comply with GDPR, ePrivacy, CCPA, or similar regulations — particularly anything serving EU or UK users.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## IP allowlist / denylist
+
+Scram doesn't currently support restricting access to your app based on IP address — no built-in allowlist for permitted IPs or denylist for blocking specific ones.
+
+This applies whenever you're building an internal tool that should only be reachable from a corporate network, an admin area limited to known office IPs or a VPN, or anywhere you need to block known-bad addresses.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## SEO (meta tags, social cards, sitemap)
+
+Scram doesn't currently support per-page SEO controls — there's no way to set custom `<title>` and `<meta description>` per page, no Open Graph or Twitter Card metadata for link previews, no sitemap.xml generation, no robots.txt control, and no structured data (JSON-LD).
+
+This applies whenever you're building anything public-facing that needs to rank in search engines or render attractive link previews when shared — marketing sites, content sites, public-facing product pages, landing pages, and blogs.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Custom scripts and tags in page head
+
+Scram doesn't currently support adding arbitrary scripts, tags, or libraries to the page `<head>` — no way to drop in analytics (Google Analytics, Plausible, Mixpanel), tracking pixels (Meta, LinkedIn), feedback widgets (Usersnap, Hotjar), support chat (Intercom, Crisp), tag managers, or any other third-party tool that requires a script tag.
+
+This applies whenever you need to integrate a third-party service that's installed via a snippet of HTML or JavaScript in the page head — which covers most analytics, marketing, support, and observability tools.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Charts and data visualisation
+
+Scram doesn't currently have first-class chart components for producing polished data visualisations — line, bar, area, pie, scatter, sparkline, gauge, and similar.
+
+This applies whenever you're building dashboards, reports, analytics views, or any feature where a chart is the primary way users will understand the data.
+
+If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+
+## Interactive maps and geo queries
+
+Scram doesn't currently support interactive map components or dynamic geo queries. There's no built-in map widget for displaying locations with markers, popups, and click events; no dynamic distance-based sorting (e.g. "order these results by distance from the user's current location"); no place autocomplete; and no directions or routing.
+
+This applies whenever you're building location-aware features — store locators, delivery apps, ride-hailing, real estate listings, or anywhere the user expects to see and interact with a map.
 
 If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
