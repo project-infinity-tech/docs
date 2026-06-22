@@ -29,7 +29,7 @@ SELECT * FROM "Projects"
 WHERE "name" ILIKE '%' || :search || '%'
 ```
 
-This covers the majority of search use cases in everyday apps.
+This covers most search use cases in everyday apps.
 
 ### Searching across multiple columns
 
@@ -50,11 +50,11 @@ Use full-text search when you want ranked, intelligent search across larger bodi
 
 ```sql
 SELECT *, ts_rank(
-  to_tsvector('english', "name" || ' ' || "description"),
+  to_tsvector('english', COALESCE("name", '') || ' ' || COALESCE("description", '')),
   plainto_tsquery('english', :search)
 ) AS rank
 FROM "Projects"
-WHERE to_tsvector('english', "name" || ' ' || "description")
+WHERE to_tsvector('english', COALESCE("name", '') || ' ' || COALESCE("description", ''))
   @@ plainto_tsquery('english', :search)
 ORDER BY rank DESC
 ```
@@ -100,6 +100,12 @@ If a column can be `NULL`, it will never match a `LIKE` or `ILIKE` check. Use `C
 
 ```sql
 WHERE COALESCE("description", '') ILIKE '%' || :search || '%'
+```
+
+The same applies to full-text search: if any column in a `to_tsvector` concatenation is `NULL`, the entire concatenation becomes `NULL` and that row won't match. Wrap each column in `COALESCE` there too:
+
+```sql
+to_tsvector('english', COALESCE("name", '') || ' ' || COALESCE("description", ''))
 ```
 
 ### Full-text search needs a consistent language
