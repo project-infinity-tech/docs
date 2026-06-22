@@ -68,7 +68,7 @@ ORDER BY rank DESC
 ## Quick decision guide
 
 | Situation | Use |
-|---|---|
+| --- | --- |
 | User types into a search box | `ILIKE` |
 | Matching codes, references, exact case matters | `LIKE` |
 | Searching long descriptions, ranking by relevance | Full-text search |
@@ -105,3 +105,7 @@ WHERE COALESCE("description", '') ILIKE '%' || :search || '%'
 ### Full-text search needs a consistent language
 
 The `'english'` setting in `to_tsvector` and `plainto_tsquery` must match. If your content is in another language, change both — e.g. `'french'`, `'spanish'`. Mismatching them produces poor results silently.
+
+<Note>
+  Full-text search matches on word stems, not spelling. A misspelt query (e.g. `authentcation`) won't match, and there's no built-in typo-tolerance or fuzzy matching. It also matches words, not meaning — a search for "keep people out" won't find a page about "authentication" unless the words overlap. For most search boxes this is fine; if you need typo-tolerance, combine full-text search with an `ILIKE` fallback.
+</Note>
