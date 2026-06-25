@@ -1,0 +1,24 @@
+---
+title: "Buttons"
+description: "Accessible naming for Button and Icon Button components"
+---
+
+## Button
+
+The Button component uses its visible text as its accessible name. An additional `aria-label` is not required when text is present.
+
+Buttons are intended for text-based actions such as Save, Delete, or Submit.
+
+## Icon Button
+
+The Icon Button component is intended for icon-only actions. It includes an accessibility label, which defaults to the icon name and can be customised if required.
+
+## Responsive Designs
+
+Scram does not currently support responsive text visibility. If you want a button to display text on larger screens and only an icon on smaller screens, use separate Button and Icon Button components and control their visibility using responsive settings.
+
+## Best Practice
+
+- Use Button for actions with visible text.
+- Use Icon Button for icon-only actions.
+- Ensure Icon Buttons have meaningful accessibility labels.

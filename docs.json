@@ -269,6 +269,14 @@
               "keyboard-shortcuts"
             ],
             "icon": "keyboard"
+          },
+          {
+            "group": "Accessibility",
+            "icon": "universal-access",
+            "pages": [
+              "overview",
+              "buttons"
+            ]
           }
         ]
       }
