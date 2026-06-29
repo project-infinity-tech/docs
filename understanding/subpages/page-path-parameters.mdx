@@ -33,3 +33,7 @@ The parent pages (`shop` and `items`) give the URL its fixed structure, while `:
 Once a path parameter is defined, its value is available anywhere on that page. You would typically use it to load the right content — for example, fetching the item whose ID matches the value in the URL, then displaying that item's details on the page.
 
 This pattern is the standard way to build detail pages: one page design, driven by whichever item the user selected.
+
+<Warning>
+  A parameter slug matches on position, not name. Any parent with two parameter children — at any level of your app — will only ever load one of them; the other becomes unreachable. For example, putting both `:itemId` and `:productId` directly under `items` won't work. Give each parameter its own distinct parent instead: `/shop/items/:itemId` and `/shop/products/:productId`.
+</Warning>
