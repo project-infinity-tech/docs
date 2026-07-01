@@ -1,0 +1,153 @@
+---
+title: "Auth flow recipes"
+description: "Composable patterns for magic links, password reset, email verification, and invites using Scram's auth actions."
+---
+
+These recipes chain Scram's auth actions into common flows. They come in **issue / consume** pairs: one recipe issues a token and sends the email, a matching recipe handles the click.
+
+<Note>
+  The raw token only ever travels by email. Everywhere else it is hashed. Email possession proves control of the inbox, and hashing means a leaked database does not leak usable tokens.
+</Note>
+
+## How the recipes fit together
+
+Recipes 1 and 6 **issue** tokens. Recipes 2, 3, and 4 **consume** them. Recipe 5 stands alone — no email involved.
+
+| Recipe | Issues | Consumes | Signs user in |
+| --- | --- | --- | --- |
+| 1. Send magic link / reset email | Yes | — | — |
+| 2. Magic-link login | — | Yes | Yes |
+| 3. Password reset | — | Yes | No |
+| 4. Email verification | — | Yes | No |
+| 5. Change password (signed in) | — | — | Already in |
+| 6. Invite / passwordless signup | Yes | via recipe 2 | via recipe 2 |
+
+---
+
+## 1. Send a magic link or reset email
+
+Issues a token and emails it. Always reports success to the frontend so nobody can probe which emails exist.
+
+<Steps>
+  <Step title="Look up the email">
+    Backend server request block. Look up the email in the Users table.
+  </Step>
+  <Step title="Branch on found / not found">
+    Use `CaseSwitchBackend`.
+  </Step>
+  <Step title="Found: issue the token">
+    `GenerateSecretToken`, then `UPDATE Users` setting the hashed token and an expiry. `SendEmail` with the raw token.
+  </Step>
+  <Step title="Not found: no-op">
+    Do nothing.
+  </Step>
+  <Step title="Return uniform success">
+    The frontend always sees success, regardless of branch.
+  </Step>
+</Steps>
+
+## 2. Log in via magic link
+
+Consumes the token from recipe 1 and signs the user in.
+
+<Warning>
+  **Verify before publishing.** This recipe passes the _hashed_ token to `LoginWithToken`. Confirm by testing whether `LoginWithToken` expects the hashed token (and compares internally) or the raw token. If the contract is the reverse, this recipe is wrong. Do not publish until confirmed.
+</Warning>
+
+<Steps>
+  <Step title="Hash the URL token">
+    Backend server request block hashes the token from the URL.
+  </Step>
+  <Step title="Consume via LoginWithToken">
+    Frontend calls `LoginWithToken` with the email and hashed token.
+  </Step>
+  <Step title="Branch on result">
+    Success navigates to the target path. Failure shows "link invalid or expired".
+  </Step>
+</Steps>
+
+## 3. Password reset (no auto sign-in)
+
+Consumes a reset token and sets a new password. Does not sign the user in.
+
+<Steps>
+  <Step title="Validate the token">
+    Backend server request block validates email \+ hashed token \+ unexpired.
+  </Step>
+  <Step title="Branch">
+    `CaseSwitchBackend`.
+  </Step>
+  <Step title="Set the password">
+    `SetPassword`. Its defaults clear the token and revoke existing sessions.
+  </Step>
+  <Step title="Redirect to login">
+    Frontend navigates to `/login` with a success indicator (e.g. a query param that surfaces a message). On error, show the error.
+  </Step>
+</Steps>
+
+## 4. Email verification (no auto sign-in)
+
+Consumes a verification token and marks the email verified.
+
+<Warning>
+  This recipe reuses the `passwordResetToken` slot. If a password reset and an email verification are ever live for the same user at once, the second issue overwrites the first. Fine for signup-time verification, where the two don't overlap — but don't reuse the slot for post-signup re-verification flows without accounting for this.
+</Warning>
+
+<Steps>
+  <Step title="Atomic verify">
+    Backend server request block runs one atomic `UPDATE` setting `emailVerifiedAt` and clearing the token, `WHERE` email \+ hashed token \+ unexpired, `RETURNING id`.
+  </Step>
+  <Step title="Branch on result">
+    `CaseSwitchBackend` on success / error.
+  </Step>
+</Steps>
+
+## 5. Change your own password (signed in)
+
+No email involved. The user is already signed in.
+
+<Steps>
+  <Step title="Validate current password">
+    `ValidatePassword` with the user id and the current password.
+  </Step>
+  <Step title="Branch">
+    `CaseSwitchBackend`. On failure, show "current password incorrect".
+  </Step>
+  <Step title="Set the new password">
+    `SetPassword` with the new password.
+  </Step>
+</Steps>
+
+## 6. Invite / passwordless signup
+
+The user does not exist yet. The account is created at invite time.
+
+<Steps>
+  <Step title="Look up the email">
+    Backend server request block looks up the email.
+  </Step>
+  <Step title="Branch">
+    `CaseSwitchBackend`.
+  </Step>
+  <Step title="Not found: create the account">
+    `GenerateSecretToken`, then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = hashed token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. `SendEmail` with the raw token.
+  </Step>
+  <Step title="Found: no-op or re-issue">
+    Do nothing, or re-issue.
+  </Step>
+  <Step title="Return uniform success">
+    The frontend always sees success.
+  </Step>
+</Steps>
+
+The invited user consumes the link with **recipe 2** (`LoginWithToken` signs them in). The new account has no password.
+
+<Warning>
+  The invited user is created with no roles (`ARRAY[]::text[]`). They can sign in via the magic link, but will be blocked from any auth-required page or workflow that has roles selected until a role is assigned. Make sure your invite flow assigns a role, or the user signs in and sees nothing.
+</Warning>
+
+To let the user log in with a password later, send them to a **Set Password** page after first sign-in (recipe 5's `SetPassword` step, without the current-password check), or let them set it up later.
+
+<Warning>
+  **Verify before publishing.** Recipe 6 creates a user with no password. Confirm `SetPassword` works on a passwordless row. If it does not, create the user with a high-entropy random placeholder password (generated server-side, never emailed, never logged) so `SetPassword` has something to overwrite. Test this directly before relying on either path.
+</Warning>

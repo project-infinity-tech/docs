@@ -277,6 +277,13 @@
               "overview",
               "buttons"
             ]
+          },
+          {
+            "group": "Recipes",
+            "icon": "receipt",
+            "pages": [
+              "auth-flow-recipes"
+            ]
           }
         ]
       }
