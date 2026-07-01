@@ -26,25 +26,36 @@ Recipes 1 and 6 **issue** tokens. Recipes 2, 3, and 4 **consume** them. Recipe 5
 
 ## 1. Send a magic link or reset email
 
-Issues a token and emails it. Always reports success to the frontend so nobody can probe which emails exist.
+Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by an admin process) and emails it. Always reports success to the frontend so nobody can probe which emails exist.
+
+<Note>
+  This recipe assumes the user already exists. To create the user at signup time instead, see [recipe 6](#6-invite--passwordless-signup), which uses an `INSERT`.
+</Note>
 
 <Steps>
-  <Step title="Look up the email">
-    Backend server request block. Look up the email in the Users table.
+  <Step title="Generate the token">
+    Backend server request block. `GenerateSecretToken` to mint the raw token.
   </Step>
-  <Step title="Branch on found / not found">
-    Use `CaseSwitchBackend`.
+  <Step title="Store the hash and detect whether a user matched">
+    `UPDATE Users` setting the hashed token and an expiry `WHERE email = :email`, with `RETURNING id`. A matched row returns the id; no match returns an empty result. **This is the check** — an `UPDATE` alone reports success even when it matches zero rows, so use `RETURNING` to know whether a user was actually found.
   </Step>
-  <Step title="Found: issue the token">
-    `GenerateSecretToken`, then `UPDATE Users` setting the hashed token and an expiry. `SendEmail` with the raw token.
+  <Step title="Branch on the result">
+    `CaseSwitchBackend` on whether the returned result is empty.
   </Step>
-  <Step title="Not found: no-op">
-    Do nothing.
+  <Step title="Matched: send the email">
+    `SendEmail` with the raw token.
   </Step>
-  <Step title="Return uniform success">
-    The frontend always sees success, regardless of branch.
+  <Step title="No match: skip the email">
+    Do not send an email — there is no user to send to. Log or flag the miss if you want visibility on issues sent to unknown addresses. Do **not** treat this as success internally just because the `UPDATE` returned green.
+  </Step>
+  <Step title="Return uniform success to the frontend">
+    Regardless of branch, the frontend always sees success — so nobody can probe which emails exist. The distinction between matched / no-match stays server-side.
   </Step>
 </Steps>
+
+<Warning>
+  An `UPDATE ... WHERE email = :email` that matches no rows reports **Success** and returns an empty result — it does not error. Without `RETURNING id` and a branch on the empty result, a link issued to a non-existent user silently produces a live token with no stored hash, which then fails at consume with no signal upstream. Always branch on the `RETURNING` result.
+</Warning>
 
 ## 2. Log in via magic link
 
