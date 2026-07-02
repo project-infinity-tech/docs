@@ -1,0 +1,100 @@
+---
+title: "login-with-token"
+---
+
+# Login With Token
+
+# Login With Token — Workflow Action
+
+**Login With Token** signs a user in by matching a token against the value stored for their email. It is how a user is authenticated when they click a magic link or an invite link, rather than by entering a password.
+
+---
+
+## What is Login With Token?
+
+It is the **consume** half of a token-based auth flow. Generate Secret Token issues a token and emails it; Login With Token takes the token back when the user clicks the link, checks it against what is stored, and signs the user in if it matches.
+
+It compares the token you give it against **exactly** what is stored — it does no hashing of its own. This one fact determines how you call it.
+
+---
+
+## Inputs
+
+### Email
+
+| **Input** | **Type** | **Notes** |
+| --- | --- | --- |
+| **email** | text | The user's email address. The link that carries the token must also carry the email, so both are available at consume time. |
+
+### Token
+
+The token to match. Because Login With Token compares against exactly what is stored:
+
+- If you stored the token **hashed** (the recommended pattern), **hash the incoming token before passing it here**.
+- If you stored the token **raw**, pass it raw.
+
+In other words: hash on consume if and only if you hashed on store.
+
+---
+
+## Returns
+
+| **Field** | **Type** | **Meaning** |
+| --- | --- | --- |
+| **success** | boolean | Whether the login succeeded. |
+| **errorCode** | text | An error code on failure (e.g. `Unauthorized`). |
+| **message** | text | A human-readable message. |
+
+> _⚠️ `message` may come back as an **empty string** (not null) on failure. Use `||` rather than `??` for fallback text — `??` only falls back on null/undefined, so an empty string passes straight through and renders as nothing._
+
+---
+
+## How it Works at Runtime
+
+1. You pass the email and the token (hashed, if you stored it hashed).
+2. The action looks up the user by email and compares the token against the stored value.
+3. On a match, the user is signed in and `success` is `true`.
+4. On no match — wrong, tampered, or expired token — `success` is `false`.
+
+> _⚠️ Run Login With Token in a context that can act on its result — **not** in a page-data workflow. A page-data workflow can redirect on success but cannot cleanly surface the failure, so a failed login falls through to the success path and the user sees no error. Use a workflow that branches on `success`._
+
+---
+
+## Common Patterns
+
+### Consuming a magic link
+
+```text
+Step 1 (backend): hash the token from the URL
+Step 2 (frontend): Login With Token(email, hashed token)
+Step 3: branch on success → navigate on true, show message on false
+```
+
+### Displaying the failure message
+
+```text
+page.data.tokenLogin.value?.message || "This sign-in link is invalid or has expired."
+```
+
+Using `||` so a blank message falls back to friendly text.
+
+---
+
+## Important Constraints
+
+- **Compares against exactly what is stored.** Hash before calling only if you hashed before storing.
+- **Requires both email and token.** The link must carry both.
+- **Do not run it in a page-data workflow.** The failure result cannot be cleanly surfaced from there.
+
+---
+
+## Relationship to Other Actions
+
+- **Generate Secret Token** — issues the token this action consumes.
+- **Set Password** — commonly follows for invite flows, letting a passwordless user set a password after first sign-in.
+
+See [Auth flow recipes](/recipes/auth-flow-recipes) for complete flows.
+
+---
+
+In summary: Login With Token is the **consume** step of an email-link auth flow. It matches a token against stored state and signs the user in — remember to hash on the way in if you hashed on the way out, and to run it where its failure result can be acted on.

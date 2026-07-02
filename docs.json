@@ -189,6 +189,7 @@
           {
             "group": "Actions",
             "pages": [
+              "generate-secret-token",
               "actions/action-directory",
               "actions/set-variable",
               "actions/create-variable",
@@ -207,7 +208,10 @@
               "actions/reload-page-data",
               "actions/reload-all-page-data",
               "actions/upload-file-to-url",
-              "actions/terminate"
+              "actions/terminate",
+              "actions/login-with-token",
+              "actions/set-password",
+              "actions/validate-password"
             ],
             "icon": "bolt"
           },
