@@ -9,6 +9,10 @@ These recipes chain Scram's auth actions into common flows. They come in **issue
   The raw token only ever travels by email. Everywhere else it is hashed. Email possession proves control of the inbox, and hashing means a leaked database does not leak usable tokens.
 </Note>
 
+<Warning>
+  **Column name subject to change.** These recipes store the token in the `passwordResetToken` / `passwordResetTokenExpiresAt` columns on the `Users` table, which is what exists today. This column is planned to be renamed to a single general-purpose field (it serves magic-link, verification, and invite flows, not just password reset). When the migration lands, update these recipes to the new column name.
+</Warning>
+
 ## How the recipes fit together
 
 Recipes 1 and 6 **issue** tokens. Recipes 2, 3, and 4 **consume** them. Recipe 5 stands alone — no email involved.
@@ -34,16 +38,16 @@ Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by
 
 <Steps>
   <Step title="Generate the token">
-    Backend server request block. `GenerateSecretToken` to mint the raw token.
+    Backend server request block. `Generate Secret Token` to mint the raw token.
   </Step>
   <Step title="Store the hash and detect whether a user matched">
     `UPDATE Users` setting the hashed token and an expiry `WHERE email = :email`, with `RETURNING id`. A matched row returns the id; no match returns an empty result. **This is the check** — an `UPDATE` alone reports success even when it matches zero rows, so use `RETURNING` to know whether a user was actually found.
   </Step>
   <Step title="Branch on the result">
-    `CaseSwitchBackend` on whether the returned result is empty.
+    `Switch Case (Backend)` on whether the returned result is empty.
   </Step>
   <Step title="Matched: send the email">
-    `SendEmail` with the raw token.
+    `Send Email` with the raw token.
   </Step>
   <Step title="No match: skip the email">
     Do not send an email — there is no user to send to. Log or flag the miss if you want visibility on issues sent to unknown addresses. Do **not** treat this as success internally just because the `UPDATE` returned green.
@@ -61,21 +65,25 @@ Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by
 
 Consumes the token from recipe 1 and signs the user in.
 
-<Warning>
-  **Verify before publishing.** This recipe passes the _hashed_ token to `LoginWithToken`. Confirm by testing whether `LoginWithToken` expects the hashed token (and compares internally) or the raw token. If the contract is the reverse, this recipe is wrong. Do not publish until confirmed.
-</Warning>
+<Note>
+  `Login With Token` compares whatever you pass it against exactly what is stored. Because recipe 1 stores the token hashed, you must hash the URL token before passing it. (If you stored the token raw, you would pass it raw — hash on consume only if you hashed on store.)
+</Note>
 
 <Steps>
   <Step title="Hash the URL token">
     Backend server request block hashes the token from the URL.
   </Step>
-  <Step title="Consume via LoginWithToken">
-    Frontend calls `LoginWithToken` with the email and hashed token.
+  <Step title="Consume via Login With Token">
+    Frontend calls `Login With Token` with the email and hashed token. `Login With Token` requires both the email and the token, so the link must carry both.
   </Step>
   <Step title="Branch on result">
     Success navigates to the target path. Failure shows "link invalid or expired".
   </Step>
 </Steps>
+
+<Warning>
+  Run `Login With Token` in a context that can act on its result — not in a page-data workflow. Page-data can redirect on success but cannot cleanly surface the failure, so a failed login falls through to the success path. `Login With Token` returns `success`, `errorCode`, and `message`. Branch on `success`, and display `message` — but note it may come back as an **empty string** (not null) on failure, so use `||` rather than `??` for your fallback text, or a blank message renders as nothing.
+</Warning>
 
 ## 3. Password reset (no auto sign-in)
 
@@ -86,10 +94,10 @@ Consumes a reset token and sets a new password. Does not sign the user in.
     Backend server request block validates email \+ hashed token \+ unexpired.
   </Step>
   <Step title="Branch">
-    `CaseSwitchBackend`.
+    `Switch Case (Backend)`.
   </Step>
   <Step title="Set the password">
-    `SetPassword`. Its defaults clear the token and revoke existing sessions.
+    `Set Password`. Its defaults clear the token and revoke existing sessions.
   </Step>
   <Step title="Redirect to login">
     Frontend navigates to `/login` with a success indicator (e.g. a query param that surfaces a message). On error, show the error.
@@ -109,7 +117,7 @@ Consumes a verification token and marks the email verified.
     Backend server request block runs one atomic `UPDATE` setting `emailVerifiedAt` and clearing the token, `WHERE` email \+ hashed token \+ unexpired, `RETURNING id`.
   </Step>
   <Step title="Branch on result">
-    `CaseSwitchBackend` on success / error.
+    `Switch Case (Backend)` on success / error.
   </Step>
 </Steps>
 
@@ -119,13 +127,13 @@ No email involved. The user is already signed in.
 
 <Steps>
   <Step title="Validate current password">
-    `ValidatePassword` with the user id and the current password.
+    `Validate Password` with the user id and the current password.
   </Step>
   <Step title="Branch">
-    `CaseSwitchBackend`. On failure, show "current password incorrect".
+    `Switch Case (Backend)`. On failure, show "current password incorrect".
   </Step>
   <Step title="Set the new password">
-    `SetPassword` with the new password.
+    `Set Password` with the new password.
   </Step>
 </Steps>
 
@@ -138,10 +146,10 @@ The user does not exist yet. The account is created at invite time.
     Backend server request block looks up the email.
   </Step>
   <Step title="Branch">
-    `CaseSwitchBackend`.
+    `Switch Case (Backend)`.
   </Step>
   <Step title="Not found: create the account">
-    `GenerateSecretToken`, then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = hashed token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. `SendEmail` with the raw token.
+    `Generate Secret Token`, then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = hashed token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. `Send Email` with the raw token.
   </Step>
   <Step title="Found: no-op or re-issue">
     Do nothing, or re-issue.
@@ -151,14 +159,14 @@ The user does not exist yet. The account is created at invite time.
   </Step>
 </Steps>
 
-The invited user consumes the link with **recipe 2** (`LoginWithToken` signs them in). The new account has no password.
+The invited user consumes the link with **recipe 2** (`Login With Token` signs them in). The new account has no password.
 
 <Warning>
   The invited user is created with no roles (`ARRAY[]::text[]`). They can sign in via the magic link, but will be blocked from any auth-required page or workflow that has roles selected until a role is assigned. Make sure your invite flow assigns a role, or the user signs in and sees nothing.
 </Warning>
 
-To let the user log in with a password later, send them to a **Set Password** page after first sign-in (recipe 5's `SetPassword` step, without the current-password check), or let them set it up later.
+To let the user log in with a password later, send them to a **Set Password** page after first sign-in and call `Set Password` directly.
 
-<Warning>
-  **Verify before publishing.** Recipe 6 creates a user with no password. Confirm `SetPassword` works on a passwordless row. If it does not, create the user with a high-entropy random placeholder password (generated server-side, never emailed, never logged) so `SetPassword` has something to overwrite. Test this directly before relying on either path.
-</Warning>
+<Note>
+  `Set Password` takes `userId` and the new password (plus `Clear reset token` and `revoke sessions` flags). It sets the password unconditionally — it does not check any current password — so it works whether the row was created with no password or with an unknown one. The current-password check in recipe 5 comes from the separate `Validate Password` action, not from `Set Password`. This is why the invite flow needs no password workaround: `Set Password` simply sets one.
+</Note>
