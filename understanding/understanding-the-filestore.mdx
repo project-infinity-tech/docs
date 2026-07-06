@@ -34,7 +34,7 @@ In the File Store, **the `path` is the file's identity** — it's the S3 object 
   S3 has no real folders. A path like `uploads/{jobId}/cv.pdf` is a single flat key that _contains_ slashes — it behaves like a folder for listing (you can list everything under `uploads/{jobId}/`) but there is no directory object. If you need a true directory structure — renaming folders, moving files, listing reliably by folder — store file records (id, path, original name, owner, parent) in a database table and treat the File Store as flat blob storage keyed by path.
 </Note>
 
-See the [File Upload Recipes](RECIPE_LINK_TODO) for worked patterns covering keep-all, overwrite-in-place, and scoped uniqueness.
+See the \[[File Upload Recipes](/file-upload-recipes)\] for worked patterns covering keep-all, overwrite-in-place, and scoped uniqueness.
 
 ---
 
