@@ -286,7 +286,8 @@
             "group": "Recipes",
             "icon": "receipt",
             "pages": [
-              "auth-flow-recipes"
+              "auth-flow-recipes",
+              "file-upload-recipes"
             ]
           }
         ]

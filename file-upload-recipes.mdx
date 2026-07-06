@@ -1,0 +1,184 @@
+---
+title: "File Upload Recipes"
+---
+
+These recipes cover the common file upload patterns and, more importantly, help you choose the right one. They build on [Understanding The Scram File Store](RECIPE_LINK_TODO_FILE_STORE) — read that first if you haven't, since every pattern here comes down to one idea: **the `path` is the file's identity.**
+
+---
+
+## First Decision: Guardrail Or Own It
+
+Before picking a pattern, decide who handles duplicates.
+
+**Check for Duplicates** (the component property, default ON) is a _guardrail_, not a full solution. It provides coarse protection — block the upload if a file already exists at the same `path` — with no work from you. That's the **safe** path: it stops accidental overwrites in the simplest builds. It is not always the **appropriate** path, because all it can do is block with a raw error. It can't warn nicely, offer choices, rename, or reuse.
+
+For anything beyond a trivial upload, you'll usually want to **own duplicate handling yourself**. You do that by controlling the `path` (so collisions can't happen) and, where needed, using the **List Files** action to inspect what's already there before uploading — then resolving intelligently instead of just blocking.
+
+<Note>
+  Rule of thumb: if users only ever upload files and never need to see or reuse them, the guardrail is fine. The moment users share filenames, upload the same file more than once, or need to pick from files they uploaded before — take control of the path and own the check.
+</Note>
+
+Which pattern you need:
+
+| You want to… | Pattern | Mechanism |
+| --- | --- | --- |
+| Keep every file, even when filenames clash | [Keep All Files](#keep-all-files) | Unique token in the path |
+| Replace a file in place (e.g. profile picture) | [Overwrite In Place](#overwrite-in-place) | Stable, deterministic path |
+| Make files unique within a job / user / session | [Scoped Uniqueness](#scoped-uniqueness) | Scope segment in the path |
+| Let users see and reuse files they uploaded before | [File Library](#file-library) | A database table alongside the store |
+
+---
+
+## Keep All Files
+
+**Use when:** many users upload files that may share a name — job applicants uploading `cv.pdf`, students submitting `assignment.docx` — and you must keep every one.
+
+**Mechanism:** make the `path` unique per upload by prepending a unique token to the filename. Because the token differs every time, no two uploads ever collide, so nothing is blocked and nothing is overwritten. The original filename rides along in the path and is stripped back off for display.
+
+### Build the path
+
+Construct the upload path as:
+
+```text
+uploads/{token} — {file.name}
+```
+
+where `{token}` is a unique value generated per upload (a UUID, or a timestamp plus a random suffix). For example:
+
+```text
+uploads/a1b2c3d4 — cv.pdf
+```
+
+Pass this as the `path` to **Prepare File Upload**.
+
+### Display the original name
+
+When you list or show the file, strip the token back off. Split on the **first** occurrence of the delimiter and take everything after it:
+
+```js
+// key = "a1b2c3d4 — cv.pdf"
+const DELIM = " — ";
+const displayName = key.substring(key.indexOf(DELIM) + DELIM.length);
+// => "cv.pdf"
+```
+
+<Warning>
+  Use a delimiter the user's own filename won't contain — space–em-dash–space (`—`) or a double underscore (`__`) work well. Do **not** use a bare `-`: filenames like `my-cv-final.pdf` contain dashes, and splitting on the first dash would mangle the display name. Always strip on the first occurrence of the _full_ delimiter and keep the rest verbatim.
+</Warning>
+
+<Note>
+  Make the token genuinely unique, not just probably-unique. A short random string can collide at volume, and a collision here means a silent overwrite — the exact thing you're trying to avoid. Use a full UUID, or a timestamp plus random.
+</Note>
+
+---
+
+## Overwrite In Place
+
+**Use when:** a single logical slot should always hold the latest file — a user's profile picture, their "current CV", a draft they keep re-saving. Re-uploading should _replace_, not accumulate.
+
+**Mechanism:** the opposite of keep-all. Use a **stable, deterministic** path — one that's the same every time for that slot — and turn Check for Duplicates OFF so the re-upload is allowed to overwrite.
+
+### Build the path
+
+Key on something that identifies the slot, not the filename:
+
+```text
+uploads/{userId}-avatar.png
+uploads/{userId}-current-cv.pdf
+```
+
+Same user, same slot → same path → the new upload overwrites the old one. Exactly one file, always current.
+
+<Note>
+  Turn **Check for Duplicates OFF** for this pattern. With it on, the guardrail would block the very overwrite you intend, and the user would see "a file with this name already exists" when all they wanted was to update their photo.
+</Note>
+
+<Warning>
+  Because the path is deterministic and Check for Duplicates is off, overwrite is silent and irreversible — the previous file is gone. That's the intended behaviour here, but only use this pattern where losing the previous version is genuinely fine. If you ever need history, use [Keep All Files](#keep-all-files) or [File Library](#file-library) instead.
+</Warning>
+
+---
+
+## Scoped Uniqueness
+
+**Use when:** files should be unique _within a boundary_ but may legitimately repeat across boundaries — one CV per applicant per job, one submission per student per assignment. You want the folder-like grouping _and_ controlled collisions.
+
+**Mechanism:** put the scope in the path as one or more segments. S3 treats slashes as part of the key, so a path segment behaves like a folder for listing purposes.
+
+### Build the path
+
+```text
+uploads/{jobId}/{applicantId}/cv.pdf
+```
+
+- Two different applicants to the same job → different `applicantId` segment → both kept.
+- The same applicant re-applying to the same job with `cv.pdf` → same path → collides (blocked or overwritten, per Check for Duplicates). Often that's exactly what you want: one CV per applicant per job.
+
+You can then list everything for a job with **List Files** on `uploads/{jobId}/`.
+
+<Note>
+  Decide how many scope levels you need — it's a design choice, not a default. `uploads/{jobId}/cv.pdf` gives one CV per job (all applicants collide). `uploads/{jobId}/{applicantId}/cv.pdf` gives one CV per applicant per job. Add a token as well (`.../{applicantId}/{token} — cv.pdf`) if an applicant may keep multiple files per job.
+</Note>
+
+<Warning>
+  **VERIFY before relying on this in production.** This pattern assumes slash-separated paths are stored as keys and that List Files on a parent path (`uploads/{jobId}/`) returns everything beneath it. Confirm with a throwaway test: upload to `uploads/testjob/a.pdf` and `uploads/testjob/b.pdf`, then List Files on `uploads/testjob` and verify both come back.
+</Warning>
+
+<Note>
+  Remember S3 has no real folders — these are flat keys that happen to contain slashes. You can list by prefix, but you can't rename or move a "folder", and you can't reliably enumerate files by anything other than their path prefix. If you need real folder operations, use [File Library](#file-library).
+</Note>
+
+---
+
+## File Library
+
+**Use when:** users need to _see and reuse_ files they uploaded before — the pattern job boards like Jobserve use, where you upload a CV once and then pick it from a list each time you apply, instead of re-uploading.
+
+**Why the other patterns don't cover this:** the File Store is flat blob storage. `List Files` returns objects, but with tokens in the names they're not display-friendly, there's no reliable owner or upload date (`lastModified` is `{}`), and you can't query "all of _this user's_ files" cleanly. A reusable library needs real, queryable metadata — so it lives in **a database table**, with the File Store holding the raw blobs.
+
+### The table
+
+Create a table to record each uploaded file:
+
+| Column | Purpose |
+| --- | --- |
+| `id` | Primary key |
+| `user_id` | Owner — how you query "this user's files" |
+| `original_name` | Friendly name to show in the list (e.g. `cv.pdf`) |
+| `path` | The S3 key the file is stored at |
+| `content_type` | For serving / icons |
+| `size` | For display |
+| `uploaded_at` | Real upload timestamp (the store doesn't give you one) |
+
+### On upload
+
+Do two things in the upload workflow:
+
+1. Store the blob using [Keep All Files](#keep-all-files) so nothing collides — e.g. `uploads/{userId}/{token} — {file.name}`.
+2. Insert a row into the table recording `user_id`, `original_name` (`file.name`), `path`, `content_type` (`file.type`), and `size`.
+
+### On reuse
+
+When the user needs to attach a file (e.g. applying for a job):
+
+1. Don't show a file picker. Query the table for `user_id = current user`.
+2. Render the rows as a list of friendly names and dates.
+3. When the user picks one, copy its `path` / `fileUri` into the application record. No re-upload.
+
+<Note>
+  This is the only pattern where you get true file management — friendly names, per-user lists, upload dates, and reuse — because the database, not the File Store, is doing the remembering. Reach for it whenever "which of my files?" is a question the user needs to answer. For upload-and-forget flows, one of the path strategies above is lighter and enough.
+</Note>
+
+---
+
+## Quick Reference
+
+| Pattern | Check for Duplicates | Path shape | Keeps history? |  |
+| --- | --- | --- | --- | --- |
+| Keep All Files | ON or OFF (never fires) | `uploads/{token} — {name}` | Yes |  |
+| Overwrite In Place | OFF | `uploads/{userId}-slot.ext` | No |  |
+| Scoped Uniqueness | Your choice | `uploads/{scope}/{name}` | Within scope |  |
+| File Library | OFF (unique paths) | `uploads/{userId}/{token} — {name}` \+ table | Yes, queryable | --- |
+| title: "File Upload recipes" |  |  |  |  |
+
+---

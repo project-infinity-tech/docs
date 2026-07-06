@@ -34,7 +34,7 @@ In the File Store, **the `path` is the file's identity** — it's the S3 object 
   S3 has no real folders. A path like `uploads/{jobId}/cv.pdf` is a single flat key that _contains_ slashes — it behaves like a folder for listing (you can list everything under `uploads/{jobId}/`) but there is no directory object. If you need a true directory structure — renaming folders, moving files, listing reliably by folder — store file records (id, path, original name, owner, parent) in a database table and treat the File Store as flat blob storage keyed by path.
 </Note>
 
-See the [File Upload Recipes](/recipes/file-uploads) for worked patterns covering keep-all, overwrite-in-place, and scoped uniqueness.
+See the [File Upload Recipes](RECIPE_LINK_TODO) for worked patterns covering keep-all, overwrite-in-place, and scoped uniqueness.
 
 ---
 
@@ -134,7 +134,7 @@ If `file.type` is unavailable, fall back to `application/octet-stream`. Do not h
 
 ### Building the upload path
 
-Because the `path` is the file's identity, this is where you decide collision behaviour. A typical dynamic path combines the component's base Path with a unique or scoped segment and the real filename — for example `uploads/{jobId}/{token} — {file.name}`. Keep the construction consistent so you can strip any prefix back off for display. See the [File Upload Recipes](/recipes/file-uploads) for the exact patterns.
+Because the `path` is the file's identity, this is where you decide collision behaviour. A typical dynamic path combines the component's base Path with a unique or scoped segment and the real filename — for example `uploads/{jobId}/{token} — {file.name}`. Keep the construction consistent so you can strip any prefix back off for display. See the [File Upload Recipes](RECIPE_LINK_TODO) for the exact patterns.
 
 ### Resetting the file input after upload
 
@@ -150,7 +150,7 @@ The List Files action must be triggered on page load and re-triggered after each
 
 | Issue | Cause | Fix |
 | --- | --- | --- |
-| `A file with this name already exists` | Check for Duplicates is on, and a file already exists at that `path` | Make the `path` unique per file, or turn Check for Duplicates off to overwrite |
+| `A file with this name already exists` | Check for Duplicates is on and a file already exists at that `path` | Make the `path` unique per file, or turn Check for Duplicates off to overwrite |
 | `Step not found` error | Server and browser steps running out of order | Store `uploadUrl` in a page variable to bridge back to browser context |
 | Filename saves as `file` | Real filename not passed to the upload path | Read `file.name` directly from the file object |
 | `[object Object]` in file list | Raw object rendered as text | Use the correct field accessor (`.name`, `.size`) |
