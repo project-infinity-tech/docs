@@ -68,7 +68,7 @@
               "understanding/subpages/workflow-editor",
               "understanding/subpages/the-component-editor",
               {
-                "group": "Resources",
+                "group": "More (the backend)",
                 "icon": "cloud",
                 "pages": [
                   "resources/overview",

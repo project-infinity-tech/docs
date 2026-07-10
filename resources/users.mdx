@@ -1,9 +1,9 @@
 ---
 title: "Users"
-description: "Managing authentication providers, roles, and API tokens in the Scram Resource View."
+description: "Managing authentication providers, roles, and API tokens in the Scram More View."
 ---
 
-The Users section of the Resource View is where you configure how users authenticate into your app, manage the roles available in your project, and generate API tokens for third-party access.
+The Users section of the More View is where you configure how users authenticate into your app, manage the roles available in your project, and generate API tokens for third-party access.
 
 ---
 
@@ -12,6 +12,7 @@ The Users section of the Resource View is where you configure how users authenti
 This section displays a card for each enabled authentication provider. **Email/Password** is enabled by default on every new project.
 
 Each card shows:
+
 - **Status** — either **Configured** or **Needs Configuring**
 - **Signed Up Users** — total users who have registered via this provider
 - **Logged In Users** — users who have ever logged in via this provider (not currently active users)
@@ -37,6 +38,7 @@ The following providers are available out of the box:
 You can also add a custom provider by entering a kebab-case name and supplying the credentials manually, including the **OIDC Discovery Endpoint** for OpenID Connect providers.
 
 For step-by-step setup guides see:
+
 - [Setting Up Google Login](/understanding/subpages/setting-up-google-login)
 
 <Note>
@@ -52,7 +54,7 @@ For Email/Password authentication, you can add users directly from the Users sec
 Click **Add User** and fill in the details:
 
 | Field | Required | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Email address | ✅ | Must be unique |
 | Roles | ❌ | Assign one or more roles, or leave empty |
 | Given Name | ❌ | Optional |
