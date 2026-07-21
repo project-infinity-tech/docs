@@ -289,6 +289,12 @@
               "auth-flow-recipes",
               "file-upload-recipes"
             ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "google-sign-in"
+            ]
           }
         ]
       }

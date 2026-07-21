@@ -1,0 +1,92 @@
+---
+title: "Google Sign In"
+description: "Add Google single sign-on to your Scram app"
+---
+
+Google Sign In lets people create an account or sign in to your app using their existing Google account. Scram handles the OAuth exchange, creates the user record, and populates their name from their Google profile.
+
+## How it works
+
+When someone signs in with Google, Scram opens a popup window (a new tab on mobile) containing Google's account picker. Your workflow pauses at the Social Signup action while they sign in, then continues once the popup reports back.
+
+<Steps>
+  <Step title="The user triggers sign in">
+    A button click, or any other event, runs a workflow containing the Social Signup action.
+  </Step>
+  <Step title="Scram opens a popup">
+    Google's account picker appears. On mobile this opens as a new tab rather than a popup window.
+  </Step>
+  <Step title="The user chooses an account">
+    Google returns to Scram, which exchanges the authorisation code and creates or matches the user record.
+  </Step>
+  <Step title="The workflow continues">
+    The Social Signup action returns, and the rest of your workflow runs.
+  </Step>
+</Steps>
+
+<Note>
+  Because the workflow waits for the popup, everything after the Social Signup action runs with the user already signed in. You do not need a separate page load workflow to finish the sign in.
+</Note>
+
+## What you get back
+
+The Social Signup action returns the new user's ID and whether this was a sign in or a fresh signup.
+
+Scram populates the user's given name, family name, and email address from their Google profile automatically. The profile picture is not currently stored.
+
+<Info>
+  This is signup and sign in only. Requesting additional Google scopes, for example to read someone's calendar, is not yet supported.
+</Info>
+
+## Sessions are per app
+
+Each app in your project has its own session. Signing in on one app does not sign the user in on another, and signing out of one leaves the other untouched.
+
+If your project has, for example, a public site and a staff dashboard, someone will need to sign in to each separately.
+
+## Recipes
+
+<AccordionGroup>
+  <Accordion title="Redirect to another page after sign in">
+    Add a Social Signup action, then a Navigate action after it pointing at your destination page. The navigation runs once sign in completes.
+  </Accordion>
+
+  <Accordion title="Stay on the page and show a signed in state">
+    Add a Social Signup action, then update a page variable or refresh the page data after it. The page updates in place without a reload.
+  </Accordion>
+
+  <Accordion title="Create a database record on signup">
+    The Social Signup action returns `isLogin`, which is false for a first time signup. Branch on it and create your record only when it is false, so you do not create duplicates on every subsequent sign in.
+  </Accordion>
+
+  <Accordion title="Handle a cancelled sign in">
+    If someone closes the popup or cancels at the account picker, the action returns an error. Check the action's success output and show a message rather than assuming sign in completed.
+  </Accordion>
+</AccordionGroup>
+
+## Timeouts and edge cases
+
+If sign in is not completed within five minutes, the workflow times out and closes the popup. The action returns an error.
+
+Popup blocking is theoretically possible, though it did not occur in testing across desktop browsers, mobile browsers, or in app browsers such as Facebook, Instagram, and WhatsApp. If a popup is blocked, the action returns a connection error immediately rather than waiting.
+
+<Warning>
+  Avoid opening the same app in two tabs while testing sign in. Only one tab observes the completion, so the other can continue to show a signed out state until it is refreshed.
+</Warning>
+
+## Setting up
+
+<Steps>
+  <Step title="Create a Google OAuth client">
+    In the Google Cloud console, create an OAuth 2.0 client ID for a web application.
+  </Step>
+  <Step title="Register the redirect URI">
+    Copy the redirect URI from your app's authentication settings in Scram and add it to the authorised redirect URIs on your Google client.
+  </Step>
+  <Step title="Add your credentials to Scram">
+    Paste the client ID and client secret into your app's authentication settings.
+  </Step>
+  <Step title="Enable Google for login and signup">
+    Turn on Google under both login and signup, depending on which you want to offer.
+  </Step>
+</Steps>
