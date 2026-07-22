@@ -1,0 +1,52 @@
+---
+title: "Sending email: the test sender and going live"
+description: "Build every flow against one reusable email workflow. Prototype with the built-in Send Email to Project Owner action, then swap in a real provider with a single edit."
+---
+
+<Warning>
+  The built-in **Send Email to Project Owner** action only ever delivers to **your** address (the project owner's verified email), no matter which user the flow is about. It is for prototyping and testing — connect a real email provider before you ship anything that emails end users.
+</Warning>
+
+## The pattern: one reusable workflow
+
+Don't call an email action directly from your auth flows. Instead, create **one reusable workflow** with inputs for **to**, **subject**, and **body**, and have every flow that sends email (magic links, password resets, verification, invites) call it. Reusable workflows can contain backend actions, so the send step lives inside the workflow.
+
+In Scram this workflow is called **Send Email** and lives under **Reusable Workflows**. Note the name collision with the built-in **Send Email to Project Owner** action: throughout these docs, _Send Email_ means the reusable workflow, and the built-in test sender is always given its full name.
+
+Why: connecting an email provider does **not** automatically replace the built-in sender in your existing flows. If your flows call email actions directly, going live means editing every one of them. If they all call the reusable workflow, going live is **one edit** inside that workflow.
+
+<Steps>
+  <Step title="Prototype: built-in sender inside the workflow">
+    While building, the send step inside `Send User Email` is **Send Email to Project Owner**. The **to** input is accepted but unused — every message delivers to your inbox. That's fine for testing: you receive the token email regardless of which user it was issued for, and can click through the full flow yourself.
+  </Step>
+  <Step title="Connect your provider's API">
+    Add your email provider's REST API (Resend, SendGrid, Postmark, Amazon SES on your own domain, etc.) as an **HTTP data source**, supplying its API key there so the credential stays server-side and out of your flow definitions.
+
+    There is no dedicated "email" data source type. Scram has no way to know that a given data source sends email — it's an API endpoint and a key, exactly like any other integration. Name it something recognisable (`Resend`, `Postmark`) so it's obvious what it is when you wire it up.
+  </Step>
+  <Step title="Go live: swap the send step">
+    Edit the **Send Email** reusable workflow and replace **Send Email to Project Owner** with a call to your provider's send endpoint on that HTTP data source, mapping the workflow's **to**, **subject**, and **body** inputs into the request. Every flow that calls the workflow now reaches real users.
+
+    Connecting a provider does **not** change anything on its own — no existing flow is altered and no new send action appears. The swap inside the workflow is the step that takes you live.
+  </Step>
+</Steps>
+
+## The built-in test sender
+
+**Send Email to Project Owner** — backend-only, no setup required.
+
+|  |  |
+| --- | --- |
+| **Recipient** | Fixed: the project owner's verified email address. There is no **To** field. |
+| **Inputs** | **Subject** and **Body** (rich HTML — static markup plus expression blocks compiled at send time). |
+| **Output** | `messageId`, `success`. |
+| **Limits** | 20 sends per day. Exceeding the cap returns a `TooManyRequests` error. |
+| **Runs on** | Backend steps only. |
+
+<Note>
+  20 sends goes quickly when you're iterating on a token email — each retry after a tweak burns one. If a flow that worked earlier starts failing with `TooManyRequests`, you've hit the daily cap rather than broken your flow. Once the email itself is right, test the send step in isolation instead of re-running the whole signup each time.
+</Note>
+
+<Note>
+  Everything else in the [Auth flow recipes](/recipes/auth-flow-recipes) — generating tokens, hashing and storing them, consuming them, setting `emailVerifiedAt` — works identically on the test sender and a real provider. The only thing that changes at go-live is **who receives the email**, and with the reusable workflow that change is a single edit.
+</Note>

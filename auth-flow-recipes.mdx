@@ -10,7 +10,7 @@ These recipes chain Scram's auth actions into common flows. They come in **issue
 </Note>
 
 <Warning>
-  **Column name subject to change.** These recipes store the token in the `passwordResetToken` / `passwordResetTokenExpiresAt` columns on the `Users` table, which is what exists today. This column is planned to be renamed to a single general-purpose field (it serves magic-link, verification, and invite flows, not just password reset). When the migration lands, update these recipes to the new column name.
+  **Where the email actually goes.** These recipes send through the **Send Email** reusable workflow. While that workflow uses the built-in **Send Email to Project Owner** action, every message is delivered to _your_ inbox — the project owner's verified address — whatever the **to** input says. That is by design for testing: you receive the token email even for a user you just invited, and can click through the whole flow yourself. Before real users need to receive these emails, swap the send step inside the workflow to your email provider's HTTP data source. See [Sending email: the test sender and going live](/recipes/sending-email).
 </Warning>
 
 ## How the recipes fit together
@@ -25,6 +25,8 @@ Recipes 1 and 6 **issue** tokens. Recipes 2, 3, and 4 **consume** them. Recipe 5
 | 4. Email verification | — | Yes | No |
 | 5. Change password (signed in) | — | — | Already in |
 | 6. Invite / passwordless signup | Yes | via recipe 2 | via recipe 2 |
+
+All token-carrying recipes share one storage slot on the `Users` table: `passwordResetToken` and `passwordResetTokenExpiresAt`. There is no separate column for magic-link, verification, or invite tokens — see [the shared token slot](#the-shared-token-slot) for what that means in practice.
 
 ---
 
@@ -41,13 +43,15 @@ Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by
     Backend server request block. `Generate Secret Token` to mint the raw token.
   </Step>
   <Step title="Store the hash and detect whether a user matched">
-    `UPDATE Users` setting the hashed token and an expiry `WHERE email = :email`, with `RETURNING id`. A matched row returns the id; no match returns an empty result. **This is the check** — an `UPDATE` alone reports success even when it matches zero rows, so use `RETURNING` to know whether a user was actually found.
+    `UPDATE Users` setting `passwordResetToken` to the hashed token and `passwordResetTokenExpiresAt` to `NOW() + INTERVAL '1 hour'`, `WHERE email = :email`, with `RETURNING id`. A matched row returns the id; no match returns an empty result. **This is the check** — an `UPDATE` alone reports success even when it matches zero rows, so use `RETURNING` to know whether a user was actually found.
+
+    Always write the expiry in the same statement as the token. A token stored with a null expiry is the failure case the consume recipes are written to reject — see [expiry and the null case](#expiry-and-the-null-case). An hour suits password resets and magic links; invites want longer (recipe 6).
   </Step>
   <Step title="Branch on the result">
     `Switch Case (Backend)` on whether the returned result is empty.
   </Step>
   <Step title="Matched: send the email">
-    `Send Email` with the raw token.
+    Call the **Send Email** reusable workflow with the user's address, a subject, and a body containing the link with the raw token.
   </Step>
   <Step title="No match: skip the email">
     Do not send an email — there is no user to send to. Log or flag the miss if you want visibility on issues sent to unknown addresses. Do **not** treat this as success internally just because the `UPDATE` returned green.
@@ -91,7 +95,15 @@ Consumes a reset token and sets a new password. Does not sign the user in.
 
 <Steps>
   <Step title="Validate the token">
-    Backend server request block validates email \+ hashed token \+ unexpired.
+    Backend server request block validates the email, the hashed token, and the expiry in a single `WHERE` clause:
+
+    ```sql
+    WHERE "email" = :email
+      AND "passwordResetToken" = :hashedToken
+      AND "passwordResetTokenExpiresAt" > NOW()
+    ```
+
+    Write the expiry check in that direction. A null expiry then fails the comparison and the token is rejected — see [expiry and the null case](#expiry-and-the-null-case).
   </Step>
   <Step title="Branch">
     `Switch Case (Backend)`.
@@ -108,13 +120,20 @@ Consumes a reset token and sets a new password. Does not sign the user in.
 
 Consumes a verification token and marks the email verified.
 
-<Warning>
-  This recipe reuses the `passwordResetToken` slot. If a password reset and an email verification are ever live for the same user at once, the second issue overwrites the first. Fine for signup-time verification, where the two don't overlap — but don't reuse the slot for post-signup re-verification flows without accounting for this.
-</Warning>
-
 <Steps>
   <Step title="Atomic verify">
-    Backend server request block runs one atomic `UPDATE` setting `emailVerifiedAt` and clearing the token, `WHERE` email \+ hashed token \+ unexpired, `RETURNING id`.
+    Backend server request block runs one atomic `UPDATE` setting `emailVerifiedAt` and clearing both token columns, matching on email, hashed token, and expiry, with `RETURNING id`:
+
+    ```sql
+    UPDATE "Users"
+       SET "emailVerifiedAt" = NOW(),
+           "passwordResetToken" = NULL,
+           "passwordResetTokenExpiresAt" = NULL
+     WHERE "email" = :email
+       AND "passwordResetToken" = :hashedToken
+       AND "passwordResetTokenExpiresAt" > NOW()
+    RETURNING id
+    ```
   </Step>
   <Step title="Branch on result">
     `Switch Case (Backend)` on success / error.
@@ -149,7 +168,7 @@ The user does not exist yet. The account is created at invite time.
     `Switch Case (Backend)`.
   </Step>
   <Step title="Not found: create the account">
-    `Generate Secret Token`, then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = hashed token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. `Send Email` with the raw token.
+    `Generate Secret Token`, then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = hashed token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. Then call the **Send Email** reusable workflow with the raw token.
   </Step>
   <Step title="Found: no-op or re-issue">
     Do nothing, or re-issue.
@@ -170,3 +189,29 @@ To let the user log in with a password later, send them to a **Set Password** pa
 <Note>
   `Set Password` takes `userId` and the new password (plus `Clear reset token` and `revoke sessions` flags). It sets the password unconditionally — it does not check any current password — so it works whether the row was created with no password or with an unknown one. The current-password check in recipe 5 comes from the separate `Validate Password` action, not from `Set Password`. This is why the invite flow needs no password workaround: `Set Password` simply sets one.
 </Note>
+
+---
+
+## The shared token slot
+
+Every token-carrying recipe on this page writes to the same two columns: `passwordResetToken` and `passwordResetTokenExpiresAt`. There is no dedicated magic-link, verification, or invite token field.
+
+<Warning>
+  Because the slot is shared, **two live token flows for the same user overwrite each other**. Issuing a password reset invalidates a pending verification link, and vice versa.
+
+  The expiry is overwritten too. A reset issued with a one-hour expiry replaces the deadline on an invite that was issued with a seven-day one — so the earlier link does not merely stop working, it stops working on a schedule its own flow never set.
+</Warning>
+
+In practice this is fine for signup-time verification and for invites, where the flows do not realistically overlap. Take care if you add post-signup re-verification, where a user could plausibly request a password reset while a verification link is outstanding. If you need both live at once, add your own columns rather than reusing this slot.
+
+## Expiry and the null case
+
+The consume recipes match on `"passwordResetTokenExpiresAt" > NOW()`. That direction matters.
+
+Postgres comparisons against `NULL` evaluate to `NULL`, not `TRUE`, so a row whose expiry was never written fails the `WHERE` clause and the token is rejected. The check fails closed.
+
+<Warning>
+  Do not rewrite the expiry check as a negation such as `NOT ("passwordResetTokenExpiresAt" < NOW())`, and do not drop the clause when the column might be null. Both read as "not expired" in English, but a null expiry then passes, producing a token that never expires. Always compare the expiry directly and in the positive direction.
+</Warning>
+
+The other half of this is on the issue side: always write the expiry in the same statement that writes the token (recipes 1 and 6). A token stored without one is unusable under the recipes above — which is the safe outcome, but a confusing one to debug if you did not intend it.

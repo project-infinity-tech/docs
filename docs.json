@@ -287,7 +287,8 @@
             "icon": "receipt",
             "pages": [
               "auth-flow-recipes",
-              "file-upload-recipes"
+              "file-upload-recipes",
+              "sending-email"
             ]
           },
           {
