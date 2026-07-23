@@ -3,7 +3,7 @@ title: "Current limitations"
 description: "Things Scram doesn't currently support. If any of these are blockers, get in touch."
 ---
 
-This page lists what Scram doesn't currently support. If you're using Scram's AI and hit one of these limitations, the AI will surface the relevant entry rather than improvising a workaround. If any of these are blockers for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can understand the demand and see what we can do.
+This page lists what Scram doesn't currently support. If you're using Scram's AI and hit one of these limitations, the AI will surface the relevant entry rather than improvising a workaround. If any of these are blockers for what you're building, email us at [hello@scram.com](mailto:hello@scram.com) and we'll see what we can do — we'll also invite you to the Builders group on Slack
 
 Entries will roll off this page as gaps close, so check back if anything here is critical to your plans.
 
@@ -13,7 +13,7 @@ Scram doesn't currently support iterating over a set of records and performing w
 
 This applies whenever you need bulk processing, batch operations, data syncs that iterate over collections, queued work spread over time, or any "do X for every Y" pattern that exceeds a single synchronous request.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Scheduled background work (CRON)
 
@@ -21,7 +21,7 @@ Scram doesn't currently support running scheduled jobs on a recurring basis — 
 
 This applies whenever you need recurring tasks that run independently of user activity: nightly data syncs, daily digest emails, hourly metric rollups, weekly cleanup of expired records, scheduled report generation, and similar.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Real-time push updates (SSE / WebSocket)
 
@@ -29,7 +29,7 @@ Scram doesn't currently support server-sent events or WebSocket connections for 
 
 This applies whenever you're building chat-style apps, live collaborative editing, presence indicators, in-app notifications, live dashboards, or anything else where the server needs to push updates to the browser as they happen.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Database triggers
 
@@ -37,7 +37,7 @@ Scram doesn't currently support running a workflow automatically when a row in a
 
 This applies whenever you want side effects to fire off changes to your data — sending a notification when a new order is created, generating a derived record when something is updated, cascading clean-up when something is deleted, or maintaining audit logs and computed fields without relying on every write path remembering to do it.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## External database access
 
@@ -45,7 +45,7 @@ Scram doesn't currently support accessing the underlying database from outside t
 
 This applies whenever you need to read or write Scram's data from an external tool (analytics, BI, reverse ETL, backup), sync data with another system, or integrate with services that expect direct database access.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## CSV import and export
 
@@ -53,7 +53,7 @@ Scram doesn't currently support uploading and parsing CSV files as a data source
 
 This applies whenever you want users to bulk-import data via a CSV, populate or update a table from an uploaded spreadsheet, accept CSVs as a workflow input, or offer a "download as CSV" button on a table or report.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Fuzzy, full-text, and semantic search
 
@@ -61,7 +61,7 @@ Scram doesn't currently support search that goes beyond what plain SQL `LIKE` an
 
 This applies whenever you're building anything you'd reach for Algolia, Elasticsearch, Meilisearch, Typesense, or a vector store for site-wide search across documents, product catalogues, knowledge bases, support tickets, or anywhere search results need to be smarter than exact substring matching.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Private file storage with secure URLs
 
@@ -69,7 +69,7 @@ Scram doesn't currently support storing files privately with signed or time-limi
 
 This applies whenever you're handling user-uploaded documents that should be private (medical records, financial documents, contracts), paid content that should be accessible only to authorised users, or anything else where unauthenticated URL access is unacceptable.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## JWT signing (server-side)
 
@@ -77,7 +77,7 @@ Scram doesn't currently support minting or signing JWTs in server-side functions
 
 This applies whenever you're integrating with a service that requires a signed JWT for authentication or session handoff — LiveKit (video/audio), Mux (video), Stream (chat), Algolia (search), GitHub Apps, and many enterprise APIs.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Verifying incoming webhook signatures
 
@@ -85,7 +85,7 @@ Scram doesn't currently expose the raw request body in webhook handlers, which i
 
 This applies whenever you're accepting webhooks from a third party that requires signature verification — typically payment confirmations, repository events, message events, or any time you need to confirm the request genuinely came from the claimed sender.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Third-party OAuth (sign in / connect)
 
@@ -93,7 +93,7 @@ Scram doesn't currently support OAuth as a consumer — there's no built-in way 
 
 This applies whenever you want users to sign in with an existing identity provider rather than creating a Scram-specific account, or whenever your app needs to act on a user's behalf with a third-party service — reading their Gmail, posting to their Slack, managing their Stripe data via their account, and so on.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Persistent login ("stay logged in")
 
@@ -101,7 +101,7 @@ Scram doesn't currently support persistent login — there's no built-in "rememb
 
 This applies whenever you're building an app where users should stay signed in for days or weeks rather than being prompted to re-authenticate each session.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com) and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Cookie consent
 
@@ -109,7 +109,7 @@ Scram-built apps set cookies (including for authentication) without a built-in c
 
 This applies whenever you're building a public-facing app that needs to comply with GDPR, ePrivacy, CCPA, or similar regulations — particularly anything serving EU or UK users.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## IP allowlist / denylist
 
@@ -117,7 +117,7 @@ Scram doesn't currently support restricting access to your app by IP address —
 
 This applies whenever you're building an internal tool that should only be reachable from a corporate network, an admin area limited to known office IPs or a VPN, or anywhere you need to block known-bad addresses.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## SEO (meta tags, social cards, sitemap)
 
@@ -125,7 +125,7 @@ Scram doesn't currently support per-page SEO controls — there's no way to set 
 
 This applies whenever you're building anything public-facing that needs to rank in search engines or render attractive link previews when shared — marketing sites, content sites, public-facing product pages, landing pages, and blogs.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Custom scripts and tags in page head
 
@@ -133,7 +133,7 @@ Scram doesn't currently support adding arbitrary scripts, tags, or libraries to 
 
 This applies whenever you need to integrate a third-party service that's installed via a snippet of HTML or JavaScript in the page head — which covers most analytics, marketing, support, and observability tools.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Charts and data visualisation
 
@@ -141,7 +141,7 @@ Scram doesn't currently have first-class chart components for producing polished
 
 This applies whenever you're building dashboards, reports, analytics views, or any feature where a chart is the primary way users will understand the data.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
 ## Interactive maps and geo queries
 
@@ -149,4 +149,4 @@ Scram doesn't currently support interactive map components or dynamic geo querie
 
 This applies whenever you're building location-aware features — store locators, delivery apps, ride-hailing, real estate listings, or anywhere the user expects to see and interact with a map.
 
-If this is a blocker for what you're building, post in the [Builders group on Slack](REPLACE_WITH_SLACK_LINK) so we can see what we can do to help.
+If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
