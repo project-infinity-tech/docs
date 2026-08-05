@@ -1,0 +1,277 @@
+---
+title: "Import data from a CSV"
+description: "Build a CSV importer that previews the file, maps columns to your fields, and writes rows to your database."
+---
+
+Letting people bring their existing data into your app is often the first thing they ask for. This recipe builds a contact importer, but the pattern works for any table: products, bookings, transactions, members.
+
+The finished importer has three stages.
+
+<Steps>
+  <Step title="Upload">
+    The person selects a file. You parse it and show them the first few rows so they can confirm it has been read correctly.
+  </Step>
+  <Step title="Map columns">
+    Their column headings will not match your field names. They tell you which column goes where.
+  </Step>
+  <Step title="Confirm and import">
+    You write the valid rows, skip the invalid ones, and report back how many of each.
+  </Step>
+</Steps>
+
+## Before you start
+
+You need a table to import into. This recipe uses a `Contacts` table with `firstName`, `lastName`, `email`, `company` and `phone`.
+
+<Warning>
+  Add a unique constraint on whichever field identifies a record. For contacts that is usually email.
+
+  ```sql
+  CREATE UNIQUE INDEX contacts_email_key ON "Contacts" ("email");
+  ```
+
+  Without it, importing the same file twice creates two copies of everything. With it, the second import quietly does nothing, which is almost always what the person expects.
+</Warning>
+
+## Parse the file
+
+Scram includes [Papa Parse](https://www.papaparse.com/), which handles the parts of CSV that look simple and are not: quoted fields containing commas, values spanning several lines, escaped quotes, and the byte order mark that Excel adds on Windows.
+
+Add a code component that takes the uploaded file and returns the parsed rows.
+
+```tsx CsvParser.tsx
+import React from 'react';
+import Papa from 'papaparse';
+
+type CsvParserProps = {
+  file: File | undefined;
+  onParsed: (payload: {
+    headers: string[];
+    previewRows: Record<string, string>[];
+    allRows: Record<string, string>[];
+    rowCount: number;
+    parseErrors: { row: number; message: string }[];
+  }) => void;
+};
+
+const CsvParser = ({ file, onParsed }: CsvParserProps) => {
+  React.useEffect(() => {
+    if (!file) return;
+
+    let cancelled = false;
+
+    Papa.parse<Record<string, string>>(file, {
+      header: true,
+      skipEmptyLines: true,
+      worker: true,
+      complete: (results) => {
+        if (cancelled) return;
+
+        const rows = results.data ?? [];
+
+        onParsed({
+          headers: results.meta.fields ?? [],
+          previewRows: rows.slice(0, 5),
+          allRows: rows,
+          rowCount: rows.length,
+          parseErrors: (results.errors ?? []).map((e) => ({
+            row: (e.row ?? 0) + 2,
+            message: e.message,
+          })),
+        });
+      },
+      error: (error) => {
+        if (cancelled) return;
+        onParsed({
+          headers: [],
+          previewRows: [],
+          allRows: [],
+          rowCount: 0,
+          parseErrors: [{ row: 0, message: error.message }],
+        });
+      },
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [file]);
+
+  return null;
+};
+
+export default CsvParser;
+```
+
+Four things in there are worth knowing about.
+
+**`header: true`** returns each row as an object keyed by the column heading, rather than a positional array. Everything downstream becomes easier to read and you stop worrying about column order.
+
+**`worker: true`** parses on a background thread. Without it, a large file freezes the page while it reads.
+
+**`results.errors`** is Papa Parse telling you which rows it could not read and why. It is easy to throw away and it is exactly the information the person needs at the end. Note the `+ 2` when reporting the row: Papa Parse counts data rows from zero, and the file has a heading row above them, so adding two gives the line number they will see in their spreadsheet.
+
+**The `cancelled` flag** stops a stale parse from reporting its results if the person swaps the file mid-parse.
+
+<Tip>
+  Avoid `dynamicTyping`. It converts anything that looks like a number, which turns a postcode into a number and strips the leading zero from a phone number.
+</Tip>
+
+## Let them map the columns
+
+Exports from other systems will use headings like `Given Name`, `Email Address` or `Telephone`. Show a dropdown for each of your fields, listing the headings found in the file, and store the choice.
+
+Try to preselect sensible matches by comparing lowercased headings with punctuation and spaces removed, so `Email Address` and `email_address` both find `email`. Let the person override whatever you guess.
+
+<Note>
+  Leave every mapping optional except the one your unique constraint covers. Someone importing contacts without phone numbers should not be blocked.
+</Note>
+
+{/* TODO: add the builder click path for wiring the dropdowns to the workflow */}
+
+## Write the rows
+
+Insert in a single statement rather than looping over rows. One statement handles thousands of rows in roughly the time a handful of individual inserts would take, and it either succeeds or fails as a whole.
+
+Pass each field as an array parameter and use `unnest` to turn those parallel arrays back into rows.
+
+```sql Import contacts
+WITH input AS (
+  SELECT
+    idx AS row_number,
+    trim(email)      AS email,
+    trim(first_name) AS first_name,
+    trim(last_name)  AS last_name,
+    trim(company)    AS company,
+    trim(phone)      AS phone
+  FROM unnest(
+    :emails::text[],
+    :firstNames::text[],
+    :lastNames::text[],
+    :companies::text[],
+    :phones::text[]
+  ) WITH ORDINALITY AS t(
+    email, first_name, last_name, company, phone, idx
+  )
+),
+valid AS (
+  SELECT * FROM input
+  WHERE email <> ''
+    AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+),
+invalid AS (
+  SELECT
+    row_number,
+    CASE
+      WHEN email = '' THEN 'Missing email'
+      ELSE 'Invalid email address'
+    END AS reason
+  FROM input
+  WHERE email = ''
+     OR email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+),
+inserted AS (
+  INSERT INTO "Contacts" ("firstName", "lastName", "email", "company", "phone")
+  SELECT first_name, last_name, email, company, phone
+  FROM valid
+  ON CONFLICT ("email") DO NOTHING
+  RETURNING 1
+)
+SELECT
+  (SELECT count(*)::int FROM inserted) AS imported,
+  (SELECT count(*)::int FROM invalid)  AS skipped,
+  COALESCE(
+    (SELECT json_agg(json_build_object('row', row_number, 'reason', reason))
+     FROM invalid),
+    '[]'::json
+  ) AS skipped_rows;
+```
+
+`ON CONFLICT ("email") DO NOTHING` is what makes the import safe to run twice. Rows that already exist are left alone rather than duplicated. If you would rather refresh existing records than skip them, use `DO UPDATE SET` instead:
+
+```sql
+  ON CONFLICT ("email") DO UPDATE SET
+    "firstName" = EXCLUDED."firstName",
+    "lastName"  = EXCLUDED."lastName",
+    "company"   = EXCLUDED."company",
+    "phone"     = EXCLUDED."phone"
+```
+
+`WITH ORDINALITY` numbers the rows as they arrive so you can tell the person which row was skipped. Send the number they will recognise from their spreadsheet, which means adding two to the array position to account for zero-based counting and the heading row. Do that adjustment when you build the arrays, not in the query, so there is one place to get it right.
+
+## Import in batches
+
+Send a few hundred rows at a time rather than the whole file in one call.
+
+<Warning>
+  A single call carrying tens of thousands of rows can exceed the time and memory available to a workflow. Batching keeps every call small and predictable, and it gives you a progress indicator for free.
+</Warning>
+
+Loop through the mapped rows in slices, call the import workflow for each slice, and accumulate the counts:
+
+```ts
+const BATCH_SIZE = 500;
+
+let imported = 0;
+let skipped = 0;
+const skippedRows: { row: number; reason: string }[] = [];
+
+for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+  const batch = rows.slice(i, i + BATCH_SIZE);
+
+  const result = await importContacts({
+    emails:     batch.map((r) => r[mapping.email] ?? ''),
+    firstNames: batch.map((r) => r[mapping.firstName] ?? ''),
+    lastNames:  batch.map((r) => r[mapping.lastName] ?? ''),
+    companies:  batch.map((r) => r[mapping.company] ?? ''),
+    phones:     batch.map((r) => r[mapping.phone] ?? ''),
+    rowOffset:  i + 2,
+  });
+
+  imported += result.imported;
+  skipped += result.skipped;
+  skippedRows.push(...result.skipped_rows);
+
+  setProgress(Math.min(i + BATCH_SIZE, rows.length) / rows.length);
+}
+```
+
+Pass `rowOffset` through to the query and add it to `idx` so the reported row numbers stay correct across batches.
+
+{/* TODO: confirm recommended BATCH_SIZE and document the workflow time limit */}
+
+## Report the result
+
+Show two counts, imported and skipped, and list the skipped rows with the row number and the reason. Combine the parse errors from Papa Parse with the validation failures from the query so the person sees one list.
+
+<Note>
+  Cap the visible list at fifty or so rows and offer the rest as a download. A dirty file can produce thousands of skipped rows, and rendering all of them will hang the page.
+</Note>
+
+## Common problems
+
+<AccordionGroup>
+  <Accordion title="The first column heading has odd characters in front of it">
+    Excel on Windows writes a byte order mark at the start of the file. Papa Parse strips it when the file is read as UTF-8, which it is by default. If you see it, check the file is being passed as a `File` object rather than as a string you have read yourself.
+  </Accordion>
+
+  <Accordion title="Rows split in the wrong place">
+    Almost always a field containing a comma or a line break, which is valid CSV when quoted. Papa Parse handles it. Hand-written parsing with `split(',')` does not, which is why this recipe does not use it.
+  </Accordion>
+
+  <Accordion title="Phone numbers have lost their leading zero">
+    Something has treated the value as a number. Check `dynamicTyping` is off and the database column is text rather than numeric.
+  </Accordion>
+
+  <Accordion title="Reported row numbers do not match the spreadsheet">
+    Count the offsets. Array positions start at zero, the heading row occupies line one, and batching adds a further offset. Adding two to the position within the file gives the line number the person sees.
+  </Accordion>
+
+  <Accordion title="Importing the same file twice creates duplicates">
+    The unique constraint is missing, or `ON CONFLICT` names a column that is not covered by one. `ON CONFLICT` needs a unique index on exactly the columns it names.
+  </Accordion>
+</AccordionGroup>
+
+## Adapting this
+
+The shape stays the same for any table. What changes is the validation rule and the unique key. For products it might be a SKU, for bookings a reference number. Pick something the source system already guarantees is unique, and let the database enforce it rather than checking in your workflow.

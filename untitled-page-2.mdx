@@ -1,0 +1,86 @@
+---
+title: "Countdown Timer"
+description: "Build a ticking clock as a headless code component that reports time and fires events, then assemble everything visible from ordinary Scram components on the canvas."
+---
+
+## What this recipe does
+
+Gives you a reusable **Countdown Timer** component you can drop onto any page, configure, and wire up to workflows. It counts down accurately and tells the rest of the page how much time is left. It draws nothing at all.
+
+That last part is the point. The clock face, the buttons, the colours, the progress bar: all of it stays as normal Scram components on the canvas, fully editable. Only the ticking itself lives in code, because a live clock is the one part Scram cannot do natively.
+
+<Note>
+  This is the general shape for anything that needs behaviour Scram lacks. Put the smallest possible piece in a code component, expose it through settings, values, and events, and build everything visible around it. A code component that also renders its own interface takes that interface off the canvas and out of reach.
+</Note>
+
+## Settings
+
+The component exposes three properties, configurable like any other component's.
+
+| Setting | What it does |
+| --- | --- |
+| **Is Running** | On to count down, off to pause. |
+| **Total Seconds** | How long the countdown lasts. Defaults to 900 (15 minutes). |
+| **Reset Signal** | A number you increase by one whenever the timer should return to the start. |
+
+<Note>
+  **Reset Signal** is a number rather than a button or a boolean because the component reacts to the value _changing_, not to what it is. A boolean would need setting to true and then back to false again, and you would have to remember to do the second half. Bumping a number is a single action with no cleanup, and two resets in quick succession are still two distinct events.
+</Note>
+
+## The value it shares
+
+One live value, **Seconds Remaining**.
+
+Anything else on the page can read it: a text component showing minutes and seconds, a progress bar, a conditional that turns the display red under thirty seconds. This is what lets the visible clock be built separately from the engine driving it.
+
+## Events
+
+| Event | When it fires | Typical use |
+| --- | --- | --- |
+| **Tick** | Every second, carrying the updated seconds remaining | Update a display or a progress bar |
+| **Complete** | Once, when the countdown reaches zero | Play a sound, show a message, move to the next step |
+
+## Building it
+
+<Steps>
+  <Step title="Add the component and set its duration">
+    Drop **Countdown Timer** onto the page and set **Total Seconds**. Nothing appears, which is correct. The component has no visible output of its own.
+  </Step>
+  <Step title="Add a start and pause control">
+    A button that flips **Is Running**. One button toggling the setting is usually enough, with its label reading from the same value so it says Start or Pause as appropriate.
+  </Step>
+  <Step title="Add a reset control">
+    A button that increases **Reset Signal** by one. The timer returns to **Total Seconds** and holds there or resumes, depending on whether **Is Running** is on.
+  </Step>
+  <Step title="Show the time">
+    A text component reading **Seconds Remaining**, formatted as minutes and seconds. This is ordinary Scram, so style it however you like, and add a progress bar reading the same value against **Total Seconds** if you want one.
+  </Step>
+  <Step title="Handle completion">
+    Attach a workflow to the **Complete** event. This is where the actual consequence lives: submitting an answer, ending a session, sending a notification.
+  </Step>
+</Steps>
+
+## Keeping the count accurate
+
+<Warning>
+  Do not build the countdown by subtracting one from a counter every second. Browsers throttle background timers heavily, so a tab left in the background will fall behind, sometimes by minutes. Compute the remaining time from a target timestamp instead, so the timer is correct whenever it is next able to run.
+</Warning>
+
+The pattern is to record the moment the countdown should finish, then derive **Seconds Remaining** from the current time against that target. A tick that arrives late, or a run of ticks that never arrived at all, corrects itself immediately rather than accumulating drift.
+
+Pausing works the same way. On pause, store the seconds left. On resume, set a new target from that stored value.
+
+<Note>
+  This matters more than it sounds for anything with a real consequence attached. A timed assessment where the countdown silently gains two minutes because the candidate switched tabs is a correctness problem, not a cosmetic one.
+</Note>
+
+## Where the boundary sits
+
+| In the code component | On the canvas |
+| --- | --- |
+| Tracking the target time | The clock face and its formatting |
+| Emitting **Tick** and **Complete** | Buttons and their labels |
+| Responding to **Reset Signal** | Progress bars, colours, conditional styling |
+| Publishing **Seconds Remaining** | The workflow that runs when time expires |
+
+If you find yourself wanting to add something visual to the code component, that is the signal to add it to the page instead and read **Seconds Remaining** for whatever it needs to know.
