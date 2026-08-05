@@ -1,0 +1,212 @@
+---
+title: "API Keys for User-Owned Data"
+description: "Let each user issue a key that a third-party tool can use to read and write only their own rows. Ownership lives in your SQL, not in RLS, so every query is a security boundary."
+---
+
+<Warning>
+  Row Level Security cannot scope a public API endpoint to the caller. On an HTTP API data source with authentication switched off, `auth.user_id()` is **NULL**, so owner-scoped policies match no rows at all. Reads come back empty, writes affect nothing, and every step reports success. Ownership has to be enforced in your query text instead.
+</Warning>
+
+## What this recipe does
+
+Lets each user of your app generate a key, paste it into a third-party tool (an AI assistant, an MCP server, a script), and have that tool reach only that user's rows.
+
+The key belongs to the user. It is not a shared integration credential, and it is not an account the third party logs into. It is a bearer token your app issues and can revoke.
+
+## Why RLS cannot help
+
+Policies are static expressions evaluated per row. They cannot see the parameters of your query, so there is no way to write a policy meaning "allow the rows belonging to whoever owns the key in this request". The only input a policy has is session state, principally `auth.user_id()`.
+
+On a public endpoint your workflow runs as the application role with RLS enforced and no user identity attached. A policy of the form `USING ("ownerId" = auth.user_id()::text)` therefore evaluates false for every row.
+
+| Statement | What happens | What you see |
+| --- | --- | --- |
+| `SELECT` | Zero rows match | Empty result, success |
+| `UPDATE` | Zero rows match | Success, nothing changed |
+| `DELETE` | Zero rows match | Success, nothing removed |
+| `INSERT` | Policy check refuses the row | Step fails, workflow continues |
+
+<Note>
+  The failure mode here is silence, not an error. A workflow that returns an empty list and a workflow whose policies blocked everything look identical from the outside. Check the result of every step rather than trusting the overall response.
+</Note>
+
+## The shape
+
+1. A key is generated while the user is logged in, so their identity is known.
+2. Only a hash of the key is stored. The key itself is shown once.
+3. The public endpoint looks the hash up to get an owner id.
+4. Every statement in that endpoint is scoped by that owner id.
+
+<Steps>
+  <Step title="Create a dedicated key table">
+    Keep keys in their own table. Do not add them as a column on an existing user or settings table. The lookup in step four needs this table readable without an auth context, and nothing else should share that exemption.
+
+    ```sql
+    CREATE TABLE "ApiKey" (
+      "id"        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      "ownerId"   text NOT NULL,
+      "keyHash"   text NOT NULL UNIQUE,
+      "label"     text,
+      "createdAt" timestamptz NOT NULL DEFAULT now(),
+      "revokedAt" timestamptz
+    );
+    
+    CREATE INDEX ON "ApiKey" ("ownerId");
+    ```
+
+    `label` lets the user tell their keys apart. `revokedAt` gives per-key revocation without blocking the user's login.
+  </Step>
+  <Step title="Set policies per command, not the usual owner-scoped set">
+    Reads and writes need different treatment on this table.
+
+    ```sql
+    -- Reads: open, because the public endpoint has no identity to check against
+    CREATE POLICY "key lookup" ON "ApiKey"
+      FOR SELECT USING (true);
+    
+    -- Writes: owner only, always
+    CREATE POLICY "own keys insert" ON "ApiKey"
+      FOR INSERT WITH CHECK ("ownerId" = auth.user_id()::text);
+    
+    CREATE POLICY "own keys update" ON "ApiKey"
+      FOR UPDATE USING ("ownerId" = auth.user_id()::text)
+                 WITH CHECK ("ownerId" = auth.user_id()::text);
+    ```
+
+    No DELETE policy. Revoking sets `revokedAt` rather than removing the row, so the audit trail survives.
+
+    Because the SELECT policy is open, the in-app screen listing a user's keys has to filter for itself:
+
+    ```sql
+    SELECT "id", "label", "createdAt", "revokedAt"
+    FROM "ApiKey"
+    WHERE "ownerId" = auth.user_id()::text
+    ORDER BY "createdAt" DESC;
+    ```
+  </Step>
+  <Step title="Generate a key under a logged-in session">
+    This runs from a page in your app, where `auth.user_id()` resolves normally.
+
+    ```sql
+    WITH k AS (
+      SELECT 'sk_'
+          || replace(gen_random_uuid()::text, '-', '')
+          || replace(gen_random_uuid()::text, '-', '') AS raw
+    ),
+    ins AS (
+      INSERT INTO "ApiKey" ("ownerId", "keyHash", "label")
+      SELECT auth.user_id()::text,
+             encode(sha256(k.raw::bytea), 'hex'),
+             :label
+      FROM k
+      RETURNING "id"
+    )
+    SELECT ins."id", k.raw AS "apiKey"
+    FROM ins, k;
+    ```
+
+    Only the hash is written. The raw key is returned once by this statement and never stored again. Show it to the user immediately with a clear warning that it will not be shown a second time, then let them copy it.
+  </Step>
+  <Step title="Resolve the key on the public endpoint">
+    First, look it up:
+
+    ```sql
+    SELECT "ownerId"
+    FROM "ApiKey"
+    WHERE "keyHash" = encode(sha256(:key::bytea), 'hex')
+      AND "revokedAt" IS NULL;
+    ```
+
+    Then stop if it returned nothing. This branch is not optional. A NULL owner id flowing into the queries below produces `WHERE "ownerId" = NULL`, which matches no rows and returns a cheerful empty result, indistinguishable from a valid key belonging to a user with no data. Branch explicitly and return a 401.
+  </Step>
+  <Step title="Scope every statement by the owner id">
+    ```sql
+    SELECT "id", "title", "body"
+    FROM "Recipes"
+    WHERE "ownerId" = :ownerId;
+    ```
+
+    And on writes:
+
+    ```sql
+    UPDATE "Recipes"
+    SET "title" = :title
+    WHERE "id" = :id
+      AND "ownerId" = :ownerId;
+    ```
+
+    Note the second condition on the update. Without it, any caller holding any valid key can edit any row by guessing an id.
+  </Step>
+</Steps>
+
+## Why the write policies matter most
+
+<Warning>
+  Never put `ALL USING(true) WITH CHECK(true)` on a table that maps credentials to identities. With INSERT open, any logged-in user can insert a row pairing a hash they control with somebody else's `ownerId`, then call your API as that person. That is a full account takeover, and no amount of hashing prevents it.
+</Warning>
+
+Hashing and write policies defend against different things, and both are needed.
+
+|  | Protects against | Does not protect against |
+| --- | --- | --- |
+| **Storing only the hash** | An accidental read handing out working keys: exports, backups, a misdirected endpoint, browsing the table in the console | Anyone inserting their own key against your `ownerId` |
+| **Owner-scoped INSERT and UPDATE** | Account takeover through a forged key row | A leaked key already in a user's tool config |
+
+The open read policy is defensible only because the stored value is worthless. Someone reading the table learns who has keys and what they are labelled, which is metadata rather than credentials. Store the key in plain text and that same read is a set of live credentials for every user in your app.
+
+<Note>
+  Use `sha256()`, which is built into Postgres and needs no extension. A plain hash is correct here because the key is high-entropy random data rather than a user-chosen password, so there is nothing to brute force. A password hashing function only adds latency to every API call.
+</Note>
+
+## Keeping the query discipline manageable
+
+The `WHERE` clause is now your entire tenancy boundary, and there is no way to push the check back down into the database. The remaining defences are procedural.
+
+Keep the surface small. Expose the operations the integration genuinely needs rather than a general query interface. Every endpoint you add is another clause to get right.
+
+Keep the parameter name conspicuous and consistent. `:ownerId` in every query, never abbreviated, never reused for anything else, so a missing one is visible when you scan the SQL.
+
+Review these endpoints as security code. A missing `AND "ownerId" = :ownerId` will not fail a functional test. It works perfectly, for everybody's data.
+
+## Revoking a key
+
+From inside the app, under the user's session:
+
+```sql
+UPDATE "ApiKey"
+SET "revokedAt" = now()
+WHERE "id" = :id;
+```
+
+The owner-scoped UPDATE policy already restricts this to the user's own keys. The next call using that key resolves to nothing and gets a 401.
+
+Show the user a list of their keys with label and creation date, so revocation is an informed decision rather than a guess. If you want a "last used" column, write it to a separate log table rather than updating `ApiKey`, since the public endpoint cannot update a row it does not own.
+
+## Connecting it up
+
+The third party sends the key on every request. Use a header, never a query string, because query strings end up in server logs and browser history.
+
+```bash
+curl https://your-app.example.com/api/dataSource/oAC_00001/recipes \
+     -H "X-API-Key: sk_..."
+```
+
+For an MCP server this goes into its configuration once and stays there.
+
+## Checklist
+
+|  |  |
+| --- | --- |
+| Keys live in their own table | Not bolted onto an existing user or settings table |
+| Only the hash is stored | The raw key is shown once and is never retrievable |
+| SELECT is open, writes are owner-scoped | The write policies are what stop account takeover |
+| The in-app key list filters by owner | The open SELECT policy will not do it for you |
+| The endpoint stops on an empty lookup | Otherwise a bad key silently reads nothing and looks fine |
+| Every read is scoped by owner id | `WHERE "ownerId" = :ownerId` |
+| Every write is scoped by owner id **and** row id | Owner alone still lets a caller edit by guessing ids |
+| Revocation is per key | Setting `revokedAt`, never blocking the user |
+| Keys travel in a header | Never in a query string |
+
+<Note>
+  This recipe exists because signed token generation is currently a console operation, so an app cannot issue one to a user who signs up at three in the morning. If a workflow gains the ability to mint a token for the current user, most of this becomes unnecessary: the token carries a verified identity, `auth.user_id()` resolves normally, and your existing owner-scoped policies work with no changes at all.
+</Note>
