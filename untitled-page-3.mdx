@@ -23,14 +23,12 @@ The finished importer has three stages.
 
 You need a table to import into. This recipe uses a `Contacts` table with `firstName`, `lastName`, `email`, `company` and `phone`.
 
+You also need to decide what identifies a record. For contacts that is usually email. You will use it to avoid importing the same person twice.
+
 <Warning>
-  Add a unique constraint on whichever field identifies a record. For contacts that is usually email.
+  Scram tables have a system-generated primary key and no other unique constraints, so the database will not stop you inserting the same contact twice. Nothing prevents a duplicate unless your import checks for one.
 
-  ```sql
-  CREATE UNIQUE INDEX contacts_email_key ON "Contacts" ("email");
-  ```
-
-  Without it, importing the same file twice creates two copies of everything. With it, the second import quietly does nothing, which is almost always what the person expects.
+  This recipe checks explicitly. See [Avoiding duplicates](#avoiding-duplicates) below.
 </Warning>
 
 ## Parse the file
@@ -170,11 +168,19 @@ invalid AS (
   WHERE email = ''
      OR email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'
 ),
+fresh AS (
+  SELECT DISTINCT ON (lower(v.email)) v.*
+  FROM valid v
+  WHERE NOT EXISTS (
+    SELECT 1 FROM "Contacts" c
+    WHERE lower(c."email") = lower(v.email)
+  )
+  ORDER BY lower(v.email), v.row_number
+),
 inserted AS (
   INSERT INTO "Contacts" ("firstName", "lastName", "email", "company", "phone")
   SELECT first_name, last_name, email, company, phone
-  FROM valid
-  ON CONFLICT ("email") DO NOTHING
+  FROM fresh
   RETURNING 1
 )
 SELECT
@@ -187,17 +193,23 @@ SELECT
   ) AS skipped_rows;
 ```
 
-`ON CONFLICT ("email") DO NOTHING` is what makes the import safe to run twice. Rows that already exist are left alone rather than duplicated. If you would rather refresh existing records than skip them, use `DO UPDATE SET` instead:
-
-```sql
-  ON CONFLICT ("email") DO UPDATE SET
-    "firstName" = EXCLUDED."firstName",
-    "lastName"  = EXCLUDED."lastName",
-    "company"   = EXCLUDED."company",
-    "phone"     = EXCLUDED."phone"
-```
-
 `WITH ORDINALITY` numbers the rows as they arrive so you can tell the person which row was skipped. Send the number they will recognise from their spreadsheet, which means adding two to the array position to account for zero-based counting and the heading row. Do that adjustment when you build the arrays, not in the query, so there is one place to get it right.
+
+## Avoiding duplicates
+
+The `fresh` step above does two jobs, and both matter.
+
+`WHERE NOT EXISTS` skips rows whose email is already in the table, so importing the same file twice does not create a second copy of everyone. `DISTINCT ON` handles duplicates within the file itself, keeping the first occurrence, because a single file often lists the same person more than once.
+
+Both comparisons use `lower()` so that `Sarah@example.com` and `sarah@example.com` are treated as the same person. Email addresses are not case sensitive in practice, whatever the standard says.
+
+<Note>
+  This is a check rather than a guarantee. If two imports run at the same moment for the same contacts, both can pass the check before either has written, and both will insert. Sequential imports are safe, and that covers the ordinary case of somebody importing the same file twice by mistake.
+
+  When unique constraints become available in Scram, this section becomes a single `ON CONFLICT DO NOTHING` clause, which closes that gap and is faster.
+</Note>
+
+The cost is one lookup per candidate row against the existing table. On a large `Contacts` table with no index on email, this scan is what will slow your import down first.
 
 ## Import in batches
 
@@ -268,10 +280,14 @@ Show two counts, imported and skipped, and list the skipped rows with the row nu
   </Accordion>
 
   <Accordion title="Importing the same file twice creates duplicates">
-    The unique constraint is missing, or `ON CONFLICT` names a column that is not covered by one. `ON CONFLICT` needs a unique index on exactly the columns it names.
+    The `WHERE NOT EXISTS` check is missing, or it is comparing values that do not match. Check both sides are lowercased and trimmed, since a trailing space or a capital letter is enough to make the same address look like a new one.
+  </Accordion>
+
+  <Accordion title="The import gets slower as the table grows">
+    Every candidate row is checked against the existing table, and without an index on the field you are matching, each check scans it. Keep batches small and expect this to improve when indexes are supported.
   </Accordion>
 </AccordionGroup>
 
 ## Adapting this
 
-The shape stays the same for any table. What changes is the validation rule and the unique key. For products it might be a SKU, for bookings a reference number. Pick something the source system already guarantees is unique, and let the database enforce it rather than checking in your workflow.
+The shape stays the same for any table. What changes is the validation rule and the field you match on to spot duplicates. For products it might be a SKU, for bookings a reference number. Pick something the source system already treats as an identifier, and normalise both sides of the comparison the same way before matching.
