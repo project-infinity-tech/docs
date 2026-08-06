@@ -1,40 +1,81 @@
 ---
 title: "Frontend Configuration"
-description: "App-level frontend settings including error handling and redirect behaviour in Scram."
+description: "Frontend-level settings in Scram — favicon, fallback pages, the static frontend URL, and deletion."
 ---
 
-Frontend Configuration contains app-level settings that apply across your entire frontend. It is accessed from the **App Manager** in the Top Navigation.
+Frontend Configuration contains settings that apply across an entire frontend. Each frontend in your project has its own configuration.
+
+There are two ways to reach it:
+
+- **More \> Overview**, then select the frontend
+- The **frontend dropdown** in the Top Navigation — **Configure Frontend** at the bottom of the list
+
+<Note>
+  Frontends were previously called apps. You may still see "app" in some parts of the editor.
+</Note>
+
+---
+
+## Selecting a page
+
+A **Select a Page** dropdown at the top of the configuration screen lets you jump straight to any page in this frontend without leaving the settings.
+
+The same page list is available from the frontend dropdown in the Top Navigation, where you can also search pages and use **Add Page**.
 
 ---
 
 ## AI Description
 
-A free-text field describing this specific app's frontend — what it does, who it's for, and any relevant context. This is used by the Scram AI to provide more relevant assistance when you're working within this app.
+A free-text field describing this frontend — what it does, who it's for, and any relevant context. This is used by the Scram AI to provide more relevant assistance when you're working within this frontend.
 
 <Tip>
-  Keep this description up to date as your app evolves — the more context the AI has, the more accurate its suggestions will be.
+  Keep this description up to date as your frontend evolves — the more context the AI has, the more accurate its suggestions will be.
 </Tip>
 
 ---
 
-## Error Handling
+## Favicon
 
-Controls what happens when a user tries to access a page they're not allowed to see. Rather than showing an error, Scram redirects them to a page you specify.
+The icon shown in browser tabs for this frontend.
 
-**Login Required** — the page a user is redirected to if they try to access a page that requires them to be logged in and they're not. Typically your login page.
+You can upload a new image or choose an existing file from [Project Files](/resources/project-files), the same asset picker used elsewhere in the editor. You can also enter a URL directly.
 
-**Missing Role** — the page a user is redirected to if they're logged in but don't have the role required to access a particular page. Typically an "access denied" or home page.
+{/* VERIFY: any format or size constraints on favicon upload? Does the favicon apply to both dev and published builds? */}
+
+---
+
+## Fallback Pages
+
+Controls what happens when a user tries to reach a page they're not allowed to see. Rather than showing an error, Scram redirects them to a page you specify.
+
+**On navigating to a page that requires authentication without being logged-in** — typically your login page.
+
+**On navigating to a page which is restricted to a role they don't have** — typically an "access denied" or home page.
 
 <Note>
-  These redirects are configured at the app level but can be overridden per page in the page's authorisation settings. See [Page Authorisation](/understanding/subpages/page-authorisation) for more detail.
+  These redirects are configured at frontend level but can be overridden per page in the page's authorisation settings. See [Page Authorisation](/understanding/subpages/page-authorisation) for more detail.
 </Note>
+
+---
+
+## Static frontend URL
+
+A fixed URL for this frontend that always resolves to its latest dev build. It does not change when you rebuild, so it is safe to register with third-party services that need to redirect back into your app — OAuth providers, payment gateways, webhook consumers.
+
+The URL exists as soon as the frontend is created, so you can register it before the frontend has ever been run or published.
+
+<Warning>
+  The static frontend URL points at your **dev** build only. There is no live equivalent. If you register it with a third-party service, that integration will continue to point at dev after you publish — you will need to register your live URL separately.
+</Warning>
+
+{/* VERIFY: confirm no live equivalent exists, and confirm the URL is issued at frontend creation rather than first run. Both currently reported as "believed to be the case". */}
 
 ---
 
 ## Danger Zone
 
-**Delete Frontend** — permanently deletes this app from your project.
+**Delete App** — permanently deletes this frontend and everything in it.
 
 <Warning>
-  You cannot delete an app if it is the only one in your project — a project must always have at least one app. To delete the last app, delete the project instead.
+  You cannot delete a frontend if it is the only one in your project — a project must always have at least one frontend. To remove the last one, delete the project instead.
 </Warning>
