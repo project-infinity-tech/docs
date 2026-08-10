@@ -150,3 +150,19 @@ Scram doesn't currently support interactive map components or dynamic geo querie
 This applies whenever you're building location-aware features — store locators, delivery apps, ride-hailing, real estate listings, or anywhere the user expects to see and interact with a map.
 
 If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
+
+<Warning>
+  **Keep workflows that write to the database short.**
+
+  A workflow call that takes too long to respond may be sent again automatically. The original call is not cancelled, so if it was writing to the database, the work can be committed more than once. A single button press can produce several copies of the same records, and the app will still be showing a loading state while it happens.
+
+  This affects any workflow that writes and might run for a while, not just imports. Bulk inserts, generating records in a loop, and anything that calls an external service per row are all exposed.
+
+  Until this is resolved:
+
+  - Split large writes into batches of a few hundred rows and call the workflow once per batch, rather than sending everything in one call
+  - Avoid building bulk import features that write thousands of rows in a single call
+  - Where you can, check whether a record already exists before inserting it. This is not a complete safeguard, since two overlapping attempts can both pass the check, but it prevents duplicates in the ordinary case
+
+  If you see rows duplicated after an operation that appeared to hang, this is almost certainly the cause. Check the row count before assuming the write failed.
+</Warning>
