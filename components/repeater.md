@@ -1,3 +1,7 @@
+---
+title: "repeater"
+---
+
 # Repeater
 
 ## Overview
@@ -15,7 +19,7 @@ It is the standard way to render any dynamic list in Scram: product cards, searc
 3. The Repeater renders that template **once per item**, making each item's fields available inside via the `current` context.
 4. Optionally, you design a **fallback** inside the `emptyState` slot that shows when the array is empty.
 
-```
+```text
 data = [ {name: "Alice"}, {name: "Bob"}, {name: "Carol"} ]
 
 ┌─ render slot (repeated) ──────────┐
@@ -40,7 +44,7 @@ data = [ {name: "Alice"}, {name: "Bob"}, {name: "Carol"} ]
 
 ## Accessing Data Inside the Render Slot
 
-Inside the `render` slot, three special context objects are available:
+Inside the `render` slot, five special context objects are available:
 
 | **Expression** | **Type** | **Description** |
 | --- | --- | --- |
@@ -68,7 +72,7 @@ Repeaters can be nested inside one another. Inside an inner Repeater, `current`
 
 The Repeater itself has **no style properties** — it produces no wrapper element of its own. To control how repeated items are laid out (grid, list, horizontal scroll, etc.), wrap the Repeater in a container and style that container:
 
-```
+```text
 // A three-column card grid
 <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: theme.spacing.md, rowGap: theme.spacing.md }}>
   <Repeater data={page.data.products.value}>
