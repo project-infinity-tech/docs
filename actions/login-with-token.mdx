@@ -39,23 +39,28 @@ On success, the action returns:
 | --- | --- | --- |
 | **userId** | uuid | The id of the user who has just been signed in. |
 
-On failure it returns no value — it raises a typed error. There is no `success` field on the payload.
+On failure it returns no value — it raises a typed error, and the envelope carries the failure detail instead.
 
 <Note>
-  **What you actually address in an expression.** Every step in Scram wraps its result in an envelope, so the declared output above is not what you reach directly. The envelope carries `value` (the action's own payload), `additional`, and `success`.
+  **What you actually address in an expression.** Every step in Scram wraps its result in an envelope, so the declared output above is not what you reach directly.
+
+  On success:
 
   ```text
-  steps["<stepId>"].output.success          → true / false
+  steps["<stepId>"].output.success          → true
   steps["<stepId>"].output.value.userId     → the signed-in user's id
   ```
 
-  `steps["<stepId>"].output.userId` is the natural reading of the table above and resolves to undefined. Branch on the envelope's `success`; read the payload through `value`.
-</Note>
+  On failure:
 
-{/* VERIFY: the expression path for errorCode and message on a failed step.
-    Both are visible in the step inspector as "Error Code" and "Error Message",
-    but the envelope shape on failure was never captured. Do not document a
-    path until confirmed. */}
+  ```text
+  steps["<stepId>"].output.success          → false
+  steps["<stepId>"].output.errorCode        → e.g. "Unauthorized"
+  steps["<stepId>"].output.message          → human-readable failure text
+  ```
+
+  Note the asymmetry: the success payload is nested under `value`, but the error fields sit directly on `output`. On failure, `value` is absent entirely rather than null — so `steps["<stepId>"].output.value.userId` is the safe thing to test for a successful login, and `steps["<stepId>"].output.userId` resolves to undefined in both cases.
+</Note>
 
 ---
 
@@ -64,18 +69,17 @@ On failure it returns no value — it raises a typed error. There is no `success
 | **Code** | **When** |
 | --- | --- |
 | **Unauthorized** | The token does not match, has expired, has no expiry set, or has already been used. |
+| **ValidationFailure** | An input failed validation. A missing or empty `email` returns `ValidationFailure: `email` is required`. |
 | **TooManyRequests** | Rate limit reached. |
-| **ValidationFailure** | An input failed validation — for example a missing or empty email. |
 | **UncategorisedError** | Anything else. |
 
 <Warning>
   Handle `TooManyRequests` separately from the rest. The natural failure copy for a bad link — "request a new one" — is the wrong instruction for a rate-limited user, and following it makes the situation worse.
 </Warning>
 
-{/* VERIFY: only Unauthorized has been observed in testing. The conditions listed
-    for TooManyRequests, ValidationFailure and UncategorisedError are inferred
-    from the code names. A missing email param is the cheapest test and should
-    confirm ValidationFailure. */}
+{/* VERIFY: Unauthorized and ValidationFailure observed. The conditions listed
+    for TooManyRequests and UncategorisedError are inferred from the code names
+    and have not been reproduced. */}
 
 ---
 
@@ -121,8 +125,12 @@ Page Load workflow:
 
 ```text
 steps["<step2Id>"].output.success          → branch on this
-steps["<step2Id>"].output.value.userId     → the signed-in user
+steps["<step2Id>"].output.value.userId     → the signed-in user (success only)
+steps["<step2Id>"].output.errorCode        → e.g. "Unauthorized" (failure only)
+steps["<step2Id>"].output.message          → display text (failure only)
 ```
+
+The failure `message` is supplied by the platform — the action has no message input — and has been populated on every observed failure.
 
 ---
 

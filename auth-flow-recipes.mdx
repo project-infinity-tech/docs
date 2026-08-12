@@ -121,14 +121,16 @@ Consumes the token from recipe 1 and signs the user in.
 </Steps>
 
 <Warning>
-  **Branch on the step envelope, not on the action's payload.** `Login With Token` returns `{ userId }` on success and raises a typed error on failure — there is no `success` field inside its payload. What you branch on is the envelope every Scram step wraps its result in:
+  **Branch on the step envelope, not on the action's payload.** `Login With Token` returns `{ userId }` on success and raises a typed error on failure. The envelope every Scram step wraps its result in is what you address:
 
   ```text
   steps["<stepId>"].output.success          → branch on this
-  steps["<stepId>"].output.value.userId     → the signed-in user's id
+  steps["<stepId>"].output.value.userId     → the signed-in user (success only)
+  steps["<stepId>"].output.errorCode        → e.g. "Unauthorized" (failure only)
+  steps["<stepId>"].output.message          → display text (failure only)
   ```
 
-  `steps["<stepId>"].output.userId` is the natural mistake and resolves to undefined.
+  The success payload is nested under `value`; the error fields sit directly on `output`. On failure `value` is absent entirely. `steps["<stepId>"].output.userId` is the natural mistake and resolves to undefined either way.
 </Warning>
 
 <Note>
