@@ -5,12 +5,22 @@ description: "Composable patterns for magic links, password reset, email verific
 
 These recipes chain Scram's auth actions into common flows. They come in **issue / consume** pairs: one recipe issues a token and sends the email, a matching recipe handles the click.
 
+<Warning>
+  **You have to hash the token yourself.** Scram does not hash it for you. `Generate Secret Token` returns a raw token, the database stores exactly what you write to it, and `Login With Token` compares exactly what you pass it. If you store the raw token, everything still works and nothing errors — you simply have live, usable tokens sitting in your database, where a leaked backup hands an attacker working sign-in links.
+
+  Hash before you store, and hash again before you compare. See [how to hash](#how-to-hash).
+</Warning>
+
 <Note>
-  The raw token only ever travels by email. Everywhere else it is hashed. Email possession proves control of the inbox, and hashing means a leaked database does not leak usable tokens.
+  **The raw token can only ever leave by email.** `Generate Secret Token`'s output is restricted to the server request block that produced it — you cannot assign it to a page variable or bind it to a component, and the editor rejects the expression outright. Compose the email body inside that same block.
+
+  Everywhere the token is stored, it is hashed. This is what makes the pattern safe: possession of the email proves control of the inbox, and a leaked database yields hashes rather than usable links.
 </Note>
 
 <Warning>
-  **Where the email actually goes.** These recipes send through the **Send Email** reusable workflow. While that workflow uses the built-in **Send Email to Project Owner** action, every message is delivered to _your_ inbox — the project owner's verified address — whatever the **to** input says. That is by design for testing: you receive the token email even for a user you just invited, and can click through the whole flow yourself. Before real users need to receive these emails, swap the send step inside the workflow to your email provider's HTTP data source. See [Sending email: the test sender and going live](/recipes/sending-email).
+  **Where the email actually goes.** These recipes send email by calling the **Send Email** reusable workflow. While that workflow uses the built-in **Send Email to Project Owner** action, every message is delivered to _your_ inbox — the project owner's verified address — whatever the **to** input says. Any `to`, `cc` or `bcc` you supply is written into the body of the message so you can see who it would have gone to; it does not affect delivery.
+
+  That is by design for testing: you receive the token email even for a user you just invited, and can click through the whole flow yourself. Before real users need to receive these emails, swap the send step inside the workflow to your email provider's HTTP data source. See [Sending email: the test sender and going live](/recipes/sending-email).
 </Warning>
 
 ## How the recipes fit together
@@ -30,6 +40,28 @@ All token-carrying recipes share one storage slot on the `Users` table: `passwor
 
 ---
 
+## How to hash
+
+Both of these produce the same digest, so you can hash in JavaScript on the way in and in SQL on the way out without a mismatch.
+
+**In JavaScript**, directly on a step input:
+
+```js
+Sha256Hex(token)
+```
+
+**In SQL**, via an `Execute SQL` step:
+
+```sql
+SELECT encode(sha256(:token::bytea), 'hex') AS hash
+```
+
+Both return lowercase hex. Use whichever suits the step you are in — a SQL step that is already writing the row can hash inline, while a frontend-adjacent step is easier to handle in JavaScript.
+
+The rule that matters is symmetry: **hash on consume if and only if you hashed on store.** A mismatch here produces a token that never validates, with no error to tell you why.
+
+---
+
 ## 1. Send a magic link or reset email
 
 Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by an admin process) and emails it. Always reports success to the frontend so nobody can probe which emails exist.
@@ -40,10 +72,13 @@ Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by
 
 <Steps>
   <Step title="Generate the token">
-    Backend server request block. `Generate Secret Token` to mint the raw token.
+    Backend server request block. `Generate Secret Token` to mint the raw token. This is the value that goes in the email — and nowhere else. The raw token cannot leave this block, so everything that touches it, including composing the email body, happens here.
+  </Step>
+  <Step title="Hash it">
+    Hash the raw token before it touches the database. See [how to hash](#how-to-hash). The raw token goes in the email; the hash goes in the row.
   </Step>
   <Step title="Store the hash and detect whether a user matched">
-    `UPDATE Users` setting `passwordResetToken` to the hashed token and `passwordResetTokenExpiresAt` to `NOW() + INTERVAL '1 hour'`, `WHERE email = :email`, with `RETURNING id`. A matched row returns the id; no match returns an empty result. **This is the check** — an `UPDATE` alone reports success even when it matches zero rows, so use `RETURNING` to know whether a user was actually found.
+    `UPDATE Users` setting `passwordResetToken` to the **hashed** token and `passwordResetTokenExpiresAt` to `NOW() + INTERVAL '1 hour'`, `WHERE email = :email`, with `RETURNING id`. A matched row returns the id; no match returns an empty result. **This is the check** — an `UPDATE` alone reports success even when it matches zero rows, so use `RETURNING` to know whether a user was actually found.
 
     Always write the expiry in the same statement as the token. A token stored with a null expiry is the failure case the consume recipes are written to reject — see [expiry and the null case](#expiry-and-the-null-case). An hour suits password resets and magic links; invites want longer (recipe 6).
   </Step>
@@ -51,7 +86,7 @@ Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by
     `Switch Case (Backend)` on whether the returned result is empty.
   </Step>
   <Step title="Matched: send the email">
-    Call the **Send Email** reusable workflow with the user's address, a subject, and a body containing the link with the raw token.
+    Call the **Send Email** reusable workflow with the user's address, a subject, and a body containing the link with the **raw** token.
   </Step>
   <Step title="No match: skip the email">
     Do not send an email — there is no user to send to. Log or flag the miss if you want visibility on issues sent to unknown addresses. Do **not** treat this as success internally just because the `UPDATE` returned green.
@@ -70,24 +105,52 @@ Issues a token to a user who **already exists** (e.g. bulk-loaded, or created by
 Consumes the token from recipe 1 and signs the user in.
 
 <Note>
-  `Login With Token` compares whatever you pass it against exactly what is stored. Because recipe 1 stores the token hashed, you must hash the URL token before passing it. (If you stored the token raw, you would pass it raw — hash on consume only if you hashed on store.)
+  `Login With Token` compares whatever you pass it against exactly what is stored. Because recipe 1 stores the token hashed, you must hash the URL token before passing it. (If you stored the token raw, you would pass it raw — hash on consume only if you hashed on store.) See [how to hash](#how-to-hash).
 </Note>
 
 <Steps>
   <Step title="Hash the URL token">
-    Backend server request block hashes the token from the URL.
+    In a **Page Load** workflow, hash the token from the URL. See [how to hash](#how-to-hash).
   </Step>
   <Step title="Consume via Login With Token">
-    Frontend calls `Login With Token` with the email and hashed token. `Login With Token` requires both the email and the token, so the link must carry both.
+    `Login With Token` with the email and the hashed token. It requires both, so the link must carry both.
   </Step>
   <Step title="Branch on result">
-    Success navigates to the target path. Failure shows "link invalid or expired".
+    Branch on the step's `success`. On true, navigate to the target path. On false, show the failure message on the page.
   </Step>
 </Steps>
 
 <Warning>
-  Run `Login With Token` in a context that can act on its result — not in a page-data workflow. Page-data can redirect on success but cannot cleanly surface the failure, so a failed login falls through to the success path. `Login With Token` returns `success`, `errorCode`, and `message`. Branch on `success`, and display `message` — but note it may come back as an **empty string** (not null) on failure, so use `||` rather than `??` for your fallback text, or a blank message renders as nothing.
+  **Branch on the step envelope, not on the action's payload.** `Login With Token` returns `{ userId }` on success and raises a typed error on failure — there is no `success` field inside its payload. What you branch on is the envelope every Scram step wraps its result in:
+
+  ```text
+  steps["<stepId>"].output.success          → branch on this
+  steps["<stepId>"].output.value.userId     → the signed-in user's id
+  ```
+
+  `steps["<stepId>"].output.userId` is the natural mistake and resolves to undefined.
 </Warning>
+
+<Note>
+  Run this in a **Page Load** workflow. A failed `Login With Token` step does not halt the workflow — the steps after it still run — so you can branch on the outcome and render an error on the same page.
+</Note>
+
+{/* VERIFY: continue-on-error was observed in a Page Load workflow only.
+    Not tested in button-triggered or reusable workflows. Do not generalise. */}
+
+<Note>
+  You do not need to clear the token afterwards. On a successful login, `Login With Token` sets `passwordResetToken` and `passwordResetTokenExpiresAt` to null itself, which is what makes the link single-use — replaying it fails. This differs from recipes 3 and 4, where you clear the columns in your own SQL.
+</Note>
+
+<Note>
+  You also do not need an expiry check here. `Login With Token` performs it, and rejects a null expiry as well as a past one. Recipes 3 and 4 do their matching in SQL and must carry the clause themselves — see [expiry and the null case](#expiry-and-the-null-case).
+</Note>
+
+<Warning>
+  **A valid token signs the user in whether or not their email is verified.** `Login With Token` does not check `emailVerifiedAt`, and does not set it on success. If your app gates access on verification, check it yourself after the login step — otherwise a magic-link user arrives signed in with `emailVerifiedAt` still null and your gate holds them out.
+</Warning>
+
+Handle `TooManyRequests` on its own branch. The natural failure copy for a bad link — "request a new one" — is the wrong instruction for a rate-limited user, and following it makes the situation worse. See [the error codes](/actions/login-with-token#errors).
 
 ## 3. Password reset (no auto sign-in)
 
@@ -95,7 +158,7 @@ Consumes a reset token and sets a new password. Does not sign the user in.
 
 <Steps>
   <Step title="Validate the token">
-    Backend server request block validates the email, the hashed token, and the expiry in a single `WHERE` clause:
+    Backend server request block validates the email, the hashed token, and the expiry in a single `WHERE` clause. Hash the URL token first — see [how to hash](#how-to-hash).
 
     ```sql
     WHERE "email" = :email
@@ -140,6 +203,10 @@ Consumes a verification token and marks the email verified.
   </Step>
 </Steps>
 
+<Note>
+  This recipe is the only thing on this page that sets `emailVerifiedAt`. A magic-link login (recipe 2) proves inbox control but does not record it, so a user who only ever signs in by magic link stays unverified indefinitely.
+</Note>
+
 ## 5. Change your own password (signed in)
 
 No email involved. The user is already signed in.
@@ -168,7 +235,7 @@ The user does not exist yet. The account is created at invite time.
     `Switch Case (Backend)`.
   </Step>
   <Step title="Not found: create the account">
-    `Generate Secret Token`, then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = hashed token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. Then call the **Send Email** reusable workflow with the raw token.
+    `Generate Secret Token`, hash it (see [how to hash](#how-to-hash)), then `INSERT` into Users: email, `authType` `userpass`, `roles` `ARRAY[]::text[]`, `passwordResetToken` = **hashed** token, `passwordResetTokenExpiresAt` = now \+ expiry. Use a longer window than a password reset — invites often last days. Then call the **Send Email** reusable workflow with the **raw** token.
   </Step>
   <Step title="Found: no-op or re-issue">
     Do nothing, or re-issue.
@@ -213,5 +280,7 @@ Postgres comparisons against `NULL` evaluate to `NULL`, not `TRUE`, so a row who
 <Warning>
   Do not rewrite the expiry check as a negation such as `NOT ("passwordResetTokenExpiresAt" < NOW())`, and do not drop the clause when the column might be null. Both read as "not expired" in English, but a null expiry then passes, producing a token that never expires. Always compare the expiry directly and in the positive direction.
 </Warning>
+
+`Login With Token` (recipe 2) applies the same rule internally — an expired token is rejected, and so is one with no expiry set — so recipe 2 does not carry the clause. Recipes 3 and 4 match in SQL and must.
 
 The other half of this is on the issue side: always write the expiry in the same statement that writes the token (recipes 1 and 6). A token stored without one is unusable under the recipes above — which is the safe outcome, but a confusing one to debug if you did not intend it.

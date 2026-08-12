@@ -1,10 +1,7 @@
 ---
-title: "login-with-token"
+title: "Login With Token"
+description: "Signs a user in by matching a token against the value stored for their email — the consume half of a magic link or invite flow."
 ---
-
-# Login With Token
-
-# Login With Token — Workflow Action
 
 **Login With Token** signs a user in by matching a token against the value stored for their email. It is how a user is authenticated when they click a magic link or an invite link, rather than by entering a password.
 
@@ -12,7 +9,7 @@ title: "login-with-token"
 
 ## What is Login With Token?
 
-It is the **consume** half of a token-based auth flow. Generate Secret Token issues a token and emails it; Login With Token takes the token back when the user clicks the link, checks it against what is stored, and signs the user in if it matches.
+It is the **consume** half of a token-based auth flow. `Generate Secret Token` issues a token and emails it; `Login With Token` takes the token back when the user clicks the link, checks it against what is stored, and signs the user in if it matches.
 
 It compares the token you give it against **exactly** what is stored — it does no hashing of its own. This one fact determines how you call it.
 
@@ -20,32 +17,65 @@ It compares the token you give it against **exactly** what is stored — it does
 
 ## Inputs
 
-### Email
-
 | **Input** | **Type** | **Notes** |
 | --- | --- | --- |
 | **email** | text | The user's email address. The link that carries the token must also carry the email, so both are available at consume time. |
+| **token** | text | The token to match, in whatever form it was stored. |
 
-### Token
-
-The token to match. Because Login With Token compares against exactly what is stored:
+Because `Login With Token` compares against exactly what is stored:
 
 - If you stored the token **hashed** (the recommended pattern), **hash the incoming token before passing it here**.
 - If you stored the token **raw**, pass it raw.
 
-In other words: hash on consume if and only if you hashed on store.
+In other words: hash on consume if and only if you hashed on store. See [how to hash](/recipes/auth-flow-recipes#how-to-hash).
 
 ---
 
 ## Returns
 
+On success, the action returns:
+
 | **Field** | **Type** | **Meaning** |
 | --- | --- | --- |
-| **success** | boolean | Whether the login succeeded. |
-| **errorCode** | text | An error code on failure (e.g. `Unauthorized`). |
-| **message** | text | A human-readable message. |
+| **userId** | uuid | The id of the user who has just been signed in. |
 
-> _⚠️ `message` may come back as an **empty string** (not null) on failure. Use `||` rather than `??` for fallback text — `??` only falls back on null/undefined, so an empty string passes straight through and renders as nothing._
+On failure it returns no value — it raises a typed error. There is no `success` field on the payload.
+
+<Note>
+  **What you actually address in an expression.** Every step in Scram wraps its result in an envelope, so the declared output above is not what you reach directly. The envelope carries `value` (the action's own payload), `additional`, and `success`.
+
+  ```text
+  steps["<stepId>"].output.success          → true / false
+  steps["<stepId>"].output.value.userId     → the signed-in user's id
+  ```
+
+  `steps["<stepId>"].output.userId` is the natural reading of the table above and resolves to undefined. Branch on the envelope's `success`; read the payload through `value`.
+</Note>
+
+{/* VERIFY: the expression path for errorCode and message on a failed step.
+    Both are visible in the step inspector as "Error Code" and "Error Message",
+    but the envelope shape on failure was never captured. Do not document a
+    path until confirmed. */}
+
+---
+
+## Errors
+
+| **Code** | **When** |
+| --- | --- |
+| **Unauthorized** | The token does not match, has expired, has no expiry set, or has already been used. |
+| **TooManyRequests** | Rate limit reached. |
+| **ValidationFailure** | An input failed validation — for example a missing or empty email. |
+| **UncategorisedError** | Anything else. |
+
+<Warning>
+  Handle `TooManyRequests` separately from the rest. The natural failure copy for a bad link — "request a new one" — is the wrong instruction for a rate-limited user, and following it makes the situation worse.
+</Warning>
+
+{/* VERIFY: only Unauthorized has been observed in testing. The conditions listed
+    for TooManyRequests, ValidationFailure and UncategorisedError are inferred
+    from the code names. A missing email param is the cheapest test and should
+    confirm ValidationFailure. */}
 
 ---
 
@@ -53,10 +83,24 @@ In other words: hash on consume if and only if you hashed on store.
 
 1. You pass the email and the token (hashed, if you stored it hashed).
 2. The action looks up the user by email and compares the token against the stored value.
-3. On a match, the user is signed in and `success` is `true`.
-4. On no match — wrong, tampered, or expired token — `success` is `false`.
+3. It checks `passwordResetTokenExpiresAt`. An expired timestamp is rejected — and so is a null one.
+4. On a match, the user is signed in, **both token columns are cleared**, and the action returns `{ userId }`.
+5. On no match — wrong, tampered, expired, or already used — it raises a typed error.
 
-> _⚠️ Run Login With Token in a context that can act on its result — **not** in a page-data workflow. A page-data workflow can redirect on success but cannot cleanly surface the failure, so a failed login falls through to the success path and the user sees no error. Use a workflow that branches on `success`._
+<Note>
+  **The token is single-use, and the action enforces this itself.** A successful login sets `passwordResetToken` and `passwordResetTokenExpiresAt` to null, so replaying the same link fails. You do not need a step to clear them afterwards.
+</Note>
+
+<Note>
+  **Run it in a Page Load workflow.** A failed step does not halt the workflow — execution continues to the next step — so you can branch on the result and render an error on the same page.
+</Note>
+
+{/* VERIFY: continue-on-error was observed in a Page Load workflow only. Not
+    tested in button-triggered or reusable workflows. Do not generalise. */}
+
+<Warning>
+  **This action does not check `emailVerifiedAt`, and does not set it.** A user with an unverified email can sign in with a valid token — reasonably, since receiving the link proves inbox control. But the proof is not recorded, so the user stays unverified. If your app gates access on verification, check it yourself after the login step.
+</Warning>
 
 ---
 
@@ -65,18 +109,20 @@ In other words: hash on consume if and only if you hashed on store.
 ### Consuming a magic link
 
 ```text
-Step 1 (backend): hash the token from the URL
-Step 2 (frontend): Login With Token(email, hashed token)
-Step 3: branch on success → navigate on true, show message on false
+Page Load workflow:
+  Step 1: hash the token from the URL
+  Step 2: Login With Token(email, hashed token)
+  Step 3: If/Else on steps["<step2Id>"].output.success
+            true  → navigate to the target path
+            false → show the failure message
 ```
 
-### Displaying the failure message
+### Reading the result
 
 ```text
-page.data.tokenLogin.value?.message || "This sign-in link is invalid or has expired."
+steps["<step2Id>"].output.success          → branch on this
+steps["<step2Id>"].output.value.userId     → the signed-in user
 ```
-
-Using `||` so a blank message falls back to friendly text.
 
 ---
 
@@ -84,7 +130,8 @@ Using `||` so a blank message falls back to friendly text.
 
 - **Compares against exactly what is stored.** Hash before calling only if you hashed before storing.
 - **Requires both email and token.** The link must carry both.
-- **Do not run it in a page-data workflow.** The failure result cannot be cleanly surfaced from there.
+- **Failure raises rather than returning.** There is no `success` field on the payload — branch on the step envelope's `success`.
+- **Does not verify email addresses.** It neither requires nor sets `emailVerifiedAt`.
 
 ---
 
@@ -97,4 +144,4 @@ See [Auth flow recipes](/recipes/auth-flow-recipes) for complete flows.
 
 ---
 
-In summary: Login With Token is the **consume** step of an email-link auth flow. It matches a token against stored state and signs the user in — remember to hash on the way in if you hashed on the way out, and to run it where its failure result can be acted on.
+In summary: `Login With Token` is the **consume** step of an email-link auth flow. It matches a token against stored state, enforces expiry and single use, and signs the user in — remember to hash on the way in if you hashed on the way out, and to branch on the step envelope rather than the payload.
