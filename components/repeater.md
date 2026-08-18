@@ -58,18 +58,21 @@ Inside the `render` slot, five special context objects are available:
 
 ## Nested Repeaters
 
-Repeaters can be nested inside one another. What `current` refers to depends on **which property you are editing**, not just which Repeater you are inside.
+Repeaters can be nested inside one another. There is one rule for `current`, and it holds everywhere:
 
-This catches people out, so it is worth understanding before you build a nested list.
+<Info>
+  `current` refers to the closest ancestor Repeater, whenever you are inside that Repeater's **Repeating Content** slot.
+</Info>
 
-### The rule
+That rule applies to every component equally, including a Repeater nested inside another Repeater. It is worth reading carefully, because nested Repeaters are where people expect it to bend, and it does not.
 
-A Repeater's `data` property is what _creates_ its items. So inside that field, `current` cannot yet refer to this Repeater's own items, because they do not exist until `data` has resolved. It refers to the enclosing Repeater's item instead.
+### Why a Repeater's own properties look like an exception
 
-| **Where you are typing** | **`current.data` refers to** |
-| --- | --- |
-| Inner Repeater's **Data** property | The **outer** item |
-| Inner Repeater's **Repeating Content** | The **inner** item |
+A Repeater's properties, including its **Data** field, are not inside that Repeater. They sit alongside it, in whatever slot the Repeater itself lives in.
+
+So a nested Repeater's Data field is inside the **outer** Repeater's Repeating Content, exactly like any sibling text element. It resolves `current` the same way they do: to the outer item.
+
+Nothing inside a Repeater component ever points at that Repeater's own `current`. Its items do not exist until its Data has resolved, so there is nothing to point at.
 
 ### Worked example
 
@@ -77,30 +80,30 @@ An array of animals, where each animal has a `prey` list of more animals.
 
 ```text
 animals = [
-  { name: "Lion", prey: [{ name: "Antelope" }, { name: "Okapi" }] },
+  { name: "Lion", prey: [{ name: "Antelope" }, { name: "Zebra" }] },
   { name: "Hawk", prey: [{ name: "Mouse" }] }
 ]
 ```
 
-Outer Repeater, Data property:
+**Outer Repeater**, Data property:
 
 ```text
 vars.animals
 ```
 
-Inner Repeater, Data property. Here `current.data` is the **animal**, so this reads the prey list off it:
+**Inner Repeater**, Data property. This field lives in the outer Repeater's Repeating Content, so `current.data` is the animal:
 
 ```text
 current.data.prey
 ```
 
-Inner Repeater, Repeating Content. Here `current.data` is the **prey animal**:
+**Inner Repeater**, Repeating Content. Now you are inside the inner Repeater, so `current.data` is the prey animal:
 
 ```text
 {current.data.name}   → "Antelope"
 ```
 
-To reach the outer animal from inside the Repeating Content, use `parentRepeater`:
+To reach the outer animal from inside the inner Repeating Content, use `parentRepeater`:
 
 ```text
 {parentRepeater.current.data.name}   → "Lion"
@@ -108,18 +111,28 @@ To reach the outer animal from inside the Repeating Content, use `parentRepeater
 
 ### Reaching further up
 
-`parentRepeater` is always relative to whatever `current` means in that position. From inside Repeating Content it reaches the outer Repeater's item. From inside the Data property, where `current` is already the outer item, it reaches one level above that.
+`parentRepeater` is relative to whatever `current` means where you are typing. From inside a Repeating Content slot it reaches the enclosing Repeater's item. From a Repeater's Data property, where `current` is already the outer item, it reaches one level above that.
 
-| **Expression** | **In Repeating Content** | **In the Data property** |
+| **Expression** | **In Repeating Content** | **In a Repeater's Data property** |
 | --- | --- | --- |
-| `current.data` | This Repeater's item | The outer Repeater's item |
-| `parentRepeater.current.data` | The outer Repeater's item | Two levels up |
+| `current.data` | This Repeater's item | The enclosing Repeater's item |
+| `parentRepeater.current.data` | The enclosing Repeater's item | Two levels up |
 
 For deeper nesting the reference chains: `parentRepeater.parentRepeater.current.data`.
 
-<Warning>
-  Writing `parentRepeater` where there is no enclosing Repeater resolves to nothing. The list will render empty with no error shown, so check your nesting depth if a nested list appears blank.
-</Warning>
+<Note>
+  `parentRepeater` is only available where there is an ancestor Repeater to reach. In a nested Repeater's Data property, `current` is already the outer item, so `parentRepeater` there refers to a Repeater outside the outer one.
+</Note>
+
+### Typing and casts
+
+If your data comes from a declared project type, the shape carries through and you can access fields directly with no type assertion:
+
+```text
+current.data.prey
+```
+
+Type assertions such as `(current.data as {prey: any[]}).prey` are only needed where the shape is genuinely unknown. If you find yourself writing one, check whether the source type can be declared properly instead. It is almost always clearer.
 
 ### Typing and casts
 
