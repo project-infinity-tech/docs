@@ -79,11 +79,9 @@ This applies whenever you're accepting webhooks from a third party that requires
 
 If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
-## Third-party OAuth (sign in / connect)
+## Third-party services via a social login
 
-Scram doesn't currently support OAuth as a consumer — there's no built-in way to let users sign in with Google, GitHub, Microsoft, or similar providers, and no way to authorise the app against a third-party API on the user's behalf (the "connect your X account" flow).
-
-This applies whenever you want users to sign in with an existing identity provider rather than creating a Scram-specific account, or whenever your app needs to act on a user's behalf with a third-party service — reading their Gmail, posting to their Slack, managing their Stripe data via their account, and so on.
+Scram doesn't currently support using a social login to reach the provider's other services — signing in with Google, Microsoft, or another provider establishes who someone is, but building on that to read a user's Google Drive, their Outlook mail and calendar, or anything else on that account isn't supported yet.
 
 If this is a blocker for what you're building, email us at [hello@scram.com](mailto:hello@scram.com), and we'll see what we can do — we'll also invite you to the Builders group on Slack.
 
@@ -157,4 +155,15 @@ If this is a blocker for what you're building, email us at [hello@scram.com](mai
   - Where you can, check whether a record already exists before inserting it. This is not a complete safeguard, since two overlapping attempts can both pass the check, but it prevents duplicates in the ordinary case
 
   If you see rows duplicated after an operation that appeared to hang, this is almost certainly the cause. Check the row count before assuming the write failed.
+</Warning>
+
+<Warning>
+  **Social login may not complete in some browsers when you're testing in the editor.**
+
+  In the editor your app runs inside a preview frame. The sign-in popup opens on your app's own domain and completes normally, but the app inside the "Run" preview can't read the cookies the popup set. If you encounter this issue, try a different browser like Chrome. This affects the editor's preview only, a published app is unaffected.
+
+  Until this is resolved:
+
+  - Test social login in Chrome
+  - To check another browser, open your app in its own tab with the **external link icon** in Run mode, rather than signing in through the "Run" preview
 </Warning>
