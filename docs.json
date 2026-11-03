@@ -289,10 +289,10 @@
               "auth-flow-recipes",
               "file-upload-recipes",
               "sending-email",
-              "untitled-page",
-              "untitled-page-2",
-              "untitled-page-3",
-              "untitled-page-4"
+              "api-keys-for-user-owned-data",
+              "countdown-timer",
+              "import-data-from-csv",
+              "mcp-server-recipes"
             ]
           },
           {
