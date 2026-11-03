@@ -1,0 +1,388 @@
+---
+title: "MCP server recipes"
+description: "Turn a Scram app into an MCP server that Claude, ChatGPT and other AI assistants can connect to as a connector."
+---
+
+These recipes show you how to make your Scram app an **MCP server** — something an AI assistant like Claude or ChatGPT can connect to, see your app's tools, and call them. You build it with a single incoming API trigger and one workflow. No special data source, no extra infrastructure.
+
+<Note>
+  **Yes, a single trigger is enough.** MCP over HTTP is JSON-RPC 2.0 sent as a `POST` to one URL and answered with JSON. Every message — `initialize`, `tools/list`, `tools/call` — goes to the same URL; only the `method` field in the body changes. Session IDs are optional in the protocol, so a stateless server is fully valid. You don't need one route per message, and you don't need session handling.
+</Note>
+
+<Warning>
+  **Don't settle for plain REST endpoints.** A pair of REST endpoints (for example "save" and "search") is not an MCP server. Claude and ChatGPT can't add them as a connector, so the assistant still can't use your app. If you want an AI assistant to call your app, build the MCP trigger below.
+</Warning>
+
+| You want to… | Recipe |
+| --- | --- |
+| Prove the approach works with the smallest possible server | [1. Minimal MCP server](#1-minimal-mcp-server) |
+| Check your server connects and the tools run | [2. Test with MCP Inspector](#2-test-with-mcp-inspector) |
+| Stop strangers calling your server | [3. Secure it with a secret key](#3-secure-it-with-a-secret-key) |
+| Expose real app data as tools | [4. Worked example: memory vault](#4-worked-example-memory-vault) |
+| Use it from an AI assistant | [5. Connect to Claude or ChatGPT](#5-connect-to-claude-or-chatgpt) |
+
+---
+
+## How it works
+
+An MCP client talks to your server in three steps, each a separate `POST` to the same URL:
+
+| Client sends `method` | Your workflow replies with |
+| --- | --- |
+| `initialize` | Protocol version, capabilities and server info |
+| `notifications/initialized` | Anything — the client ignores the reply |
+| `tools/list` | The list of tools, each with a name, description and input schema |
+| `tools/call` | The result of running the named tool |
+
+Every request body looks like this:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }
+```
+
+Every reply must echo the same `id` back:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "result": { ... } }
+```
+
+<Warning>
+  **Always echo `id` exactly as received.** It can be a number or a string. If your reply's `id` doesn't match the request, the client never pairs the reply with its request and the connection hangs or times out — with no error telling you why. This is the most common mistake.
+</Warning>
+
+---
+
+## 1. Minimal MCP server
+
+**Use when:** you want to prove MCP works in your project before building anything real. Do this in a throwaway project first.
+
+**Mechanism:** one incoming `POST /mcp` trigger, authentication off, and a workflow that branches on `body.method`. The two tools — `echo` and `add` — need no database.
+
+<Steps>
+  <Step title="Create the trigger">
+    Add an incoming API trigger with method `POST` and path `/mcp`. Turn authentication **off** on the trigger — external MCP clients can't sign in with a Scram user token. (You'll add a secret key in [recipe 3](#3-secure-it-with-a-secret-key).)
+  </Step>
+  <Step title="Define the request body">
+    Set the request body type to:
+
+    | Field | Type |
+    | --- | --- |
+    | `jsonrpc` | text |
+    | `id` | json (optional — may be a number or a string) |
+    | `method` | text |
+    | `params` | json (optional) |
+
+    Use the loose `json` type for `id` and `params`, because their shape changes from one method to the next.
+  </Step>
+  <Step title="Branch on the method">
+    In the trigger's workflow, branch on `body.method` and return one of the replies below. Return **every** reply — including errors — through the workflow's success output, so it goes back as HTTP `200`. JSON-RPC errors belong in the body, not in the HTTP status.
+  </Step>
+</Steps>
+
+### The replies
+
+**`initialize`**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "<id from the request>",
+  "result": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": { "tools": {} },
+    "serverInfo": { "name": "scram-mcp-test", "version": "1.0.0" }
+  }
+}
+```
+
+**Any method starting with `notifications/`** — return `{}`.
+
+**`ping`**
+
+```json
+{ "jsonrpc": "2.0", "id": "<id>", "result": {} }
+```
+
+**`tools/list`**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "<id>",
+  "result": {
+    "tools": [
+      {
+        "name": "echo",
+        "description": "Echoes back the text you send.",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "text": { "type": "string", "description": "Text to echo" } },
+          "required": ["text"]
+        }
+      },
+      {
+        "name": "add",
+        "description": "Adds two numbers.",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "a": { "type": "number" }, "b": { "type": "number" } },
+          "required": ["a", "b"]
+        }
+      }
+    ]
+  }
+}
+```
+
+**`tools/call`** — branch again on `params.name`, reading the tool's inputs from `params.arguments`. A tool result is always a list of content items:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "<id>",
+  "result": { "content": [{ "type": "text", "text": "Echo: hello" }] }
+}
+```
+
+For an unknown tool name, return a result flagged as an error:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "<id>",
+  "result": { "isError": true, "content": [{ "type": "text", "text": "Unknown tool" }] }
+}
+```
+
+**Any other method** — return a JSON-RPC "method not found" error:
+
+```json
+{ "jsonrpc": "2.0", "id": "<id>", "error": { "code": -32601, "message": "Method not found" } }
+```
+
+<Note>
+  **Tool descriptions matter.** The AI assistant decides when to call a tool by reading its `description` and `inputSchema`. Write descriptions the way you'd brief a colleague: what the tool does, and what each input means.
+</Note>
+
+### Build it with ScramAI
+
+You can paste this prompt into ScramAI in a new project:
+
+```text
+Build a minimal test app that is an MCP server (Model Context Protocol, HTTP transport, stateless). Keep it as small as possible: no UI, no database, no login.
+
+This IS possible with a single incoming API trigger. MCP over HTTP is just JSON-RPC 2.0 sent as a POST to one URL, answered with JSON. Session IDs are optional; do not implement sessions. Do not build separate REST endpoints instead.
+
+Endpoint:
+- One incoming API trigger: POST /mcp
+- Trigger auth OFF.
+- Request body: { jsonrpc: text, id: json (optional, number or string), method: text, params: json (optional) }
+- Response content type: JSON.
+
+Workflow on that trigger. Branch on body.method. Always echo back the request's `id` exactly as received. Always return through the success output (HTTP 200), including errors.
+
+- "initialize" → { jsonrpc: "2.0", id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "scram-mcp-test", version: "1.0.0" } } }
+- any method starting with "notifications/" → return {}
+- "ping" → { jsonrpc: "2.0", id, result: {} }
+- "tools/list" → { jsonrpc: "2.0", id, result: { tools: [
+    { name: "echo", description: "Echoes back the text you send.", inputSchema: { type: "object", properties: { text: { type: "string", description: "Text to echo" } }, required: ["text"] } },
+    { name: "add", description: "Adds two numbers.", inputSchema: { type: "object", properties: { a: { type: "number" }, b: { type: "number" } }, required: ["a", "b"] } }
+  ] } }
+- "tools/call" → branch on params.name, using params.arguments:
+    - "echo" → { jsonrpc: "2.0", id, result: { content: [ { type: "text", text: "Echo: " + arguments.text } ] } }
+    - "add" → { jsonrpc: "2.0", id, result: { content: [ { type: "text", text: <a + b as text> } ] } }
+    - anything else → { jsonrpc: "2.0", id, result: { isError: true, content: [ { type: "text", text: "Unknown tool" } ] } }
+- any other method → { jsonrpc: "2.0", id, error: { code: -32601, message: "Method not found" } }
+
+When done, tell me the full public URL of the /mcp endpoint.
+```
+
+---
+
+## 2. Test with MCP Inspector
+
+**Use when:** you've built the server and want to confirm it connects and the tools run, before connecting a real AI assistant.
+
+**Mechanism:** [MCP Inspector](https://github.com/modelcontextprotocol/inspector) is the official MCP testing tool. It runs on your own computer and opens in your browser.
+
+<Steps>
+  <Step title="Start the Inspector">
+    You need [Node.js](https://nodejs.org) installed. In a terminal (**Terminal** on Mac, **PowerShell** on Windows), run:
+
+    ```bash
+    npx @modelcontextprotocol/inspector
+    ```
+
+    Type `y` if it asks to install. It opens in your browser.
+  </Step>
+  <Step title="Add your server">
+    Click **Add Servers** (or **Clone** on the `example-server-default` card). Fill in:
+
+    - **Server ID** — a short name with only letters, numbers, hyphens and underscores, such as `scram-test`. **Not** the URL.
+    - **Transport** — `streamable-http`.
+    - **URL** — your app's full `/mcp` endpoint URL.
+
+    Click **Add**.
+  </Step>
+  <Step title="Connect">
+    Flip the toggle on your server's card. It should show **Connected** and the protocol version your server returned (for example **MCP 2025-06-18**). That means `initialize` worked.
+  </Step>
+  <Step title="Run a tool">
+    Open **Tools** and click **List Tools** — you should see `echo` and `add`. Run `echo` with `hello`; you should get back `Echo: hello`.
+  </Step>
+</Steps>
+
+<Warning>
+  **"Use only letters, numbers, hyphens, and underscores."** You've pasted the URL into the **Server ID** box. Put a short name there and the URL in the **URL** box below it.
+</Warning>
+
+<Note>
+  **Check the Inspector itself first.** If your server won't connect, try toggling on the built-in `example-server-default`. If that connects, the Inspector is fine and the problem is in your Scram app.
+</Note>
+
+| Symptom | Likely cause |
+| --- | --- |
+| Hangs, then times out | Reply `id` doesn't match the request `id` |
+| Connects, but no tools listed | `tools/list` reply shape is wrong — check `result.tools` |
+| Tool runs but shows nothing | Tool result isn't `result.content` as a list of `{ type: "text", text }` items |
+| Error mentioning `GET` | Expected — see [limitations](#limitations). It should still connect. |
+| `Unauthorized` | The `?key=` secret is missing or wrong — see [recipe 3](#3-secure-it-with-a-secret-key) |
+
+---
+
+## 3. Secure it with a secret key
+
+**Use when:** your MCP server reads or writes real data. Do this before you connect it to anything outside a test.
+
+**Mechanism:** trigger authentication expects a signed-in Scram user with a role, which an external AI assistant can't provide. So authentication stays **off** on the trigger, and the workflow checks a long secret key itself before doing anything else.
+
+<Steps>
+  <Step title="Create the secret">
+    Generate a long random value and store it as a secret in your project, for example `MCP_KEY`. Don't write it into the workflow itself.
+  </Step>
+  <Step title="Accept it on the trigger">
+    Add a query parameter `key` (text) to the `/mcp` trigger.
+  </Step>
+  <Step title="Check it first">
+    Make the very first step of the workflow compare `query.key` with `MCP_KEY`. If they don't match, stop and return:
+
+    ```json
+    { "jsonrpc": "2.0", "id": "<id>", "error": { "code": -32001, "message": "Unauthorized" } }
+    ```
+  </Step>
+  <Step title="Use the full URL">
+    Give clients the URL with the key on the end:
+
+    ```text
+    https://<your-app>/api/dataSource/<data-source-id>/mcp?key=<your secret>
+    ```
+  </Step>
+</Steps>
+
+<Warning>
+  **The URL is now a password.** Anyone with the full URL can call your tools. Don't paste it into chats, screenshots or tickets. If it leaks, change `MCP_KEY` and update every connected client.
+</Warning>
+
+<Note>
+  Some clients — such as Claude Desktop and Claude Code — let you send a custom header instead of putting the key in the URL. If all your clients support headers, you can check a header such as `x-mcp-key` instead of a query parameter. Web connector screens usually only accept a URL, so the query parameter is the option that works everywhere.
+</Note>
+
+---
+
+## 4. Worked example: memory vault
+
+**Use when:** you want an AI assistant to save things to your app and look them up later — the "give my assistant a memory" pattern.
+
+**Mechanism:** the same trigger as [recipe 1](#1-minimal-mcp-server) with the [secret key check](#3-secure-it-with-a-secret-key), and two tools backed by a database table.
+
+### The table
+
+| Column | Purpose |
+| --- | --- |
+| `id` | Primary key |
+| `content` | The memory text |
+| `tags` | Optional comma-separated tags |
+| `createdAt` | When it was saved |
+
+### The tools
+
+| Tool | Inputs | Does |
+| --- | --- | --- |
+| `save_memory` | `content` (required), `tags` (optional) | Inserts a row; returns `Saved memory <id>` |
+| `search_memories` | `query` (required) | Finds rows whose `content` or `tags` contain `query` (case-insensitive), newest first, max 20; returns them as readable lines, or `No memories found` |
+
+### Build it with ScramAI
+
+```text
+Build my memory vault app's backend as an MCP server (Model Context Protocol, HTTP transport, stateless) so ChatGPT and Claude can connect to it as a connector.
+
+This IS possible with a single incoming API trigger. MCP over HTTP is just JSON-RPC 2.0 sent as a POST to one URL, answered with JSON. Session IDs are optional; do not implement sessions. Do not build separate REST endpoints instead.
+
+Data:
+- A Memory table with: id, content (text), tags (text, optional), createdAt.
+
+Endpoint:
+- One incoming API trigger: POST /mcp
+- Turn trigger auth OFF (external MCP clients can't get a Scram user token).
+- Request body: { jsonrpc: text, id: json (optional, can be number or string), method: text, params: json (optional) }
+- Query param: key (text)
+
+Workflow on that trigger:
+1. Security: if query `key` doesn't equal the secret MCP_KEY, return { jsonrpc: "2.0", id, error: { code: -32001, message: "Unauthorized" } }.
+2. Branch on body.method. Always echo back the request's `id` exactly as received, and always return as a success output (HTTP 200), including errors.
+   - "initialize" → { jsonrpc: "2.0", id, result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "memory-vault", version: "1.0.0" } } }
+   - any method starting with "notifications/" → return {}
+   - "ping" → { jsonrpc: "2.0", id, result: {} }
+   - "tools/list" → { jsonrpc: "2.0", id, result: { tools: [
+       { name: "save_memory", description: "Save a memory to the vault.", inputSchema: { type: "object", properties: { content: { type: "string", description: "The memory to save" }, tags: { type: "string", description: "Optional comma-separated tags" } }, required: ["content"] } },
+       { name: "search_memories", description: "Search saved memories by text. Returns matching memories, newest first.", inputSchema: { type: "object", properties: { query: { type: "string", description: "Text to search for" } }, required: ["query"] } }
+     ] } }
+   - "tools/call" → branch on params.name, using params.arguments:
+       - "save_memory": create a Memory with arguments.content and arguments.tags. Return { jsonrpc: "2.0", id, result: { content: [ { type: "text", text: "Saved memory <id>" } ] } }
+       - "search_memories": find Memories whose content or tags contain arguments.query (case-insensitive), newest first, max 20. Return { jsonrpc: "2.0", id, result: { content: [ { type: "text", text: <the matches as readable lines, or "No memories found"> } ] } }
+       - unknown tool name → { jsonrpc: "2.0", id, result: { isError: true, content: [ { type: "text", text: "Unknown tool" } ] } }
+   - any other method → { jsonrpc: "2.0", id, error: { code: -32601, message: "Method not found" } }
+3. Store MCP_KEY as a secret, not in the workflow.
+
+When done, tell me the full endpoint URL including ?key=.
+```
+
+---
+
+## 5. Connect to Claude or ChatGPT
+
+**Use when:** your server passes the [Inspector test](#2-test-with-mcp-inspector) and you want to use it from an AI assistant.
+
+- **Claude** — add your full URL (including `?key=`) as a custom connector in Claude's connector settings. Leave the OAuth fields blank.
+- **ChatGPT** — custom connectors require developer mode. Add your full URL there.
+
+Then ask the assistant to use a tool by name to check it's wired up — for example, "save a memory that my dog is called Biscuit", then "what's my dog called?".
+
+<Note>
+  Connector settings in Claude and ChatGPT change often. If the menu names here don't match what you see, look for **Connectors** in the assistant's settings.
+</Note>
+
+---
+
+## Limitations
+
+These don't stop your server working, but you should know about them:
+
+- **Every reply is HTTP `200`.** That's fine — MCP clients accept `200`, and JSON-RPC errors go in the body.
+- **No `GET` on the endpoint.** Some clients try a `GET` to open a live stream. Scram returns `404` where MCP expects `405`. Clients log this and carry on.
+- **No streaming or server-initiated messages.** Your server can only reply to requests. That rules out progress updates and server-pushed notifications, but simple tools like save and search don't need them.
+- **No OAuth.** Use the [secret key](#3-secure-it-with-a-secret-key). Clients that only support OAuth can't connect.
+
+---
+
+## Quick reference
+
+| Piece | Setting |
+| --- | --- |
+| Trigger | `POST /mcp`, authentication off |
+| Request body | `jsonrpc` text, `id` json, `method` text, `params` json |
+| Security | `?key=` query parameter checked against a project secret |
+| Reply status | Always `200`, through the success output |
+| Reply `id` | Always echo the request's `id` exactly |
+| Protocol version | `2025-06-18` |
+| Test with | MCP Inspector, transport `streamable-http` |
